@@ -1,0 +1,216 @@
+<pre>
+
+<a href="tree.php">file tree</a>
+
+NOTES
+bezier spline plugin (dogbones)
+    http://sketchucation.com/forums/viewtopic.php?t=13563
+   gives you 
+   dogbones 
+   'convert to polyline' which will make several lines into one line when SU didn't do it automatically
+
+loop.convex returns true if the loop is convex 
+                                                
+SU7 code C:\Program Files\Google\Google SketchUp 7\Tools\Phlatboyz                                                
+                                                
+extention warehouse <a href="http://extensions.sketchup.com/">http://extensions.sketchup.com/</a>
+current code <a href="http://www.phlatforum.com/viewtopic.php?f=98&t=2297&start=50">http://www.phlatforum.com/viewtopic.php?f=98&t=2297&start=50</a>
+API docs <A href="http://www.sketchup.com/intl/en/developer/">http://www.sketchup.com/intl/en/developer/</a>
+
+</pre>      
+
+List of things to fix/add for next release, in no particular order
+
+<table border=1 cellspacing=0 cellpadding=2>
+<tr><th>Done?</th><th>Description</th><th>Notes</th></tr>
+<tr><td>&#10004;</td><td>Plunge Hole Depth 'per hole'</td><td>Released 17 May 2013</td></tr>
+<tr><td>&#10004;</td><td>Plunge rate used for all plunge moves</td><td>Released 17 May 2013</td></tr>
+<tr><td>&#10004;</td><td>Multipass prevent retract</td><td>from Yoram, released 17 may</td></tr>
+<tr><td>&#10004;</td><td>Plunge: Spiral hole drilling</td><td>See <a href="holeat.phps">holeat.php</a></td></tr>
+<tr><td>&#10004;</td><td>Plunge hole marking to denote depth setting, or size setting</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>3D code metricated</td><td>Released 17 May 2013</td></tr>
+<tr><td>&#10004;</td><td>Optimize cut start points</td><td>Just gcodeutil.rb released 21 MAy 2013</td></tr>
+<tr><td>&#10004;</td><td>Integrate Kowk's group order tool</td><td>in TRUEPLUNGE 3.2</td></tr>
+
+<tr><td>&#10004;</td><td>Sketchup Make/2013 installer</td><td>23 Aug, TRUEPLUNGE 3.2</td></tr>
+<tr><td>&#10004;</td><td>Dog bones for tenon slots</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>Sketchup 2013, toolbar not showing</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>Feedout option</td><td>on phlatprinter, feed stock so cut area is out front of the machine</td></tr>
+
+<tr><td>&#10004;</td><td>POCKET: enable option to draw just outline or just zigzag</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>POCKET: convert pocket to a phlattool</td><td>&nbsp;</td></tr>
+
+<tr><td>&#10004;</td><td>Sketchup 2013, toolbar not showing</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>Parameter dialog sizing</td><td>&nbsp;</td></tr>
+</table>
+1.1 released
+
+<table border=1 cellspacing=0 cellpadding=2>
+<tr><th>Done?</th><th width=30%>Description</th><th>Notes</th><th>more notes</th></tr>
+
+<tr><td>&#10004;</td><td>Retract prevent :optional</td>
+<td><ul>
+   <li>prevent all
+   <li>none
+   <li>on only for centerlines and pockets<br>done a bunch of this on centerline/fold/pocket cuts, not sure options are needed</br>
+   </ul>
+</td><td>pretty much sorted so optional makes no sense.  closed</td></tr>   
+
+<tr><td>&#10004;</td><td>Feedout option</td><td>on phlatprinter, feed stock so cut area is out front of the machine</td><td>1.1c-beta</td></tr>
+<tr><td>&#10004;</td><td>Profiles save/load</td><td>tool for saving and loading sets of cut parameters</td><td>1.1c-beta</td></tr>
+<tr><td>&#10004;</td><td>centerline multipass fix?</td><td>Phlatboyz.rar into 1_1b</td><td>&nbsp;</td></tr>
+
+<tr><td>&nbsp;</td><td>Wire cutter</td><td>tick box for generating wire cutter code</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>Option for plasma table code</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>Option for Z-0 on top of material, or on table top</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td>&#10004;</td><td>POCKET: Pocket in X or Y direction</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td>&nbsp;</td><td>POCKET: Concave Pocketing - mesh or Minimum Convex Decomposition</td><td><A href="http://www.anderswallin.net/cam/">http://www.anderswallin.net/cam/</a> <br><a href="http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0">http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0</a></td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>POCKET: Use inside cut tools offset routine instead</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td>&nbsp;</td><td>Auto tab placement</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>3D with bullnose bits, proper depthing stuff</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td>&nbsp;</td><td>Auto tab width on bit size change</td><td>optional</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>MyConstants.rb editor menu</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td>&nbsp;</td>
+   <TD>USER REQUEST</td>
+<td>
+   I was using the centerline tool and the perimeter cut tool on 1/4in acrylic sheet today. 
+   I use the centerline tool at variable depths such as 50% usually. With a 1/8in diameter 
+   bit I am always nervous about breaking it ($35 a piece!) so I tend to slow the travel 
+   speed down to about 20in/m  universally so when I do the full cut through the 1/4 I don't 
+   risk breaking the bit. But on the 50% cuts I could be running 50in plus. Right now the 
+   only way is to go into the gcode and try to find it and make manual changes.
+<p>I can't control spindle speed on my router, but I was wondering if it would be a big additional 
+   change to have two variables when you select any tool that can have a % depth to also have an 
+   entry for travel speed. </p>
+   <p>
+   Thoughts: could provide for feed speed scaling between a 'speed at 100% depth' to 'speed at <100% depth' where
+      speed at 100% will be less than speed at some <100% depth.
+ 
+ 
+   </p>
+   </td>
+   </tr>
+   
+<tr><td>&nbsp;</td>
+      <td>Plasma</td>
+         <td>Plasma cutter code can be auto switching, G01 will turn the gun on automatically in the controller.
+            Others need M codes for gun on/off.  Thus need to allow for optional preG01 and pre G00 codes.
+         <pre>
+         no Z movement<br>
+         only centerline cuts, maybe plunge holes<br>
+         no optimization, or only closest end<br>
+         options for M codes before and after G01 sections</pre></td>
+</tr>         
+<tr>
+   <td>&nbsp;</td>
+   <td>Z zero on material OR on table</td>
+   <td><pre>Table zero: ZL = material thickness(MT)
+                     cut = ZL - (cutfactor * MT)
+                     safe = ZL+SH  {- safe height is safe margin above material
+       Mat Zero : ZL = 0
+                  cut = ZL - (cf * MT)
+                  safe = ZL + SH   {- safeheight is mt + some safety margin</pre>
+   </td>
+   
+</tr>   
+<tr>
+   <td>&nbsp;</td>
+   <td>Advanced setup</td>
+   <td>Encapsulate MyConstants.rb setup into a menu<br>
+   <ol><li>read MyConstants.rb
+      <li>menu
+      <li>write - preserving comments
+      <li>reload
+      </ol>
+      May need to convert constants to globals to get the reload to work without error messages<br>
+      Help - needs button to display profiles folder 'file://%APPDATA%/Sketchup' to aid users in sharing profiles.
+   
+   
+   </td>
+</tr>
+</table>
+
+<h2>1_1_c-beta</h2>
+   <ul>
+   <li>Setup Profiles
+      <pre>
+      Menu items  Tools|Phlatboyz|Save Profile
+                     Tools|Phlatboyz|Load Profile
+      Buttons on Parameters webdialog 
+      Saves and loads the following variables
+         spindlespeed
+         feedrate
+         plungerate
+         cutfactor
+         bitdiameter
+         tabwidth
+         tabdepth
+         safetravel
+         usemultipass
+         multipassdepth
+         gen3d
+         stepover
+         materialthickness (optional - see MyConstants-example.rb)
+      After a load, the comment parameter will read "Loaded profile NAME" where
+         NAME is the name of the profile.
+      Profile names must not have spaces or punctuation in them, but can be as long as 250 characters.
+   </pre>
+   <li>CW/CWW choices for plunge holes and pockets
+   <pre>
+      Set one or more of
+         Use_pocket_CW = false
+         Use_plunge_CW = false
+      to true to get CW cuts on pockets and plunge holes respectively.  
+      Normally these will cut CCW to use climb-milling but if the machine 
+      is not stiff enough CW will give a better finish.  The overhead gantry setting 
+      will not affect this.
+   </pre>
+   <li>Phlatprinter outfeed option
+   <pre>
+      Set
+         Use_outfeed = false
+      to true to use the outfeed feature.   This is ONLY for Phlatprinters.
+      Normally a Phlatprinter will go to 'home' at the end of a job, which means that
+      the material is sticking out the back of the machine.
+      Setting this option to true causes the material to be fed forward out of the machine
+      to 75% of the material 'safe length'.  This should make it easier to remove at the end
+      of a job.
+      </pre>
+   <li>Options Summary
+   <pre>
+      Menu Tools|Phlatboyz|Options Summary
+      Shows a dialog box with a list of options settable in MyConstants.rb, 
+      and their current values.
+   </pre>
+
+   <li>Pocket zigzag direction
+      <pre>
+      Default setting in MyConstants.rb
+      Press END key to toggle after selecting tool.
+      CTRL and SHIFT still select inner and outer as usual
+      </pre>
+
+   <li>Phlatbones
+      <pre>
+      Tool diamter tool:
+      Correctly detects inch/metric mode and uses appropriate units
+      Adds 0.01" to bit diameter and rounds result to 3 digits
+      </pre>
+   <Li> Help updated
+   <li> Parameters tool 'restore defaults' bug fixed
+
+   </ul>
+
+
+                       
+
+
+
+
+$Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
+</pre>
