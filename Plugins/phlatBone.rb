@@ -3,7 +3,7 @@
 # IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #-----------------------------------------------------------------------------
-# $Id: phlatBone.rb 45 2013-09-02 09:44:12Z swarfer $
+# $Id: phlatBone.rb 93 2014-02-05 09:07:35Z swarfer $
 #-----------------------------------------------------------------------------
 # Name:             phlatBone.rb
 # Version:          1.10
@@ -38,6 +38,7 @@ module PhlatBoner
     # Toolbar Stuff...
 
 	boneBar = UI::Toolbar.new "PhlatBone"
+   $keyMsg = " : Press SHIFT key to select other edge"
 
 	cmd1 = UI::Command.new("Tool Diameter...") { setToolDiameter }
 	cmd1.large_icon = cmd1.small_icon = "phlatBone/toolDiameter.png"
@@ -117,23 +118,23 @@ $PhlatBoner_units = "mm"    # "mm" or "inches"
 #-----------------------------------------------------------------------------
 
 def self.getSavePrefs(reading)
-    theFile = "#{Sketchup.find_support_file("Plugins")}/phlatBone/phlatBone_prefs"
-    if File::exists?(theFile)
-	if reading
-	    # Read to a prefsArray
-	    prefsData = IO.readlines(theFile)
-	    $PhlatBoner_toolDiameter = prefsData[0].to_f
-	    $PhlatBoner_units = prefsData[1].chomp
-	else
-	    # Write prefs
-	    File.open(theFile, "w") {|f| f.puts($PhlatBoner_toolDiameter); f.puts($PhlatBoner_units)}
-	end
-    else
-	# Prefs file missing
-#	UI.messagebox("Can't find the prefs file for PhlatBone, I'm creating a new one.")
-	# Write default to the new prefs
-	File.open(theFile, "w") {|f| f.puts("2.00"); f.puts("mm")}
-    end
+   theFile = "#{Sketchup.find_support_file("Plugins")}/phlatBone/phlatBone_prefs"
+   if File::exists?(theFile)
+      if reading
+         # Read to a prefsArray
+         prefsData = IO.readlines(theFile)
+         $PhlatBoner_toolDiameter = prefsData[0].to_f
+         $PhlatBoner_units = prefsData[1].chomp
+      else
+         # Write prefs
+         File.open(theFile, "w") {|f| f.puts($PhlatBoner_toolDiameter); f.puts($PhlatBoner_units)}
+      end
+   else
+      # Prefs file missing
+      #	UI.messagebox("Can't find the prefs file for PhlatBone, I'm creating a new one.")
+      # Write default to the new prefs
+      File.open(theFile, "w") {|f| f.puts("2.00"); f.puts("mm")}
+   end
 end
 
 #--- swarfer - integrate with phlatscript -- add 0.254 0.01" automatically to prevent missed inside corners
@@ -149,25 +150,33 @@ end
 getSavePrefs(true) # Load the prefs file at startup
 
 def self.setToolDiameter
-    if (self.cangetdiam?)
-	$PhlatBoner_toolDiameter = PhlatScript.bitDiameter.to_mm + 0.255.mm
-#	puts "tool diam from phlatscript = #{$PhlatBoner_toolDiameter}mm"
-	phstr = " (PhlatScript default) "
-    else
-	phstr = ""
-    end
-    prompts = ["Tool Diameter?" + phstr,"Units? "]
-    defaults = ["#{$PhlatBoner_toolDiameter}","#{$PhlatBoner_units}"]
-    list = "","mm|inches"
-    input = UI.inputbox(prompts, defaults, list, "Phlatbone Tool #{phstr}")
+   if (self.cangetdiam?)
+      $PhlatBoner_toolDiameter = PhlatScript.bitDiameter.to_mm + 0.255
+      if PhlatScript.isMetric
+         $PhlatBoner_units = 'mm'         
+      else
+         $PhlatBoner_units = 'inches'
+         $PhlatBoner_toolDiameter = $PhlatBoner_toolDiameter / 25.4
+      end
+      $PhlatBoner_toolDiameter = ($PhlatBoner_toolDiameter.to_f * 1000).round() / 1000.0
+      
+      #	puts "tool diam from phlatscript = #{$PhlatBoner_toolDiameter}mm"
+      phstr = " (PhlatScript default) "
+   else
+      phstr = ""
+   end
+   prompts = ["Tool Diameter?" + phstr,"Units? "]
+   defaults = ["#{$PhlatBoner_toolDiameter}","#{$PhlatBoner_units}"]
+   list = "","mm|inches"
+   input = UI.inputbox(prompts, defaults, list, "Phlatbone Tool #{phstr}")
 
-    unless input==false # Cancelled
-	$PhlatBoner_toolDiameter = input[0].to_f
-	$PhlatBoner_units = input[1]
-    	getSavePrefs(false) # Write the prefs
-    end
+   unless input==false # Cancelled
+      $PhlatBoner_toolDiameter = input[0].to_f
+      $PhlatBoner_units = input[1]
+      getSavePrefs(false) # Write the prefs
+   end
 
-    Sketchup.active_model.select_tool nil # Return control to select tool
+   Sketchup.active_model.select_tool nil # Return control to select tool
 end
 
 #-----------------------------------------------------------------------------
@@ -414,7 +423,7 @@ class BoneMulti
 		@state = 0
 
 		# Status bar prompt
-		result = Sketchup.set_status_text "Select corner for auto boning", SB_PROMPT
+		result = Sketchup.set_status_text "Select corner for auto boning" + $keyMsg, SB_PROMPT
 
 		# Clear InputPoints
 		@ip1.clear
@@ -581,15 +590,15 @@ class BoneSingle
 	include NorthSouthEastWest
 
 	def initialize(type, boneDirection)
-        @boneType = type                                    # 1 = rad-bone,   2 = T-bone
-        @boneDirection = boneDirection                      # true = inside bone
-        @tBoneTop = false                                   # Default T-Bone direction false=horiz
+      @boneType = type                                    # 1 = rad-bone,   2 = T-bone
+      @boneDirection = boneDirection                      # true = inside bone
+      @tBoneTop = false                                   # Default T-Bone direction false=horiz
 		if $PhlatBoner_units=="mm"
 			@toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
 			else
 			@toolDiameter = $PhlatBoner_toolDiameter
 		end
-        @toolRadius = @toolDiameter/2
+      @toolRadius = @toolDiameter/2
 		@model = Sketchup.active_model
 		@entities = @model.active_entities
 		@ip1 = nil
@@ -647,7 +656,7 @@ class BoneSingle
 			@ip1.pick view, x, y
 			if( @ip1.valid? )
 				@state = 1
-				result = Sketchup.set_status_text "Select corner for boning", SB_PROMPT
+				result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
 				@xdown = x
 				@ydown = y
 
@@ -689,7 +698,7 @@ class BoneSingle
 		@state = 0
 
 		# Status bar prompt
-		result = Sketchup.set_status_text "Select corner for boning", SB_PROMPT
+		result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
 
 		# Clear InputPoints
 		@ip1.clear
