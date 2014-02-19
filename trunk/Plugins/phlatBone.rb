@@ -3,7 +3,7 @@
 # IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #-----------------------------------------------------------------------------
-# $Id: phlatBone.rb 93 2014-02-05 09:07:35Z swarfer $
+# $Id$
 #-----------------------------------------------------------------------------
 # Name:             phlatBone.rb
 # Version:          1.10

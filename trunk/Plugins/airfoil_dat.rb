@@ -13,6 +13,7 @@
 #
 # EJT 11 Aug 2009
 # SWARFER Jul 2013 - offset from origin so shapes are easier to select and move
+# $Id$
 require 'sketchup.rb'
 
 def airfoil_dat_main

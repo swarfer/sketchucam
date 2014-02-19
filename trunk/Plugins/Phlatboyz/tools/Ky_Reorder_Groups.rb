@@ -24,7 +24,7 @@ History:
    1.0 (02-02-2010)  -  first version
    1.1 (06-12-2010)  -  added "mouse left click" option, modified for [kyyu] submenu
    1.1.1 (08-20-2013)   -  swarfer integrates this into the Phlatscript toolset
-   $Id: Ky_Reorder_Groups.rb 70 2013-10-25 12:33:58Z swarfer $
+   $Id$
 =end
 
 require 'sketchup.rb'

@@ -1,4 +1,4 @@
-# $Id: Phlatscript.rb 97 2014-02-14 13:49:00Z swarfer $
+# $Id$
 require('sketchup.rb')
 require('extensions.rb')
 require('langhandler.rb')

@@ -16,7 +16,7 @@ class PhlatScriptExtention < SketchupExtension
   def initialize
     super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
     self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating Phlatprinter g-code.' 
-    self.version = '1.1c' 
+    self.version = '1.1d-beta' 
     self.creator = 'Phlatboyz' 
     self.copyright = '2014, Phlatboyz' 
   end

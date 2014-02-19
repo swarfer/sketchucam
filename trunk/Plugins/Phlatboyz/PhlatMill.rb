@@ -495,4 +495,4 @@ end # module PhlatScript
 # This file solves that, and is different from the first version published in that
 # all upward Z moves are at fullspeed, only downward cuts are at plunge speed
 # Vtabs are at full speed as usual.
-# $Id: PhlatMill.rb 78 2014-01-27 08:29:22Z swarfer $
+# $Id$

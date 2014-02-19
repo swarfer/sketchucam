@@ -1,4 +1,4 @@
-# $Id: PhlatTool.rb 27 2013-08-28 10:52:59Z swarfer $
+# $Id$
 require 'sketchup.rb'
 require 'Phlatboyz/Constants.rb'
 

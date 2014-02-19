@@ -1,6 +1,6 @@
 
 require 'Phlatboyz/PhlatTool.rb'
-# $Id: ProfilesTool.rb 94 2014-02-10 14:12:04Z swarfer $
+# $Id$
 module PhlatScript
 
    def PhlatScript.conformat(inp)

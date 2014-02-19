@@ -10,7 +10,7 @@
 # Usage :         Move Group or groups to within the safe area starting from 0,0 and on the 0 plane then run the contour script
 # Date :          23.Nov.2010
 # Type :          tool
-# History :       Metricated by swarfer May 2013 $Id: Phlat3D.rb 73 2013-11-12 11:01:17Z swarfer $
+# History :       Metricated by swarfer May 2013 $Id$
 #						Fix multipass bug, plunges to fulldepth before each pass, should only plunge to pass depth
 
 require 'sketchup.rb'

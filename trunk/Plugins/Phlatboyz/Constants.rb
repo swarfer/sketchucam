@@ -1,5 +1,5 @@
 require 'sketchup.rb'
-# $Id: Constants.rb 96 2014-02-14 11:04:28Z swarfer $
+# $Id$
 # Ruby essentials
 # http://www.techotopia.com/index.php/Ruby_Essentials
 # http://www.zenspider.com/Languages/Ruby/QuickRef.html
