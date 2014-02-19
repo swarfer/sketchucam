@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title> SketchUcam parameters</title>
+<meta name="id" value="$Id: setParamsWebDialog.html 88 2014-02-03 14:01:07Z swarfer $">
+  <style type="text/css">
+<!--
+body {
+background-color: #ebe9ed;
+}
+td.buttons {
+font-family: Verdana, Arial, Helvetica, Sans-serif;
+text-align: center;
+font-size: 0.90em;
+}
+td {
+font-family: Verdana, Arial, Helvetica, Sans-serif;
+}
+td.caption{
+text-decoration: none;
+font-size: 0.80em;
+text-align: right;
+}
+.button {
+font-family: Verdana, Arial, Helvetica, Sans-serif;
+font-size: 0.90em;
+margin: 5px;
+padding: 3px;
+}
+
+tr.profile { 
+   background-color: #dbd9dd; 
+   }
+
+td.tooltip {outline:none; }
+td.tooltip strong {line-height:30px;}
+td.tooltip:hover {text-decoration: none;}
+td.tooltip span { z-index:10; display:none; padding:2px 2px; top:360px; left:275px; width:200px; font-size: smaller; }
+td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px solid #DCA; background:#ffCE9F;}
+-->
+  </style>
+</head>
+<body onload="callPhlatboyz('load_params')">
+<form name="param_form" action="#" style="margin-left: auto; margin-right: auto;">
+   <a href="mailto:phlatboyz@phlatboyz.com">
+      <img style="border: 0px solid ; width: 400px; height: 135px; margin-left: auto; margin-right: auto; display: block;"
+      alt="SketchUCam" src="images/SketchUcam-Window-Logo.png">
+   </a><br>
+  <input name="checkbox_hidden" value="" type="hidden">
+  <table border=0 cellpadding=1 cellspacing=1 style="margin-left: auto; margin-right: auto;">
+    <tbody>
+    <tr class="profile">
+    <td>Profiles</td>
+    <td colspan=3 class="buttons">
+      <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
+      <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
+      <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
+    </td>
+    </tr>
+    
+    
+      <tr>
+        <td id="spindlespeed_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
+      </tr>
+
+      <tr>
+        <td id="feedrate_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
+        <td id="plungerate_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
+      </tr>
+
+      <tr>
+        <td id="materialthickness_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="materialthickness" value=""  type="text" size="8"><span>Nominal material thickess</span></td>
+      </tr>
+      <tr>
+        <td id="cutfactor_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="cutfactor" value=""  type="text" size="8"><span>Percentage of material thickness to cut</span></td>
+      </tr>
+      <tr>
+        <td id="bitdiameter_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="bitdiameter" value=""  type="text" size="8"><span>Cutting bit diameter, set before creating cut lines</span></td>
+      </tr>
+      <tr>
+        <td id="tabwidth_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="tabwidth" value=""  type="text" size="8"><Span>Width of tabs, allow for bit diameter</Span></td>
+        <td id="tabdepthfactor_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="tabdepthfactor" value=""  type="text" size="8"><span>How much material to remove in a tab</span></td>
+      </tr>
+<!--
+<tr>
+<td id="vtab_id" class="caption">&nbsp;</td>
+<td class="tooltip"><input type="checkbox" name="vtab" value="vtab" /></td>
+</tr>
+-->
+      <tr>
+        <td id="safetravel_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="safetravel" value=""  type="text" size="8"><span>Height above material to rapid safely</span></td>
+      </tr>
+      <tr>
+        <td id="safewidth_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="safewidth" value=""  type="text" size="8"><span>Width of material</span></td>
+      </tr>
+      <tr>
+        <td id="safeheight_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="safeheight" value=""  type="text" size="8"><span>Height of material</span></td>
+      </tr>
+      <tr>
+        <td id="overheadgantry_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="overheadgantry" value=""  type="checkbox"><span>Sets direction of cuts</span></td>
+      </tr>
+
+      <tr id="multipass_row1">
+        <td id="multipass_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="multipass" type="checkbox">&nbsp;<span>Use multipass for hard materials</span></td>
+        <td id="multipassdepth_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="multipassdepth" value=""  type="text" size="8"><span>Depth of cut for each pass</span></td>
+      </tr>
+
+      <tr>
+        <td id="gen3D_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="gen3D" value=""  type="checkbox"><span>Generate a 3D cut path over a 3D object</span></td>
+        <td id="stepover_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="stepover" value=""  type="text" size="8"><span>Percentage of bitdiameter to step over</span></td>
+      </tr>
+
+      <tr>
+        <td id="showgplot_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="showgplot" value=""  type="checkbox"><span>Launch Gplot after generating Gcode</span></td>
+      </tr>
+
+      <tr>
+        <td id="commenttext_id" class="caption">&nbsp;</td>
+        <td colspan=3><textarea name="commenttext" rows="4"></textarea></td>
+      </tr>
+      <tr>
+        <td colspan="4" class="buttons">
+            <input  value="OK" onclick="callPhlatboyz('save')" class="button" type="button">
+            <input value="Cancel"  onclick="callPhlatboyz('cancel')" class="button"  type="button">
+            <input value="Restore Defaults"  onclick="callPhlatboyz('restore_defaults')" class="button"  type="button">
+        </td>
+      </tr>
+      <tr><td colspan=4 id="version_id" class="caption" >&nbsp;</td>      </tr>
+    </tbody>
+  </table>
+</form>
+
+<script type='text/javascript'>
+   function callPhlatboyz(action) {
+      window.location.href = 'skp:phlatboyz_action_callback@'+action;
+   }
+   function setFormValue(formId, value) {
+      param_form.elements[formId].value = value;
+   }
+   function setFormCaption(formId, value) {
+      document.getElementById(formId).innerHTML = value;
+   }
+   function setEncodedFormValue(formId, value, delim) {
+      str_arr = value.split(delim);
+      param_form.elements[formId].value = str_arr.join("\n");
+   }
+   function setCheckbox(formId, value) {
+      if (value == 'false')
+      { param_form.elements[formId].checked = false }
+      else
+      { param_form.elements[formId].checked = true }
+   }
+   function isChecked(formId) {
+      param_form.elements["checkbox_hidden"].value = (param_form.elements[formId].checked) ? "true" : "false";
+   }
+   function hideMultipass() {
+      document.getElementById("multipass_row1").style.display = 'none';
+   }
+  </script>
+
+</body>
+</html>

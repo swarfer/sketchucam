@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO use the Phlatbones tool</title>
+<style type="text/css">
+	body, div, span {
+			font-family: Verdana;
+	}
+	body {
+			background-color: grey;
+			text-align: center;
+			width: 1024px;
+			padding-left:0.5%;
+			padding-right:0.5%;
+	}
+	div.shell {
+			/*background-color: #eee;*/
+			background-color: #ddeeff;
+			/*background-color: white;*/
+			font-size: 1.05em;
+	}
+
+	div.intro-name {
+			text-align:center;
+			font-size: 1.20em;
+			font-weight: bold;
+			padding-top:25px;
+	}
+	div.intro-name div {
+			font-size: 0.60em;
+			font-weight: normal;
+	}
+	div.intro-title {
+			text-align:center;
+			margin:10px;
+			font-size: 1.10em;
+			font-weight: bold;
+			padding-top: 15px;
+	}
+	div.intro {
+			text-align:left;
+			margin:5px;
+			padding: 5px;
+			font-size: 0.90em;
+	}
+
+	.command-image {
+			/*background-color: #ededed;*/
+			background-color: #ddeeff;
+			height: 100px;
+			font-weight: bold;
+			font-size: 0.90em;
+			vertical-align:center;
+			padding:10px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+	}
+.command-description {
+        /*background-color: #ededed;*/
+        background-color: #eaecfa;
+        /*margin: 2px;*/
+        padding: 15px;
+        border-top: thin solid white;
+        border-left: thin solid white;
+        border-right: thin solid #cccccc;
+        border-bottom: thin solid #cccccc;
+        font-size: 0.90em;
+        text-align: left;
+}
+
+	.command-title {
+			font-size: 1.00em;
+			font-weight: bold;
+			/*border-bottom: thin solid blue;*/
+			text-align: center;
+			padding-top: 25px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+			text-decoration: underline;
+	}
+	.command-subtitle {
+			font-size: 0.70em;
+			font-style: italic;
+	}
+      hr {
+         background-color: #6699ff; 
+         height: 2px; 
+         border: 0; 
+         }
+</style>
+
+</head>
+<body>
+
+
+<div class="shell">
+
+   <br>
+   <div class="intro-name">Phlatboyz PhlatScripT
+      <div><b>SketchUcam Version 1.1c</b><br>Feb 2014</div>
+   </div>
+   <hr width="100%" >
+   <div class="intro">
+      <h2>HOWTO use the PhlatBones tool</h2>
+      <br clear=all>
+   <img src="images/phlatbones.png" align=right alt="Phlatbones toolbar">   
+   The PhlatBones toolbar provides a handy set of tools for creating clearance in corners.
+   This allows you to route slots and tabs which will fit into each other without any handwork.
+   <img src="images/phlat01.png" alt="Bones example"><br>
+   In the above image you can see that the relieved corners will allow the tab to fit into the slot.  The PhlatBones
+   tool (from 'dogbones') allow you to easily add these relieved corners using one of the 6 tools in the toolbar.
+   </div>
+
+<table summary="phlatbones Help details table">
+   <tbody>
+   <tr>
+      <th colspan="2" class="command-title">
+         Phlatboyz Command Toolbar
+      </th>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/toolDiameter.png" title="Tool Diameter" width="32">
+      </td>
+      <td class="command-description">
+      <b>Tool Diameter</b> - 
+      <img src="images/bonesbit.png" align=right>
+      This allows you to set the tool diameter that the Bones tool will use.<br>  
+      This version of PhlatBone tools is integrated with SketchUcam.  <br>
+      This allows it to fetch the current SketchUcam tool diameter and present it as
+      the default in this dialog.<br>  <b>0.01" will be added to the bitdiameter to allow space for the inside or outside cut.</b><br>
+      In some cases this allowance will be too small and you will need to redraw the bones with a larger diameter.
+      In many cases the generated inside/outside cut lines will contain very small arc segments which can confuse some controllers.
+      If this happens remove the cutlines, select all the bone arcs, right click and select 'Explode Curve' .  
+      Now when you add cut lines they will be much simpler, containing only straight line segments.<br>
+      Alternately you can use a larger diameter for the bones.
+      <p>
+      (PhlatScript default) is displayed when the tool <i>could</i> retrieve the bit diameter from SketchUcam. 
+      </p>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/radBoneMultiIn.png" title="radBone Multi Inside" width="32">
+      </td>
+      <td class="command-description">
+      <b>radBone Multi Inside</b> - inserts radBones on the inside all the corners of a face.  Just point at a corner to
+      see the proposed bones. 
+      <dl>
+      <dd><img src="images/bones01.png">
+      </dl>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/radBoneMultiOut.png" title="radBone Multi Outside" width="32">
+      </td>
+      <td class="command-description">
+      <b>radBone Multi Outside</b> - inserts radBones on the outside of a figure.
+      <dl>
+      <dd><img src="images/bones02.png" >
+      </dl>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/radBoneSingle.png" title="radBone Single" width="32">
+      </td>
+      <td class="command-description">
+      <b>radBone Single</b> - insert a radbone on a single corner.
+      <dl>
+         <dd>   <img src="images/bones03.png" >
+      </dl>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/tBoneMultiIn.png" title="tBone Multi Inside" width="32">
+      </td>
+      <td class="command-description">
+      <b>tBone Multi Inside</b> - inserts tBones on the inside corners of a figure.  The bones will default to
+      one edge of the figure.  If you want them on the other edge of the corners, simply press the SHIFT key before clicking.<br>
+      <dl>
+      <dt>Default selection
+         <dd><img src="images/bones04.png" > 
+      <dt>Alternate selection with SHIFT key pressed
+         <dd><img src="images/bones05.png" >
+      </dl>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/tBoneMultiOut.png" title="tBone Multi Outside" width="32">
+      </td>
+      <td class="command-description">
+      
+      <b>tBone Multi Outside</b> - inserts tBones on the outside corners of a figure.  Press SHIFT to select the other edges.<br>
+          <dl>
+         <dt>Default selection
+            <dd><img src="images/bones06.png" > 
+         <dt>Alternate selection with SHIFT key pressed
+            <Dd><img src="images/bones07.png" >
+         </dl>
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../../phlatBone/tBoneSingle.png" title="tBone Single" width="32">
+      </td>
+      <td class="command-description">
+         <b>tBone Single</b> - tBone a single corner.  Press SHIFT to select the other edge.<br>
+         <dl>
+         <dt>Default selection
+            <dd><img src="images/bones08.png"> 
+         <dt>Alternate selection with SHIFT key pressed
+            <dd><img src="images/bones09.png">
+         </dl>
+      </td>
+   </tr>
+   </tbody>
+   
+   
+   
+   
+   
+   
+   
+</table>   
+   
+   <hr>
+</div>
+</body>
+</html>
