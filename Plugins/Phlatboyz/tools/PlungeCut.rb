@@ -140,7 +140,7 @@ module PhlatScript
   end
 
 end
-# $Id: PlungeCut.rb 70 2013-10-25 12:33:58Z swarfer $
+# $Id$
 # $Log: PlungeCut.rb $
 # Revision 1.1  2013/05/22 16:02:40  david
 # Initial revision

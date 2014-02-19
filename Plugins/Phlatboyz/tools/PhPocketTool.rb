@@ -20,7 +20,7 @@
 #
 # ** Swarfer 2013-08-27 - integrated into Phlatscript toolset
 #	default depth is 50% - no support for additional languages yet
-# $Id: PhPocketTool.rb 86 2014-02-03 13:55:38Z swarfer $
+# $Id$
 
 require 'sketchup.rb'
 require 'Phlatboyz/Constants.rb'

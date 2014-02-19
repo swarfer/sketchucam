@@ -19,7 +19,7 @@
 #    This is a step on the way toward integrating it into Sketchucam, and properly handling complex faces
 #
 # ** Swarfer 2013-08-27 - create PocketCut type edges, mostly just copied from one of the other cut types
-# $Id: PhPocketCut.rb 70 2013-10-25 12:33:58Z swarfer $
+# $Id$
 
 require 'sketchup.rb'
 require 'Phlatboyz/PhlatCut.rb'

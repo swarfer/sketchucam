@@ -1,4 +1,4 @@
-# $Id: PhlatCut.rb 27 2013-08-28 10:52:59Z swarfer $
+# $Id$
 require 'Phlatboyz/Phlatscript.rb'
 
 module PhlatScript

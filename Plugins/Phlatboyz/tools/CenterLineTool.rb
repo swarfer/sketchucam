@@ -1,4 +1,4 @@
-# $Id: CenterLineTool.rb 70 2013-10-25 12:33:58Z swarfer $
+# $Id$
 require 'sketchup.rb'
 require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/Tools/CenterLineCut.rb'
