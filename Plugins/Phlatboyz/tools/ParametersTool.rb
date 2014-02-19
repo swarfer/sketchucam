@@ -1,6 +1,6 @@
 
 require 'Phlatboyz/PhlatTool.rb'
-# $Id: ParametersTool.rb 96 2014-02-14 11:04:28Z swarfer $
+# $Id$
 module PhlatScript
 
   module WebDialogX
@@ -252,11 +252,11 @@ module PhlatScript
                 #web_dialog.setValue('gen3D',Default_gen3d)
                web_dialog.setValue('stepover',Default_stepover)
                 #web_dialog.setValue('showgplot',Default_show_gplot)
-                
-               web_dialog.execute_script("setCheckbox('overheadgantry','"+PhlatScript.useOverheadGantry?.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('multipass','"+PhlatScript.useMultipass?.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('showgplot','"+PhlatScript.showGplot?.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('gen3D','"+PhlatScript.gen3D.inspect()+"')")
+               
+               web_dialog.execute_script("setCheckbox('overheadgantry','"+ Default_overhead_gantry.inspect()+"')")
+               web_dialog.execute_script("setCheckbox('multipass','"+      Default_multipass.inspect()+"')")
+               web_dialog.execute_script("setCheckbox('showgplot','"+      Default_show_gplot.inspect()+"')")
+               web_dialog.execute_script("setCheckbox('gen3D','"+          Default_gen3d.inspect()+"')")
           
             elsif(action_name == 'pload')   # profile load
                ptool = ProfilesLoadTool.new()   # in ProfilesTool.rb
