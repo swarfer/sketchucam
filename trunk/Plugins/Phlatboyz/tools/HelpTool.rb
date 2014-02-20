@@ -1,5 +1,5 @@
-
 require 'Phlatboyz/PhlatTool.rb'
+require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'
 
 module PhlatScript
 
@@ -60,9 +60,10 @@ module PhlatScript
       end
 
       def select
-         msg = ENV['APPDATA'] + "\\Sketchup"
-         if File.exist?(msg)
-            UI.openURL(msg)
+#         path = ENV['APPDATA'] + "\\Sketchup"
+         path = SketchupDirectoryUtils.toolsProfilesPath()
+         if File.exist?(path)
+            UI.openURL(path)
          else
             UI.messagebox('First you need to save a profile before you can display the folder that contains it')
          end
@@ -70,5 +71,4 @@ module PhlatScript
       end #select
    end # class
 
-   
 end

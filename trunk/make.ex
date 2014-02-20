@@ -20,3 +20,5 @@ ocean_extension.rb
 *.bak
 TIG-Smart_offset.rb
 utilities.rb
+PocketTool.r_b
+attribs*
