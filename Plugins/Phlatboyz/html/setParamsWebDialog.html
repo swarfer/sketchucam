@@ -61,33 +61,33 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
     
       <tr>
         <td id="spindlespeed_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
+        <td class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
       </tr>
 
       <tr>
         <td id="feedrate_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
+        <td class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
         <td id="plungerate_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
+        <td class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
       </tr>
 
       <tr>
         <td id="materialthickness_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="materialthickness" value=""  type="text" size="8"><span>Nominal material thickess</span></td>
+        <td class="tooltip"><input name="materialthickness" id="materialthickness" value=""  type="text" size="8"><span>Nominal material thickess</span></td>
       </tr>
       <tr>
         <td id="cutfactor_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="cutfactor" value=""  type="text" size="8"><span>Percentage of material thickness to cut</span></td>
+        <td class="tooltip"><input name="cutfactor" id="cutfactor" value=""  type="text" size="8"><span>Percentage of material thickness to cut</span></td>
       </tr>
       <tr>
         <td id="bitdiameter_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="bitdiameter" value=""  type="text" size="8"><span>Cutting bit diameter, set before creating cut lines</span></td>
+        <td class="tooltip"><input name="bitdiameter" id="bitdiameter" value=""  type="text" size="8"><span>Cutting bit diameter, set before creating cut lines</span></td>
       </tr>
       <tr>
         <td id="tabwidth_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="tabwidth" value=""  type="text" size="8"><Span>Width of tabs, allow for bit diameter</Span></td>
+        <td class="tooltip"><input name="tabwidth" id="tabwidth" value=""  type="text" size="8"><Span>Width of tabs, allow for bit diameter</Span></td>
         <td id="tabdepthfactor_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="tabdepthfactor" value=""  type="text" size="8"><span>How much material to remove in a tab</span></td>
+        <td class="tooltip"><input name="tabdepthfactor" id="tabdepthfactor" value=""  type="text" size="8"><span>How much material to remove in a tab</span></td>
       </tr>
 <!--
 <tr>
@@ -97,38 +97,38 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
 -->
       <tr>
         <td id="safetravel_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="safetravel" value=""  type="text" size="8"><span>Height above material to rapid safely</span></td>
+        <td class="tooltip"><input name="safetravel" id="safetravel" value=""  type="text" size="8"><span>Height above material to rapid safely</span></td>
       </tr>
       <tr>
         <td id="safewidth_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="safewidth" value=""  type="text" size="8"><span>Width of material</span></td>
+        <td class="tooltip"><input name="safewidth" id="safewidth" value=""  type="text" size="8"><span>Width of material</span></td>
       </tr>
       <tr>
         <td id="safeheight_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="safeheight" value=""  type="text" size="8"><span>Height of material</span></td>
+        <td class="tooltip"><input name="safeheight" id="safeheight" value=""  type="text" size="8"><span>Height of material</span></td>
       </tr>
       <tr>
         <td id="overheadgantry_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="overheadgantry" value=""  type="checkbox"><span>Sets direction of cuts</span></td>
+        <td class="tooltip"><input name="overheadgantry" id="overheadgantry" value=""  type="checkbox"><span>Sets direction of cuts</span></td>
       </tr>
 
       <tr id="multipass_row1">
         <td id="multipass_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="multipass" type="checkbox">&nbsp;<span>Use multipass for hard materials</span></td>
         <td id="multipassdepth_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="multipassdepth" value=""  type="text" size="8"><span>Depth of cut for each pass</span></td>
+        <td class="tooltip"><input name="multipassdepth"  id="multipassdepth" value=""  type="text" size="8"><span>Depth of cut for each pass</span></td>
       </tr>
 
       <tr>
         <td id="gen3D_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="gen3D" value=""  type="checkbox"><span>Generate a 3D cut path over a 3D object</span></td>
+        <td class="tooltip"><input name="gen3D" id="gen3D" value=""  type="checkbox"><span>Generate a 3D cut path over a 3D object</span></td>
         <td id="stepover_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="stepover" value=""  type="text" size="8"><span>Percentage of bitdiameter to step over</span></td>
+        <td class="tooltip"><input name="stepover" id="stepover" value=""  type="text" size="8"><span>Percentage of bitdiameter to step over</span></td>
       </tr>
 
       <tr>
         <td id="showgplot_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="showgplot" value=""  type="checkbox"><span>Launch Gplot after generating Gcode</span></td>
+        <td class="tooltip"><input name="showgplot" id="showgplot" value=""  type="checkbox"><span>Launch Gplot after generating Gcode</span></td>
       </tr>
 
       <tr>
