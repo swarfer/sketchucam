@@ -44,7 +44,7 @@ module PhlatScript
           Dir.mkdir(path)
         end
 
-        print "saving to #{profilename}\n"
+        print "saving to #{profilename} in path #{path}\n"
 
         if File.exist?(path)
           #create file
@@ -252,7 +252,8 @@ module PhlatScript
       defaults=['select one']
       # dropdown options can be added here
       list=[""]
-      path=ENV['APPDATA'] + "\\Sketchup"
+#      path=ENV['APPDATA'] + "\\Sketchup"
+      path = SketchupDirectoryUtils.toolsProfilesPath()
       if not File.exist?(path)
         Dir.mkdir(path)
       end
