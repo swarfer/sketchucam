@@ -477,6 +477,7 @@ module PhlatScript
     addToolItem(HelpTool.new())
     addToolItem( SummaryTool.new() )
     addToolItem( DisplayProfileFolderTool.new() )
+    addToolItem( GroupList.new() )   # from GcodeUtil.rb but want the entry here
 
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
