@@ -12,6 +12,90 @@ require 'Phlatboyz/Phlat3D.rb'
 require 'Phlatboyz/PhlatProgress.rb'
 
 module PhlatScript
+  
+  class GroupList < PhlatTool
+    # this tool gets the list of groups containing phlatcuts and displays them in the cut order
+    # it displays 2 levels deep in the case of a group of groups
+    def initialize
+       @tooltype=(PB_MENU_MENU)
+       @tooltip="Group Listing in cut order"
+       @statusText="Groups Summary display"
+       @menuItem="Groups Summary"
+       @menuText="Groups Summary"
+    end
+
+    def select
+      groups = GroupList.listgroups()
+      msg = "Summary of groups in CUT ORDER\n"
+      if (groups.length > 0)
+	i = 1
+        groups.each { |e|
+	  ename = (e.name.empty?) ? 'no name' : e.name
+	  msg += i.to_s + " - " + ename + "\n"
+	  bits = e.entities
+	  bits.each { |bit|
+	    if (bit.kind_of?(Sketchup::Group))
+	      bname = (bit.name.empty?) ? 'no name' : bit.name
+	      msg += "   " + i.to_s + " - " + bname + "\n"
+	    end
+	    }	
+          i += 1
+          } #groups.each
+      else
+	msg += "No groups found to cut\n"
+      end 
+      UI.messagebox(msg,MB_MULTILINE)
+    end #select
+    
+    # copied from loopnodefromentities so if that changes maybe this should too   
+    def GroupList.listgroups
+      #copied from "loopnodefromentities" and trimmed to just return the list of groups
+      model = Sketchup.active_model
+      entities = model.active_entities
+      safe_area_points = P.get_safe_area_point3d_array()
+      # find all outside loops
+      loops = []
+      groups = []
+      phlatcuts = []
+      dele_edges = [] # store edges that are part of loops to remove from phlatcuts
+      entities.each { |e|
+        if e.kind_of?(Sketchup::Face)
+          has_edges = false
+          # only keep loops that contain phlatcuts
+          e.outer_loop.edges.each { |edge|
+            pc = PhlatCut.from_edge(edge)
+            has_edges = ((!pc.nil?) && (pc.in_polygon?(safe_area_points)))
+            dele_edges.push(edge)
+          }
+          loops.push(e.outer_loop) if has_edges
+        elsif e.kind_of?(Sketchup::Edge)
+            # make sure that all edges are marked as not processed
+            pc = PhlatCut.from_edge(e)
+            if (pc)
+              pc.processed = (false)
+              phlatcuts.push(pc) if ((pc.in_polygon?(safe_area_points)) && ((pc.kind_of? PhlatScript::PlungeCut) || (pc.kind_of? PhlatScript::CenterLineCut)))
+            end
+        elsif e.kind_of?(Sketchup::Group)
+          groups.push(e)
+        end
+        } # entities.each
+
+      # make sure any edges part of a curve or loop aren't in the free standing phlatcuts array
+      phlatcuts.collect! { |pc| dele_edges.include?(pc.edge) ? nil : pc }
+      phlatcuts.compact!
+      puts("Located #{groups.length.to_s} GROUPS containing PhlatCuts")   if (groups.length > 0)
+      groups.each { |e|
+        group_name = e.name
+        puts "(Group: #{group_name})" if !group_name.empty?
+        } #groups.each
+      loops.flatten!
+      loops.uniq!
+      puts("Located #{loops.length.to_s} loops containing PhlatCuts")
+      return groups
+    end #listgroups
+    
+  end
+#-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   class GcodeUtil < PhlatTool
 
@@ -43,24 +127,24 @@ module PhlatScript
       @menuText = PhlatScript.getString("GCode")
     end
 
-	def select
-		if PhlatScript.gen3D
-			result = UI.messagebox 'Generate 3D GCode?', MB_OKCANCEL
-			if result == 1  # OK
-				GCodeGen3D.new.generate
-				if PhlatScript.showGplot?
-					GPlot.new.plot
-				end
-			else 
-				return 
-			end
-		else
-			GcodeUtil.generate_gcode
-			if PhlatScript.showGplot?
-				GPlot.new.plot
-			end
-		end
+    def select
+      if PhlatScript.gen3D
+	result = UI.messagebox 'Generate 3D GCode?', MB_OKCANCEL
+	if result == 1  # OK
+	  GCodeGen3D.new.generate
+	  if PhlatScript.showGplot?
+	    GPlot.new.plot
+	  end
+	else 
+	  return 
 	end
+      else
+	GcodeUtil.generate_gcode
+	if PhlatScript.showGplot?
+	  GPlot.new.plot
+	end
+      end
+    end
 
     def statusText
       return "Generate Gcode output"
