@@ -23,26 +23,35 @@ module PhlatScript
        @menuItem="Groups Summary"
        @menuText="Groups Summary"
     end
+    
+    # recursive method to add all group names to msg
+    def listgroups(msg, ent, ii, depth)
+      ent.each { |bit|
+         if (bit.kind_of?(Sketchup::Group))
+            bname = (bit.name.empty?) ? 'no name' : bit.name
+            spacer = "   " * depth
+            msg += spacer + ii.to_s + " - " + bname + "\n"
+            msg = listgroups(msg,bit.entities,ii,depth+1)
+         end
+         }	
+      return msg
+    end
 
     def select
       groups = GroupList.listgroups()
       msg = "Summary of groups in CUT ORDER\n"
       if (groups.length > 0)
-	i = 1
-        groups.each { |e|
-	  ename = (e.name.empty?) ? 'no name' : e.name
-	  msg += i.to_s + " - " + ename + "\n"
-	  bits = e.entities
-	  bits.each { |bit|
-	    if (bit.kind_of?(Sketchup::Group))
-	      bname = (bit.name.empty?) ? 'no name' : bit.name
-	      msg += "   " + i.to_s + " - " + bname + "\n"
-	    end
-	    }	
-          i += 1
-          } #groups.each
+         i = 1
+         groups.each { |e|
+            ename = (e.name.empty?) ? 'no name' : e.name
+            if (!ename.include?("safearea") )
+               msg += i.to_s + " - " + ename + "\n"
+               msg = listgroups(msg,e.entities,i,1)       # list all the groups that are members of this group
+               i += 1
+            end
+            } #groups.each
       else
-	msg += "No groups found to cut\n"
+         msg += "No groups found to cut\n"
       end 
       UI.messagebox(msg,MB_MULTILINE)
     end #select
@@ -209,7 +218,6 @@ module PhlatScript
               end
             end
             
-
             #puts("finishing up")
             aMill.job_finish() # output housekeeping code
           rescue
@@ -262,8 +270,10 @@ module PhlatScript
         # this is a bit hacky and we should try to use a transformation based on
         # the group.local_bounds.corner(0) in the future
         group_name = e.name
-        aMill.cncPrint("(Group: #{group_name})\n") if !group_name.empty?
-        puts "(Group: #{group_name})" if !group_name.empty?
+        if (!group_name.empty?) # the safe area labels are groups with names containing 'safearea', dont print them
+           aMill.cncPrint("(Group: #{group_name})\n")    if !group_name.include?("safearea") 
+           puts "(Group: #{group_name})"                 if !group_name.include?("safearea") 
+        end
         model.start_operation "Exploding Group", true
         es = e.explode
         gnode = LoopNodeFromEntities(es, aMill, material_thickness)
@@ -272,8 +282,10 @@ module PhlatScript
         millLoopNode(aMill, gnode, material_thickness)
         # abort the group explode
         model.abort_operation
-        aMill.cncPrint("(Group complete: #{group_name})\n") if !group_name.empty?
-        puts "(Group end: #{group_name})" if !group_name.empty?
+        if (!group_name.empty?)
+           aMill.cncPrint("(Group complete: #{group_name})\n")    if !group_name.include?("safearea") 
+           puts "(Group end: #{group_name})"                      if !group_name.include?("safearea") 
+        end
       }
       loops.flatten!
       loops.uniq!

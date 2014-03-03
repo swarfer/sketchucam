@@ -275,6 +275,7 @@ def PhlatScript.add_point_label(in_entities, in_point, in_height, in_align)
 	label = in_point.x.to_s+", "+in_point.y.to_s
 
 	g = in_entities.add_group()
+   g.name = "safearea#{in_align}"  # needs a name to be exluded from group summary list 
 	g_entities = g.entities
 	construction_point = g_entities.add_3d_text(label, TextAlignLeft, "Times", false, false, in_height, 0.1.inch, 0, true, 0)
 	bbox = g.bounds
@@ -311,7 +312,7 @@ def PhlatScript.draw_safe_area(model=Sketchup.active_model)
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[2]))
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[3]))
 
-  		mark_construction_object(add_point_label(entities, safe_point3d_array[0], Construction_font_height, 0))
+         mark_construction_object(add_point_label(entities, safe_point3d_array[0], Construction_font_height, 0))
 			mark_construction_object(add_point_label(entities, safe_point3d_array[2], Construction_font_height, 1))
 		rescue
 			UI.messagebox "Exception in draw_safe_area "+$!

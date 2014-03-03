@@ -1,6 +1,6 @@
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'
-
+# $Id$
 module PhlatScript
 
   class HelpTool < PhlatTool
