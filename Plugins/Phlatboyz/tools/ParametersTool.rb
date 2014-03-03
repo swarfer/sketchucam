@@ -121,7 +121,7 @@ module PhlatScript
 
       comment_text = wd.get_element_value("commenttext").delete("'\"")
       encoded_comment_text = ""
-      comment_text.each{|line| encoded_comment_text += line.chomp()+"$/"}
+      comment_text.each_line { |line| encoded_comment_text += line.chomp()+"$/"}
       PhlatScript.commentText = encoded_comment_text.chop().chop()
    end #saveValues
 
