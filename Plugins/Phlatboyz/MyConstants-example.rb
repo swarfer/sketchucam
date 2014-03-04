@@ -50,6 +50,7 @@ Default_stepover = 30
 
 # Set this to true if you have problems with the parameter dialog being blank or crashing SU
 # on Mac, you will probably need this true
+# UPDATE Mar 2014 - this shoudl not be needed on MAC anymore, we think we fixed it!
 # on Linux, you might need this, if you do, you can fix Wine by searching the web for the howto on fixing Sketchup WebDialogs
 Use_compatible_dialogs = false
 
