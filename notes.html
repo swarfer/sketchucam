@@ -210,8 +210,15 @@ List of things to fix/add for next release, in no particular order
 <dt>Group summary
    <dd>Tools|Phlatboyz|Groups Summary
    <dd>Gives a listing of groups in the order they will be cut
-<dt>attributes.rb
-   <dt>changed $f to f to prevent Make2013 moaning about global variables in loops
+
+<dt>Sketchup Make 2014
+   <dd>This uses Ruby 2 which has some API changes. 
+   <dd>Parameterstool.rb fixed to use .each_line instead of .each for strings.
+   <dd>attributes.rb: changed $f to f to prevent Make2014 moaning about global variables in loops
+   
+<dt>Parameters dialog for Mac
+   <dd>Fixes to the html to make it work on Mac, so 'Use_compatible_dialogs = false' should now work on Mac
+      (thanks to Krzysztof)
                        
 </dl>
 
