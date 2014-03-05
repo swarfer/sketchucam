@@ -126,6 +126,7 @@ module PhlatScript
    end #saveValues
 
    def select
+      
       model = Sketchup.active_model
 
       if Use_compatible_dialogs
