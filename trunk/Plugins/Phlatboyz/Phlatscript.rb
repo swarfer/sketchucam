@@ -1,7 +1,6 @@
 # $Id$
 require('sketchup.rb')
 require('extensions.rb')
-require('langhandler.rb')
 require('Phlatboyz/Observers.rb')
 
 module PhlatScript
@@ -9,40 +8,8 @@ module PhlatScript
   @@AppChangeObserver = AppChangeObserver.new
   @@ModelChangeObserver = ModelChangeObserver.new
 
-   #place a copy of the distributed strings file into Resources
-   def PhlatScript.copyStrings(from)
-      #this line generates the name even if the file does not exist
-      ofile = Sketchup.find_support_file("en-US", "Resources" ) + "/PhlatBoyz.strings"
-      out_file = File.new(ofile, "w")
-      in_file = File.open(from)
-      in_file.each_line { |line|
-         out_file.puts(line)
-         }
-      out_file.close
-      in_file.close
-   end
-
-#make sure we have the strings file in the right place, sketchup/resources/en-US
-   myc = Sketchup.find_support_file("en-US/PhlatBoyz.strings", "Resources" )  #fails if it doesn't exist
-   thefile = Sketchup.find_support_file("Phlatboyz/Resources/PhlatBoyz.strings", "Plugins" )
-   if (myc == nil)  #file does nt exist
-      if thefile != nil
-         PhlatScript.copyStrings(thefile)
-      end
-   else
-         #file exists, check for correct version
-      correctversion = "1.03"  #this must match the version string in the file!
-      result = open(myc) { |f| f.grep(/stringversion/) }
-      if result != []  #found the string, check version
-         if !result[0].match(correctversion)  #version mismatch
-            PhlatScript.copyStrings(thefile)
-         end
-      else  #not found, copy the new file
-         PhlatScript.copyStrings(thefile)
-      end
-   end
-
-  @@phlatboyzStrings = LanguageHandler.new("PhlatBoyz.strings")
+## moved to phlatboyz.rb
+#  @@phlatboyzStrings = LanguageHandler.new('PhlatBoyz.strings')
   @@phlatboyz_tools_submenu = nil
   @@Loaded = false
   @@tools = []
