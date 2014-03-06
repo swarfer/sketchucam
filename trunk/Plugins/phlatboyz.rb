@@ -60,8 +60,6 @@ module PhlatScript
       end
    end # if version
 
-   @@phlatboyzStrings = LanguageHandler.new('PhlatBoyz.strings')
-
    class PhlatScriptExtention < SketchupExtension 
      def initialize
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
