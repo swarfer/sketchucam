@@ -281,10 +281,10 @@ module PhlatScript
       # input is nil if user cancelled
       if (input)
         toget=input[0] + ".rb"     # delete rb before tpr
-        pth= path + "\\" + toget
+        pth = File.join(path,toget)
         if not File.exist?(pth)
           toget=input[0] + ".tpr"
-          pth= path + "\\" + toget
+          pth = File.join(path,toget)
         end
         # delete the file
         if File.exist?(pth)
