@@ -78,7 +78,33 @@ module PhlatScript
     end # def select
   end # class
 
-  class ProfilesLoadTool < PhlatTool
+  class ProfilesTool < PhlatTool
+    def getDropDownList
+      list=[""]
+      path = SketchupDirectoryUtils.toolsProfilesPath()
+      if not File.exist?(path)
+        Dir.mkdir(path)
+      end
+      if File.exist?(path)
+        #print "path exists\n"
+        Dir.foreach( path ) {| filename |
+          #puts "got #{filename}"
+          if filename.index('.rb') or filename.index('.tpr')
+            filename=filename.gsub(/\.rb|\.tpr/,"")
+            if list[0] == ""
+              list=[filename]
+            else
+              list[0]= list[0] + "|#{filename}"
+            end
+          end
+        }
+        #            puts list
+      end
+      return list
+    end
+  end
+  
+  class ProfilesLoadTool < ProfilesTool
     def initialize
       @tooltype=(PB_MENU_MENU)
       @tooltip="Load tool profile"
@@ -118,26 +144,7 @@ module PhlatScript
          defaults.push(encoded_comment_text)
 =end
       # dropdown options can be added here
-      list=[""]
-      path = SketchupDirectoryUtils.toolsProfilesPath()
-      if not File.exist?(path)
-        Dir.mkdir(path)
-      end
-      if File.exist?(path)
-        #print "path exists\n"
-        Dir.foreach( path ) {| filename |
-          #puts "got #{filename}"
-          if filename.index('.rb') or filename.index('.tpr')
-            filename=filename.gsub(/\.rb|\.tpr/,"")
-            if list[0] == ""
-              list=[filename]
-            else
-              list[0]= list[0] + "|#{filename}"
-            end
-          end
-        }
-        #            puts list
-      end
+      list = getDropDownList()
       if list[0] == ""
         UI.messagebox('No profiles found. You have to save a profile before you can load one')
         return
@@ -210,31 +217,12 @@ module PhlatScript
         else
           puts "ERROR reading file for load"
         end
-
-=begin
-            if Sketchup.load(pth)
-               PhlatScript.spindleSpeed  =$prof_spindlespeed
-               PhlatScript.feedRate      =$prof_feedrate
-               PhlatScript.plungeRate    =$prof_plungerate
-               PhlatScript.cutFactor     =$prof_cutfactor
-               PhlatScript.bitDiameter   =$prof_bitdiameter
-               PhlatScript.tabWidth      =$prof_tabwidth
-               PhlatScript.tabDepth      =$prof_tabdepth
-               PhlatScript.safeTravel    =$prof_safetravel
-
-               PhlatScript.useMultipass  =$prof_usemultipass
-               PhlatScript.multipassDepth=$prof_multipassdepth
-               PhlatScript.gen3D         =$prof_gen3d
-               PhlatScript.stepover      =$prof_stepover
-            else
-               puts "ERROR loading profile\n"
-            end
-=end
+        
       end # if input
     end # def select
   end # class
 
-  class ProfilesDeleteTool < PhlatTool
+  class ProfilesDeleteTool < ProfilesTool
     def initialize
       @tooltype=(PB_MENU_MENU)
       @tooltip="Delete tool profile"
@@ -245,33 +233,12 @@ module PhlatScript
 
     def select
       model=Sketchup.active_model
-
       # prompts
       prompts=["Select Profile to Delete"]
 
       defaults=['select one']
       # dropdown options can be added here
-      list=[""]
-#      path=ENV['APPDATA'] + "\\Sketchup"
-      path = SketchupDirectoryUtils.toolsProfilesPath()
-      if not File.exist?(path)
-        Dir.mkdir(path)
-      end
-      if File.exist?(path)
-        #print "path exists\n"
-        Dir.foreach( path ) {| filename |
-          #puts "got #{filename}"
-          if filename.index('.rb') or filename.index('.tpr')
-            filename=filename.gsub(/\.rb|\.tpr/,"")
-            if list[0] == ""
-              list=[filename]
-            else
-              list[0]= list[0] + "|#{filename}"
-            end
-          end
-        }
-        #            puts list
-      end
+      list = getDropDownList()
       if list[0] == ""
         UI.messagebox('No profiles found. You have to save a profile before you can delete one')
         return
