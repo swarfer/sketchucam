@@ -7,7 +7,6 @@ module PhlatScript
 
   @@AppChangeObserver = AppChangeObserver.new
   @@ModelChangeObserver = ModelChangeObserver.new
-  @@phlatboyzStrings = LanguageHandler.new('PhlatBoyz.strings')
   @@phlatboyz_tools_submenu = nil
   @@Loaded = false
   @@tools = []
