@@ -22,3 +22,5 @@ TIG-Smart_offset.rb
 utilities.rb
 PocketTool.r_b
 attribs*
+test
+IniParser.rb
