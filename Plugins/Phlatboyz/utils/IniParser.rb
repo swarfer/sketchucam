@@ -34,7 +34,7 @@ module PhlatScript
 
     #return key/value tuple for line
     def keyAndValueForLine(line)
-      key= line[0 .. line.index('=') - 1]
+      key = line[0 .. line.index('=') - 1]
       value = line[line.index('=') + 1 .. line.length()-1]
       # remove " from string
       value = value.gsub '"', ''
@@ -43,7 +43,7 @@ module PhlatScript
 
     def removeCommentFromLine(line)
       if line.index(';')
-        return line[0 .. line.index('=') - 1]
+        return line[0 .. line.index(';') - 1]
       end
       return line
     end
@@ -51,13 +51,13 @@ module PhlatScript
     def parseFileAtPath(filePath)
       sections = {}
       fileLines = IO.readlines(filePath)
-      globals = {"values:" => {}}
-
+      
       if fileLines
         sectionName = nil
         fileLines.each { |line|
           line = line.strip
-
+          line = removeCommentFromLine(line)
+          
           validateLine(line)
           if line[0] !=';'
             if isSectionLine(line)
