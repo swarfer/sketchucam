@@ -51,13 +51,13 @@ module PhlatScript
     def parseFileAtPath(filePath)
       sections = {}
       fileLines = IO.readlines(filePath)
-      
+
       if fileLines
         sectionName = nil
         fileLines.each { |line|
           line = line.strip
           line = removeCommentFromLine(line)
-          
+
           validateLine(line)
           if line[0] !=';'
             if isSectionLine(line)
@@ -78,8 +78,6 @@ module PhlatScript
   end
 
   class IniGenerator
-    @@sectionTemplate = "[__VALUE__]\n"
-    @@attributeTemplate = "__KEY__=__VALUE__\n"
 
     def isSimpleType(var)
       return (var.is_a? Fixnum or var.is_a? String or var.is_a? Float or var.is_a? TrueClass or var.is_a? FalseClass)
@@ -105,9 +103,9 @@ module PhlatScript
       # generate ini, iterate hash map,
       # use templates to generate strings
       map.each do |key, value|
-        iniString << @@sectionTemplate.sub("__VALUE__", key)
+        iniString << "[#{key}]\n"
         value.each do |deepKey, deepValue|
-          iniString <<  @@attributeTemplate.sub("__KEY__", deepKey).sub("__VALUE__", deepValue)
+          iniString <<  "#{deepKey}=#{deepValue}\n"
         end
       end
       return iniString
