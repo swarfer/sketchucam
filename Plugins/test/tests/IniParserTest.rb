@@ -1,6 +1,6 @@
 module PhlatScript
   require_relative 'TestBase'
-  require_relative '../../Phlatboyz/utils/ini/IniParser'
+  require_relative '../../Phlatboyz/utils/IniParser'
   
   class IniParserTest < TestBase
     def run()

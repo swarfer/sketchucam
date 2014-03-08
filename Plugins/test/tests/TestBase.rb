@@ -37,6 +37,9 @@ module PhlatScript
     end
 
     def assertException(message, &block)
+      #calls a code block passed as an argument.
+      #expects it to tail with an exception.
+      # if no exception, it means test will fail
       begin
         block.call()
       rescue
@@ -46,7 +49,6 @@ module PhlatScript
       @@assertionErrorCount = @@assertionErrorCount + 1
     end
 
-    
     def assertionErrorCount
       @@assertionErrorCount
     end
