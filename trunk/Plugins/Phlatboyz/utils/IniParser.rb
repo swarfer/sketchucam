@@ -1,4 +1,9 @@
 module PhlatScript
+  # utility classes for ini file handling
+  # IniParser will read ini file and convert it to HashMap
+  # IniGenerator will generate ini file from HashMap
+  # Make sure that Hash has a proper structure fe:
+  #		{"SECTION_NAME" => {"ATTR_NAME"=>"ATTR_VALUE"}}
 
   class IniParser
 
@@ -29,11 +34,18 @@ module PhlatScript
 
     #return key/value tuple for line
     def keyAndValueForLine(line)
-      key= line[0 .. line.index('=')-1]
+      key= line[0 .. line.index('=') - 1]
       value = line[line.index('=') + 1 .. line.length()-1]
       # remove " from string
       value = value.gsub '"', ''
       return key.strip, value.strip
+    end
+
+    def removeCommentFromLine(line)
+      if line.index(';')
+        return line[0 .. line.index('=') - 1]
+      end
+      return line
     end
 
     def parseFileAtPath(filePath)
@@ -45,6 +57,7 @@ module PhlatScript
         sectionName = nil
         fileLines.each { |line|
           line = line.strip
+
           validateLine(line)
           if line[0] !=';'
             if isSectionLine(line)
