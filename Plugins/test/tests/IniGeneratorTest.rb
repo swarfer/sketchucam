@@ -20,7 +20,7 @@ module PhlatScript
       map = {"section"=>{"a"=>"b"}}
       result = generator.hashMapToIni({"section"=>{"a"=>"b"}});
       assertEquals(result,"[section]\na=b\n","should be equal")
-      generator.dumpHashMapToIni(map,"map.ini")
+      generator.dumpHashMapToIni(map,"__test_file_map.ini")
       assertTrue((File.exist?"__test_file_map.ini"), "file needs to exist after dump");
       File.delete("__test_file_map.ini")
     end
