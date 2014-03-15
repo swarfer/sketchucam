@@ -2,8 +2,7 @@
 <html>
 <head>
 <title> SketchUcam parameters</title>
-<meta name="id" value="$Id$">
-  <style type="text/css">
+<style type="text/css">
 <!--
 body {
 background-color: #ebe9ed;
@@ -40,25 +39,25 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
 -->
   </style>
 </head>
-<body onload="callPhlatboyz('load_params')">
-<form name="param_form" action="#" style="margin-left: auto; margin-right: auto;">
-   <a href="mailto:phlatboyz@phlatboyz.com">
+<body>
+   <p><a href="mailto:phlatboyz@phlatboyz.com">
       <img style="border: 0px solid ; width: 400px; height: 135px; margin-left: auto; margin-right: auto; display: block;"
       alt="SketchUCam" src="images/SketchUcam-Window-Logo.png">
-   </a><br>
-  <input name="checkbox_hidden" value="" type="hidden">
+   </a><br></p>
+<form name="param_form" action="#" style="margin-left: auto; margin-right: auto;">
+  
   <table border=0 cellpadding=1 cellspacing=1 style="margin-left: auto; margin-right: auto;">
     <tbody>
     <tr class="profile">
     <td>Profiles</td>
     <td colspan=3 class="buttons">
+      <input name="checkbox_hidden" value="" type="hidden">
       <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
       <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
       <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
     </td>
     </tr>
-    
-    
+
       <tr>
         <td id="spindlespeed_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
@@ -133,7 +132,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
 
       <tr>
         <td id="commenttext_id" class="caption">&nbsp;</td>
-        <td colspan=3><textarea name="commenttext" rows="4"></textarea></td>
+        <td colspan=3><textarea name="commenttext" rows="4" cols="40"></textarea></td>
       </tr>
       <tr>
         <td colspan="4" class="buttons">
@@ -147,33 +146,36 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
   </table>
 </form>
 
-<script type='text/javascript'>
-   function callPhlatboyz(action) {
-      window.location.href = 'skp:phlatboyz_action_callback@'+action;
-   }
-   function setFormValue(formId, value) {
-      param_form.elements[formId].value = value;
-   }
-   function setFormCaption(formId, value) {
-      document.getElementById(formId).innerHTML = value;
-   }
-   function setEncodedFormValue(formId, value, delim) {
-      str_arr = value.split(delim);
-      param_form.elements[formId].value = str_arr.join("\n");
-   }
-   function setCheckbox(formId, value) {
-      if (value == 'false')
-      { param_form.elements[formId].checked = false }
-      else
-      { param_form.elements[formId].checked = true }
-   }
-   function isChecked(formId) {
-      param_form.elements["checkbox_hidden"].value = (param_form.elements[formId].checked) ? "true" : "false";
-   }
-   function hideMultipass() {
-      document.getElementById("multipass_row1").style.display = 'none';
-   }
-  </script>
-
+	<script type='text/javascript'>
+        function callPhlatboyz(action) {
+            window.location.href = 'skp:phlatboyz_action_callback@' + action;
+        }
+        function setFormValue(formId, value) {
+            param_form.elements[formId].value = value;
+        }
+        function setFormCaption(formId, value) {
+            document.getElementById(formId).innerHTML = value;
+        }
+        function setEncodedFormValue(formId, value, delim) {
+            str_arr = value.split(delim);
+            param_form.elements[formId].value = str_arr.join("\n");
+        }
+        function setCheckbox(formId, value) {
+            if (value == 'false') {
+                param_form.elements[formId].checked = false
+            } else {
+                param_form.elements[formId].checked = true
+            }
+        }
+        function isChecked(formId) {
+            param_form.elements["checkbox_hidden"].value = (param_form.elements[formId].checked) ? "true" : "false";
+        }
+        function hideMultipass() {
+            document.getElementById("multipass_row1").style.display = 'none';
+        }
+    </script>
+	<script type="text/javascript">
+		callPhlatboyz('load_params');
+	</script>
 </body>
 </html>
