@@ -1,21 +1,23 @@
-
 require 'Phlatboyz/PhlatTool.rb'
+
 # $Id$
 module PhlatScript
 
   module WebDialogX
+
     # Module used to extend UI::WebDialog base class to a local instance only.
     # Use:  webdialog_instance.extend(WebDialogX)
     def setCaption(id, caption)
-            self.execute_script("setFormCaption('#{id}','#{caption}')")
+      self.execute_script("setFormCaption('#{id}','#{caption}')")
     end
 
     def setValue(id, value)
-            self.execute_script("setFormValue('#{id}','#{value}')")
+      self.execute_script("setFormValue('#{id}','#{value}')")
     end
   end
 
   class ParametersTool < PhlatTool
+    @dialogIsOpen = false
     # taken from ActionScript
     JS_ESCAPE_MAP  	=  	{ '\\' => '\\\\', '</' => '<\/', "\r\n" => '\n', "\n" => '\n', "\r" => '\n', '"' => '\\"', "'" => "\\'" }
 
@@ -30,7 +32,7 @@ module PhlatScript
     def format_length(s)
       escape_javascript(Sketchup.format_length(s))
     end
-    
+
     def setValues(wd) # set values from ruby into java for given web_dialog(wd)
       wd.setCaption('spindlespeed_id', PhlatScript.getString("Spindle Speed"))
       wd.setValue('spindlespeed', PhlatScript.spindleSpeed)
@@ -92,7 +94,7 @@ module PhlatScript
       wd.setCaption('version_id', 'SketchUcam V' + $PhlatScriptExtension.version)
     end
 
-   def saveValues(wd)  # put values from webdialog into phlatscript variables
+    def saveValues(wd)  # put values from webdialog into phlatscript variables
       PhlatScript.spindleSpeed = wd.get_element_value("spindlespeed") # don't use parse_length for rpm
       PhlatScript.feedRate = Sketchup.parse_length(wd.get_element_value("feedrate"))
       PhlatScript.plungeRate = Sketchup.parse_length(wd.get_element_value("plungerate"))
@@ -108,9 +110,9 @@ module PhlatScript
       PhlatScript.useOverheadGantry = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
 
       if PhlatScript.multipassEnabled?
-         wd.execute_script("isChecked('multipass')")
-         PhlatScript.useMultipass = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-         PhlatScript.multipassDepth = Sketchup.parse_length(wd.get_element_value("multipassdepth"))
+        wd.execute_script("isChecked('multipass')")
+        PhlatScript.useMultipass = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
+        PhlatScript.multipassDepth = Sketchup.parse_length(wd.get_element_value("multipassdepth"))
       end
       wd.execute_script("isChecked('gen3D')")
       PhlatScript.gen3D = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
@@ -123,168 +125,169 @@ module PhlatScript
       encoded_comment_text = ""
       comment_text.each_line { |line| encoded_comment_text += line.chomp()+"$/"}
       PhlatScript.commentText = encoded_comment_text.chop().chop()
-   end #saveValues
+    end #saveValues
 
-   def select
-      
+    def select
+
       model = Sketchup.active_model
 
       if Use_compatible_dialogs
-         # prompts
-         prompts = [PhlatScript.getString("Spindle Speed"),
-         PhlatScript.getString("Feed Rate"),
-         PhlatScript.getString("Plunge Rate"),
-         PhlatScript.getString("Material Thickness"),
-         PhlatScript.getString("In/Outside Overcut Percentage") + " ",
-         PhlatScript.getString("Bit Diameter"),
-         PhlatScript.getString("Tab Width"),
-         PhlatScript.getString("Tab Depth Factor"),
-         PhlatScript.getString("Safe Travel"),
-         PhlatScript.getString("Safe Length"),
-         PhlatScript.getString("Safe Width"),
-         PhlatScript.getString("Overhead Gantry")]
+        # prompts
+        prompts = [PhlatScript.getString("Spindle Speed"),
+          PhlatScript.getString("Feed Rate"),
+          PhlatScript.getString("Plunge Rate"),
+          PhlatScript.getString("Material Thickness"),
+          PhlatScript.getString("In/Outside Overcut Percentage") + " ",
+          PhlatScript.getString("Bit Diameter"),
+          PhlatScript.getString("Tab Width"),
+          PhlatScript.getString("Tab Depth Factor"),
+          PhlatScript.getString("Safe Travel"),
+          PhlatScript.getString("Safe Length"),
+          PhlatScript.getString("Safe Width"),
+          PhlatScript.getString("Overhead Gantry")]
 
-         if PhlatScript.multipassEnabled?
-            prompts.push(PhlatScript.getString("Generate Multipass"))
-            prompts.push(PhlatScript.getString("Multipass Depth"))
-         end
-         prompts.push(PhlatScript.getString("Generate 3D GCode"))
-         prompts.push(PhlatScript.getString("StepOver Percentage"))
-         prompts.push(PhlatScript.getString("Show Gcode"))
-         prompts.push("Comment Remarks")
+        if PhlatScript.multipassEnabled?
+          prompts.push(PhlatScript.getString("Generate Multipass"))
+          prompts.push(PhlatScript.getString("Multipass Depth"))
+        end
+        prompts.push(PhlatScript.getString("Generate 3D GCode"))
+        prompts.push(PhlatScript.getString("StepOver Percentage"))
+        prompts.push(PhlatScript.getString("Show Gcode"))
+        prompts.push("Comment Remarks")
 
-         # default values
-         encoded_comment_text = PhlatScript.commentText.to_s
+        # default values
+        encoded_comment_text = PhlatScript.commentText.to_s
 
-         defaults = [PhlatScript.spindleSpeed.to_s,
-         Sketchup.format_length(PhlatScript.feedRate),
-         Sketchup.format_length(PhlatScript.plungeRate),
-         Sketchup.format_length(PhlatScript.materialThickness),
-         PhlatScript.cutFactor.to_s,
-         Sketchup.format_length(PhlatScript.bitDiameter),
-         Sketchup.format_length(PhlatScript.tabWidth),
-         PhlatScript.tabDepth.to_s,
-         Sketchup.format_length(PhlatScript.safeTravel),
-         Sketchup.format_length(PhlatScript.safeWidth),
-         Sketchup.format_length(PhlatScript.safeHeight),
-         PhlatScript.useOverheadGantry?.inspect()]
+        defaults = [PhlatScript.spindleSpeed.to_s,
+          Sketchup.format_length(PhlatScript.feedRate),
+          Sketchup.format_length(PhlatScript.plungeRate),
+          Sketchup.format_length(PhlatScript.materialThickness),
+          PhlatScript.cutFactor.to_s,
+          Sketchup.format_length(PhlatScript.bitDiameter),
+          Sketchup.format_length(PhlatScript.tabWidth),
+          PhlatScript.tabDepth.to_s,
+          Sketchup.format_length(PhlatScript.safeTravel),
+          Sketchup.format_length(PhlatScript.safeWidth),
+          Sketchup.format_length(PhlatScript.safeHeight),
+          PhlatScript.useOverheadGantry?.inspect()]
 
-         if PhlatScript.multipassEnabled?
-            defaults.push(PhlatScript.useMultipass?.inspect())
-            defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
-         end
-         defaults.push(PhlatScript.gen3D.inspect())
-         defaults.push(PhlatScript.stepover)
-         defaults.push(PhlatScript.showGplot?.inspect())
-         defaults.push(encoded_comment_text)
+        if PhlatScript.multipassEnabled?
+          defaults.push(PhlatScript.useMultipass?.inspect())
+          defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
+        end
+        defaults.push(PhlatScript.gen3D.inspect())
+        defaults.push(PhlatScript.stepover)
+        defaults.push(PhlatScript.showGplot?.inspect())
+        defaults.push(encoded_comment_text)
 
-         # dropdown options can be added here
-         if PhlatScript.multipassEnabled?
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true",""]
-         else
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true",""]
-         end
+        # dropdown options can be added here
+        if PhlatScript.multipassEnabled?
+          list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true",""]
+        else
+          list = ["","","","","","","","","","","","false|true","false|true","","false|true",""]
+        end
 
-         input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
-         # input is nil if user cancelled
-         if (input)
-            PhlatScript.spindleSpeed = input[0].to_i
-            PhlatScript.feedRate = Sketchup.parse_length(input[1]).to_f
-            PhlatScript.plungeRate = Sketchup.parse_length(input[2]).to_f
-            PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
-            PhlatScript.cutFactor = input[4].to_i
-            PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
-            PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
-            PhlatScript.tabDepth = input[7].to_i
-            PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
-            PhlatScript.safeWidth = Sketchup.parse_length(input[9])
-            PhlatScript.safeHeight = Sketchup.parse_length(input[10])
-            PhlatScript.useOverheadGantry = (input[11] == 'true')
+        input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
+        # input is nil if user cancelled
+        if (input)
+          PhlatScript.spindleSpeed = input[0].to_i
+          PhlatScript.feedRate = Sketchup.parse_length(input[1]).to_f
+          PhlatScript.plungeRate = Sketchup.parse_length(input[2]).to_f
+          PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
+          PhlatScript.cutFactor = input[4].to_i
+          PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
+          PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
+          PhlatScript.tabDepth = input[7].to_i
+          PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
+          PhlatScript.safeWidth = Sketchup.parse_length(input[9])
+          PhlatScript.safeHeight = Sketchup.parse_length(input[10])
+          PhlatScript.useOverheadGantry = (input[11] == 'true')
 
-            if PhlatScript.multipassEnabled?
-               PhlatScript.useMultipass = (input[12] == 'true')
-               PhlatScript.multipassDepth = Sketchup.parse_length(input[13]).to_f
-               PhlatScript.gen3D = (input[14] == 'true')
-               PhlatScript.stepover = input[15].to_f
-               PhlatScript.showGplot = (input[16] == 'true')
-               PhlatScript.commentText = input[17].to_s
-            else
-               PhlatScript.gen3D = (input[12] == 'true')
-               PhlatScript.stepover = input[13].to_f
-               PhlatScript.showGplot = (input[14] == 'true')
-               PhlatScript.commentText = input[15].to_s
-            end
-         end # if input
+          if PhlatScript.multipassEnabled?
+            PhlatScript.useMultipass = (input[12] == 'true')
+            PhlatScript.multipassDepth = Sketchup.parse_length(input[13]).to_f
+            PhlatScript.gen3D = (input[14] == 'true')
+            PhlatScript.stepover = input[15].to_f
+            PhlatScript.showGplot = (input[16] == 'true')
+            PhlatScript.commentText = input[17].to_s
+          else
+            PhlatScript.gen3D = (input[12] == 'true')
+            PhlatScript.stepover = input[13].to_f
+            PhlatScript.showGplot = (input[14] == 'true')
+            PhlatScript.commentText = input[15].to_s
+          end
+        end # if input
       else #---------------------------webdialog--------------------------------------------
-         view = model.active_view
-         width = 500
-         height = 695
-         x = (view.vpwidth - width)/2
-         y = (view.vpheight - height)/2
-         x = 0 if x < 0
-         y = 0 if y < 0
-         params_dialog = UI::WebDialog.new(PhlatScript.getString("Parameters"), false, "Parameters", width, height, x, y, false)
-         params_dialog.extend(WebDialogX)
-         params_dialog.set_position(x, y)
-         params_dialog.set_size(width, height)
-         params_dialog.add_action_callback("phlatboyz_action_callback") do | web_dialog, action_name |
-            model = Sketchup.active_model
-            if(action_name == 'load_params')
-               setValues(web_dialog)
-            elsif(action_name == 'save')
-               saveValues(web_dialog)
-               params_dialog.close()
-            elsif(action_name == 'cancel')
-               params_dialog.close()
-            elsif(action_name =='restore_defaults')
-               web_dialog.setValue('spindlespeed', Default_spindle_speed)
-               web_dialog.setValue('feedrate', Default_feed_rate)
-               web_dialog.setValue('plungerate', Default_plunge_rate)
-               web_dialog.setValue('materialthickness', Default_material_thickness)
-               web_dialog.setValue('cutfactor', Default_cut_depth_factor)
-               web_dialog.setValue('bitdiameter', Default_bit_diameter)
-               web_dialog.setValue('tabwidth', Default_tab_width)
-               web_dialog.setValue('tabdepthfactor', Default_tab_depth_factor)
-               web_dialog.setValue('safetravel', Default_safe_travel)
-               web_dialog.setValue('safewidth', Default_safe_width)
-               web_dialog.setValue('safeheight', Default_safe_height)
-               web_dialog.setValue('commenttext', Default_comment_remark)
-               web_dialog.setValue('multipassdepth', Default_multipass_depth)
-                #web_dialog.setValue('gen3D',Default_gen3d)
-               web_dialog.setValue('stepover',Default_stepover)
-                #web_dialog.setValue('showgplot',Default_show_gplot)
-               
-               web_dialog.execute_script("setCheckbox('overheadgantry','"+ Default_overhead_gantry.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('multipass','"+      Default_multipass.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('showgplot','"+      Default_show_gplot.inspect()+"')")
-               web_dialog.execute_script("setCheckbox('gen3D','"+          Default_gen3d.inspect()+"')")
-          
-            elsif(action_name == 'pload')   # profile load
-               ptool = ProfilesLoadTool.new()   # in ProfilesTool.rb
-               ptool.select()                # gets the values into PhlatScript
-               setValues(web_dialog)         # display them on the dialog
-            elsif(action_name == 'psave')      # profile save
-               saveValues(web_dialog)            
-               ptool = ProfilesSaveTool.new()
-               ptool.select()
-            elsif(action_name == 'pdelete')    # profile delete
-               ptool = ProfilesDeleteTool.new()
-               ptool.select()
-            end #if actionname
-         end  # webdialog actions
+        view = model.active_view
+        width = 500
+        height = 695
+        x = (view.vpwidth - width)/2
+        y = (view.vpheight - height)/2
+        x = 0 if x < 0
+        y = 0 if y < 0
+        params_dialog = UI::WebDialog.new(PhlatScript.getString("Parameters"), false, "Parameters", width, height, x, y, false)
+        params_dialog.extend(WebDialogX)
+        params_dialog.set_position(x, y)
+        params_dialog.set_size(width, height)
+        params_dialog.add_action_callback("phlatboyz_action_callback") do | web_dialog, action_name |
+          model = Sketchup.active_model
+          if(action_name == 'load_params')
+            setValues(web_dialog)
+          elsif(action_name == 'save')
+            saveValues(web_dialog)
+            params_dialog.close()
+          elsif(action_name == 'cancel')
+            params_dialog.close()
+          elsif(action_name =='restore_defaults')
+            web_dialog.setValue('spindlespeed', Default_spindle_speed)
+            web_dialog.setValue('feedrate', Default_feed_rate)
+            web_dialog.setValue('plungerate', Default_plunge_rate)
+            web_dialog.setValue('materialthickness', Default_material_thickness)
+            web_dialog.setValue('cutfactor', Default_cut_depth_factor)
+            web_dialog.setValue('bitdiameter', Default_bit_diameter)
+            web_dialog.setValue('tabwidth', Default_tab_width)
+            web_dialog.setValue('tabdepthfactor', Default_tab_depth_factor)
+            web_dialog.setValue('safetravel', Default_safe_travel)
+            web_dialog.setValue('safewidth', Default_safe_width)
+            web_dialog.setValue('safeheight', Default_safe_height)
+            web_dialog.setValue('commenttext', Default_comment_remark)
+            web_dialog.setValue('multipassdepth', Default_multipass_depth)
+            #web_dialog.setValue('gen3D',Default_gen3d)
+            web_dialog.setValue('stepover',Default_stepover)
+            #web_dialog.setValue('showgplot',Default_show_gplot)
 
-#         params_dialog.set_on_close {
-         #UI.messagebox("set on close method")
-#         }
+            web_dialog.execute_script("setCheckbox('overheadgantry','"+ Default_overhead_gantry.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('multipass','"+      Default_multipass.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('showgplot','"+      Default_show_gplot.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('gen3D','"+          Default_gen3d.inspect()+"')")
 
-         set_param_web_dialog_file = Sketchup.find_support_file "setParamsWebDialog.html", "Plugins/Phlatboyz/html"
-         if (set_param_web_dialog_file)
-            params_dialog.set_file(set_param_web_dialog_file)
-            params_dialog.show()
-         end
+          elsif(action_name == 'pload')   # profile load
+            ptool = ProfilesLoadTool.new()   # in ProfilesTool.rb
+            ptool.select()                # gets the values into PhlatScript
+            setValues(web_dialog)         # display them on the dialog
+          elsif(action_name == 'psave')      # profile save
+            saveValues(web_dialog)
+            ptool = ProfilesSaveTool.new()
+            ptool.select()
+          elsif(action_name == 'pdelete')    # profile delete
+            ptool = ProfilesDeleteTool.new()
+            ptool.select()
+          end #if actionname
+        end  # webdialog actions
+
+        params_dialog.set_on_close {
+          @dialogIsOpen = false
+        }
+
+        set_param_web_dialog_file = Sketchup.find_support_file "setParamsWebDialog.html", "Plugins/Phlatboyz/html"
+        if (set_param_web_dialog_file and (not @dialogIsOpen))
+          params_dialog.set_file(set_param_web_dialog_file)
+          @dialogIsOpen = true
+          params_dialog.show()
+        end
       end # if old dialog
-   end # select
+    end # select
 
-end # class
+  end # class
 
 end #module
