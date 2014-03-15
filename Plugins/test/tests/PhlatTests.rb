@@ -2,13 +2,13 @@ module PhlatScript
 
   require_relative "IniParserTest"
   require_relative "IniGeneratorTest"
-
+  require_relative "HashableTest"
   class TestSuite
 
     def runTests()
       # add your test classes here...
       # every class needs to have run method implemented.
-      allTests = [IniParserTest.new(), IniGeneratorTest.new()]
+      allTests = [IniParserTest.new(), IniGeneratorTest.new(), HashableTest.new()]
 
       allTests.each{ |test|
         test.setup()
