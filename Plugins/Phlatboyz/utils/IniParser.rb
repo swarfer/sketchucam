@@ -111,17 +111,13 @@ module PhlatScript
       return iniString
     end
 
-    def dumpHashMapToIni(map, filePath, forcePath = true)
+    def dumpHashMapToIni(map, filePath)
       #generate ini string
       iniString = hashMapToIni(map)
       #ensure path exists, force if needed
       dirPath = File.dirname(filePath)
       if not File.exist?dirPath
-        if forcePath
-          Dir.mkdir(dirPath)
-        else
-          raise AttributeError, "directory doesn't exist"
-        end
+        Dir.mkdir(dirPath)
       end
       #write to file safely
       iniFile = File.new(filePath,"w")
