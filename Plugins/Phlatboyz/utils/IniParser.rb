@@ -87,12 +87,12 @@ module PhlatScript
       #input map format validation.
       #map needs two levels, one level for sections
       #second level for settings
-      raise ArgumentError, "incorrect map" if not map
-      raise ArgumentError, "incorrect map" + map.to_s if not map.is_a? Hash
+      raise ArgumentError, "incorrect map\n" if not map
+      raise ArgumentError, "incorrect map not a hash\n" + map.to_s if not map.is_a? Hash
       map.each do |key, value|
-        raise ArgumentError, "incorrect map" + map.to_s if not value.is_a? Hash
+        raise ArgumentError, "incorrect map not a subHash #{value}\n" + map.to_s if not value.is_a? Hash
         value.each do |deepKey, deepValue|
-          raise ArgumentError, "incorrect map" + map.to_s if not isSimpleType(deepValue)
+          raise ArgumentError, "incorrect map not simple\n" + map.to_s if not isSimpleType(deepValue)
         end
       end
     end
@@ -116,16 +116,18 @@ module PhlatScript
       iniString = hashMapToIni(map)
       #ensure path exists, force if needed
       dirPath = File.dirname(filePath)
-      if not File.exist?dirPath
+      if not File.exist? dirPath
         Dir.mkdir(dirPath)
       end
       #write to file safely
       iniFile = File.new(filePath,"w")
       begin
         iniFile << iniString
+        iniFile.close  # if we don't close it here we will never see the content until after Sketchup closes
       rescue
         iniFile.close unless iniFile.nil?
       end
     end
+    
   end
 end

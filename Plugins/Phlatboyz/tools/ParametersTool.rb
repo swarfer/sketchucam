@@ -219,8 +219,8 @@ module PhlatScript
         end # if input
       else #---------------------------webdialog--------------------------------------------
         view = model.active_view
-        width = 500
-        height = 695
+        width = 550
+        height = 715
         x = (view.vpwidth - width)/2
         y = (view.vpheight - height)/2
         x = 0 if x < 0
