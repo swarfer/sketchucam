@@ -5,27 +5,27 @@
 <style type="text/css">
 <!--
 body {
-background-color: #ebe9ed;
-}
+   background-color: #ebe9ed;
+   }
 td.buttons {
-font-family: Verdana, Arial, Helvetica, Sans-serif;
-text-align: center;
-font-size: 0.90em;
-}
+   font-family: Verdana, Arial, Helvetica, Sans-serif;
+   text-align: center;
+   font-size: 0.90em;
+   }
 td {
-font-family: Verdana, Arial, Helvetica, Sans-serif;
-}
+   font-family: Verdana, Arial, Helvetica, Sans-serif;
+   }
 td.caption{
-text-decoration: none;
-font-size: 0.80em;
-text-align: right;
-}
+   text-decoration: none;
+   font-size: 0.80em;
+   text-align: right;
+   }
 .button {
-font-family: Verdana, Arial, Helvetica, Sans-serif;
-font-size: 0.90em;
-margin: 5px;
-padding: 3px;
-}
+   font-family: Verdana, Arial, Helvetica, Sans-serif;
+   font-size: 0.90em;
+   margin: 5px;
+   padding: 3px;
+   }
 
 tr.profile { 
    background-color: #dbd9dd; 
@@ -34,7 +34,7 @@ tr.profile {
 td.tooltip {outline:none; }
 td.tooltip strong {line-height:30px;}
 td.tooltip:hover {text-decoration: none;}
-td.tooltip span { z-index:10; display:none; padding:2px 2px; top:360px; left:275px; width:200px; font-size: smaller; }
+td.tooltip span { z-index:10; display:none; padding:2px 2px; top:380px; left:280px; width:200px; font-size: smaller; }
 td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px solid #DCA; background:#ffCE9F;}
 -->
   </style>
@@ -49,13 +49,13 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
   <table border=0 cellpadding=1 cellspacing=1 style="margin-left: auto; margin-right: auto;">
     <tbody>
     <tr class="profile">
-    <td>Profiles</td>
-    <td colspan=3 class="buttons">
-      <input name="checkbox_hidden" value="" type="hidden">
-      <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
-      <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
-      <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
-    </td>
+       <td width="35%">Profiles</td>
+       <td width="65%" colspan=3 class="buttons">
+         <input name="checkbox_hidden" value="" type="hidden">
+         <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
+         <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
+         <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
+       </td>
     </tr>
 
       <tr>
@@ -64,10 +64,10 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
       </tr>
 
       <tr>
-        <td id="feedrate_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
-        <td id="plungerate_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
+        <td width="35%"  id="feedrate_id" class="caption">&nbsp;</td>
+        <td width="20%" class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
+        <td width="25%" id="plungerate_id" class="caption">&nbsp;</td>
+        <td width="20%" class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
       </tr>
 
       <tr>
