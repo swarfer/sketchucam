@@ -16,7 +16,7 @@ module PhlatScript
     out=out.gsub("~ ",'')
     return out
   end #
-  
+
   class Hashable  # grabbed from hashabletest.rb
 
     def toHash
@@ -31,7 +31,7 @@ module PhlatScript
       return hash
     end
   end
-#-----------------------------------------------------------------------------  
+#-----------------------------------------------------------------------------
 
   # create one and save it and the settings will be current
 class ProfileSettings < Hashable
@@ -40,22 +40,22 @@ class ProfileSettings < Hashable
       # put all the things we want to save here
       @prof_spindlespeed = PhlatScript.spindleSpeed.to_i.to_s
       @prof_feedrate    = PhlatScript.conformat(PhlatScript.feedRate)
-      @prof_plungerate  = PhlatScript.conformat(PhlatScript.plungeRate) 
+      @prof_plungerate  = PhlatScript.conformat(PhlatScript.plungeRate)
       @prof_savematthick = (Profile_save_material_thickness ? '1' : '0')
       @prof_matthick    = PhlatScript.conformat(PhlatScript.materialThickness)
-      @prof_cutfactor   = PhlatScript.cutFactor.to_s 
+      @prof_cutfactor   = PhlatScript.cutFactor.to_s
       @prof_bitdiameter = PhlatScript.conformat(PhlatScript.bitDiameter)
-      @prof_tabwidth    = PhlatScript.conformat(PhlatScript.tabWidth) 
+      @prof_tabwidth    = PhlatScript.conformat(PhlatScript.tabWidth)
       @prof_tabdepth    = PhlatScript.tabDepth.to_i.to_s
-      @prof_safetravel  = PhlatScript.conformat(PhlatScript.safeTravel) 
+      @prof_safetravel  = PhlatScript.conformat(PhlatScript.safeTravel)
 
-      @prof_usemultipass = (PhlatScript.useMultipass? ? '1' : '0') 
+      @prof_usemultipass = (PhlatScript.useMultipass? ? '1' : '0')
       @prof_multipassdepth = PhlatScript.conformat(PhlatScript.multipassDepth)
       @prof_gen3d       = (PhlatScript.gen3D ? '1' : '0')
-      @prof_stepover    = PhlatScript.stepover.to_i.to_s  
+      @prof_stepover    = PhlatScript.stepover.to_i.to_s
    end
 end
-#-----------------------------------------------------------------------------  
+#-----------------------------------------------------------------------------
 
   class ProfilesSaveTool < PhlatTool
     def initialize
@@ -80,7 +80,7 @@ end
       if (input)
         profilename=input[0].to_s.gsub(/ /,'')
 
-        path = SketchupDirectoryUtils.toolsProfilesPath()
+        path = PhlatScript.toolsProfilesPath()
 
         if not File.exist?(path)
           Dir.mkdir(path)
@@ -95,8 +95,8 @@ end
           ohash = {'profile',prof.toHash}
           filePath = File.join(path, profilename + '.tpi')
           generator.dumpHashMapToIni(ohash, filePath)
-          
-=begin          
+
+=begin
           #create file
           filePath = File.join(path, profilename + '.tpr')
           outf=File.new(filePath,"w")
@@ -121,19 +121,19 @@ end
           #outf.print "end\n";
           #close file
           outf.close
-=end          
+=end
         else
           print "ERROR path does not exist #{path}"
         end # path exists so we saved it
       end # if input
     end # def select
   end # class
-#-----------------------------------------------------------------------------  
+#-----------------------------------------------------------------------------
 
 class ProfilesTool < PhlatTool
    def getDropDownList
       list=[""]
-      path = SketchupDirectoryUtils.toolsProfilesPath()
+      path = PhlatScript.toolsProfilesPath()
       if not File.exist?(path)
         Dir.mkdir(path)
       end
@@ -160,7 +160,7 @@ class ProfilesTool < PhlatTool
       return list
    end
  end
-#--------------------------------------------------------------------------------  
+#--------------------------------------------------------------------------------
 class ProfilesLoadTool < ProfilesTool
     def initialize
       @tooltype=(PB_MENU_MENU)
@@ -169,14 +169,14 @@ class ProfilesLoadTool < ProfilesTool
       @menuItem="LoadProfile"
       @menuText="Load Profile"
     end
-    
-      # retrieve a constant value from the str, observing units of measurement
+
+# retrieve a constant value from the str, observing units of measurement
    def getvalue(str)
       value = 0
       if str
          if str.index('.mm')
             value = str.gsub('.mm','').to_f / 25.4    # to_l does not get it right when drawing is metric
-         #puts "mm to inch #{value}"
+            #puts "mm to inch #{value}"
          else
             if str.index('.inch')
                value = str.gsub('.inch','').to_f
@@ -224,11 +224,11 @@ class ProfilesLoadTool < ProfilesTool
          UI.messagebox('No profiles found. You have to save a profile before you can load one')
          return
       end
-      path = SketchupDirectoryUtils.toolsProfilesPath()
+      path = PhlatScript.toolsProfilesPath()
       input=UI.inputbox(prompts, defaults, list, 'Load Profile')
       # input is nil if user cancelled
       if (input)
-         fileNameToOpen = input[0] + ".ini"  # select ini before tpr and rb
+         fileNameToOpen = input[0] + ".tpi"  # select ini before tpr and rb
          filePath = File.join(path , fileNameToOpen)
          if not File.exist?(filePath)
             fileNameToOpen = input[0] + ".tpr"
@@ -240,9 +240,9 @@ class ProfilesLoadTool < ProfilesTool
          end
          if not File.exist?(filePath)
             die "error finding file"
-         end           
+         end
          # load and interpret the file, updating variables
-         if filePath.index('.ini')
+         if filePath.index('.tpi')
          puts 'using ini file'
             ini = IniParser.new()
             sections = ini.parseFileAtPath(filePath)
@@ -264,8 +264,8 @@ class ProfilesLoadTool < ProfilesTool
             PhlatScript.tabDepth = getvalue(profile['prof_tabdepth']) if (profile.has_key?('prof_tabdepth'))
             PhlatScript.safeTravel = getvalue(profile['prof_safetravel']) if (profile.has_key?('prof_safetravel'))
 
-            value = 0      
-            value = getvalue(profile['prof_usemultipass']) if (profile.has_key?('prof_usemultipass'))      
+            value = 0
+            value = getvalue(profile['prof_usemultipass']) if (profile.has_key?('prof_usemultipass'))
             PhlatScript.useMultipass = value > 0 ? true :  false
             PhlatScript.multipassDepth = getvalue(profile['prof_multipassdepth']) if (profile.has_key?('prof_multipassdepth'))
 
@@ -349,7 +349,7 @@ end # class
       input=UI.inputbox(prompts, defaults, list, 'Delete Profile')
       # input is nil if user cancelled
       if (input)
-         path = SketchupDirectoryUtils.toolsProfilesPath()        
+         path = PhlatScript.toolsProfilesPath()
          toget=input[0] + ".rb"     # delete rb before tpr
          pth = File.join(path,toget)
          if not File.exist?(pth)
@@ -360,7 +360,7 @@ end # class
             toget=input[0] + ".tpi"
             pth = File.join(path,toget)
          end
-         
+
         # delete the file
         if File.exist?(pth)
           if File.delete(pth)
