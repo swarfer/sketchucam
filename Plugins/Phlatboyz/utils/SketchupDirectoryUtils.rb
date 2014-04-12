@@ -3,9 +3,9 @@ module PhlatScript
 # Class contains methods for dealing with sketchup directories.
 # Class implements platform specific methods for accessing directories
 
-   class SketchupDirectoryUtils
-     
-     def self.toolsProfilesPath
+#   class SketchupDirectoryUtils
+
+     def PhlatScript.toolsProfilesPath
        # this method returns a path for storing profiles.
        # path depends on the system, macosx is recognized by RUBY_PLATFORM.
        if RUBY_PLATFORM =~ /(darwin)/
@@ -18,6 +18,6 @@ module PhlatScript
        end
        return path
      end
-   end
+#   end
 
 end
