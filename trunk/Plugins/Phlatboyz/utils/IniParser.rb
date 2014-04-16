@@ -4,6 +4,7 @@ module PhlatScript
   # IniGenerator will generate ini file from HashMap
   # Make sure that Hash has a proper structure fe:
   #		{"SECTION_NAME" => {"ATTR_NAME"=>"ATTR_VALUE"}}
+  # $Id$
 
   class IniParser
 

@@ -1,9 +1,10 @@
-
 module PhlatScript
 # Class contains methods for dealing with sketchup directories.
 # Class implements platform specific methods for accessing directories
+# $Id$
 
 #   class SketchupDirectoryUtils
+# not a class, just a tool method as part of PhlatScript. module
 
      def PhlatScript.toolsProfilesPath
        # this method returns a path for storing profiles.

@@ -35,87 +35,87 @@ require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'
 
 module PhlatBoner
 
-    unless file_loaded?("phlatBone.rb")
+   unless file_loaded?("phlatBone.rb")
 
-    # Toolbar Stuff...
+      # Toolbar Stuff...
 
-        boneBar = UI::Toolbar.new "PhlatBone"
-   $keyMsg = " : Press SHIFT key to select other edge"
+      boneBar = UI::Toolbar.new "PhlatBone"
+      $keyMsg = " : Press SHIFT key to select other edge"
 
-        cmd1 = UI::Command.new("Tool Diameter...") { setToolDiameter }
-        cmd1.large_icon = cmd1.small_icon = "phlatBone/toolDiameter.png"
-        cmd1.tooltip = "Set Tool Diameter"
-        cmd1.status_bar_text = "Setting Tool Diameter"
-        cmd1.menu_text = "Tool Diameter"
-        boneBar = boneBar.add_item cmd1
+      cmd1 = UI::Command.new("Tool Diameter...") { setToolDiameter }
+      cmd1.large_icon = cmd1.small_icon = "phlatBone/toolDiameter.png"
+      cmd1.tooltip = "Set Tool Diameter"
+      cmd1.status_bar_text = "Setting Tool Diameter"
+      cmd1.menu_text = "Tool Diameter"
+      boneBar = boneBar.add_item cmd1
 
-        boneBar.add_separator
+      boneBar.add_separator
 
-    cmd2 = UI::Command.new("Rad Bone Multi Inside") { Sketchup.active_model.select_tool BoneMulti.new(1, true) }
-        cmd2.large_icon = cmd2.small_icon = "phlatBone/radBoneMultiIn.png"
-        cmd2.tooltip = "Rad Bone Multi Inside"
-        cmd2.status_bar_text = "Multiple Inside Rad Bones"
-        cmd2.menu_text = "Rad Bone"
-        boneBar = boneBar.add_item cmd2
+      cmd2 = UI::Command.new("Rad Bone Multi Inside") { Sketchup.active_model.select_tool BoneMulti.new(1, true) }
+      cmd2.large_icon = cmd2.small_icon = "phlatBone/radBoneMultiIn.png"
+      cmd2.tooltip = "Rad Bone Multi Inside"
+      cmd2.status_bar_text = "Multiple Inside Rad Bones"
+      cmd2.menu_text = "Rad Bone"
+      boneBar = boneBar.add_item cmd2
 
-    cmd3 = UI::Command.new("Rad Bone Multi Outside") { Sketchup.active_model.select_tool BoneMulti.new(1, false) }
-        cmd3.large_icon = cmd3.small_icon = "phlatBone/radBoneMultiOut.png"
-        cmd3.tooltip = "Rad Bone Multi Outside"
-        cmd3.status_bar_text = "Multiple Outside Rad Bones"
-        cmd3.menu_text = "Rad Bone"
-        boneBar = boneBar.add_item cmd3
+      cmd3 = UI::Command.new("Rad Bone Multi Outside") { Sketchup.active_model.select_tool BoneMulti.new(1, false) }
+      cmd3.large_icon = cmd3.small_icon = "phlatBone/radBoneMultiOut.png"
+      cmd3.tooltip = "Rad Bone Multi Outside"
+      cmd3.status_bar_text = "Multiple Outside Rad Bones"
+      cmd3.menu_text = "Rad Bone"
+      boneBar = boneBar.add_item cmd3
 
-    cmd4 = UI::Command.new("Rad Bone Single") { Sketchup.active_model.select_tool BoneSingle.new(1, true) }
-        cmd4.large_icon = cmd4.small_icon = "phlatBone/radBoneSingle.png"
-        cmd4.tooltip = "Rad Bone Single"
-        cmd4.status_bar_text = "Single Rad Bone"
-        cmd4.menu_text = "Rad Bone"
-        boneBar = boneBar.add_item cmd4
+      cmd4 = UI::Command.new("Rad Bone Single") { Sketchup.active_model.select_tool BoneSingle.new(1, true) }
+      cmd4.large_icon = cmd4.small_icon = "phlatBone/radBoneSingle.png"
+      cmd4.tooltip = "Rad Bone Single"
+      cmd4.status_bar_text = "Single Rad Bone"
+      cmd4.menu_text = "Rad Bone"
+      boneBar = boneBar.add_item cmd4
 
-        boneBar.add_separator
+      boneBar.add_separator
 
-    cmd5 = UI::Command.new("T Bone Multi Inside") { Sketchup.active_model.select_tool BoneMulti.new(2, true) }
-        cmd5.large_icon = cmd5.small_icon = "phlatBone/tBoneMultiIn.png"
-        cmd5.tooltip = "T Bone Multi Inside"
-        cmd5.status_bar_text = "Multiple Inside T Bones"
-        cmd5.menu_text = "T Bone"
-        boneBar = boneBar.add_item cmd5
+      cmd5 = UI::Command.new("T Bone Multi Inside") { Sketchup.active_model.select_tool BoneMulti.new(2, true) }
+      cmd5.large_icon = cmd5.small_icon = "phlatBone/tBoneMultiIn.png"
+      cmd5.tooltip = "T Bone Multi Inside"
+      cmd5.status_bar_text = "Multiple Inside T Bones"
+      cmd5.menu_text = "T Bone"
+      boneBar = boneBar.add_item cmd5
 
-    cmd6 = UI::Command.new("T Bone Multi Outside") { Sketchup.active_model.select_tool BoneMulti.new(2, false) }
-        cmd6.large_icon = cmd6.small_icon = "phlatBone/tBoneMultiOut.png"
-        cmd6.tooltip = "T Bone Multi Outside"
-        cmd6.status_bar_text = "Multiple Outside T Bones"
-        cmd6.menu_text = "T Bones"
-        boneBar = boneBar.add_item cmd6
+      cmd6 = UI::Command.new("T Bone Multi Outside") { Sketchup.active_model.select_tool BoneMulti.new(2, false) }
+      cmd6.large_icon = cmd6.small_icon = "phlatBone/tBoneMultiOut.png"
+      cmd6.tooltip = "T Bone Multi Outside"
+      cmd6.status_bar_text = "Multiple Outside T Bones"
+      cmd6.menu_text = "T Bones"
+      boneBar = boneBar.add_item cmd6
 
-    cmd7 = UI::Command.new("T Bone Single") { Sketchup.active_model.select_tool BoneSingle.new(2, false) }
-        cmd7.large_icon = cmd7.small_icon = "phlatBone/tBoneSingle.png"
-        cmd7.tooltip = "T Bone Single"
-        cmd7.status_bar_text = "Single T Bone"
-        cmd7.menu_text = "T Bone"
-        boneBar = boneBar.add_item cmd7
+      cmd7 = UI::Command.new("T Bone Single") { Sketchup.active_model.select_tool BoneSingle.new(2, false) }
+      cmd7.large_icon = cmd7.small_icon = "phlatBone/tBoneSingle.png"
+      cmd7.tooltip = "T Bone Single"
+      cmd7.status_bar_text = "Single T Bone"
+      cmd7.menu_text = "T Bone"
+      boneBar = boneBar.add_item cmd7
 
-        boneBar.show
+      boneBar.show
 
-    # Menu Stuff...
-        add_separator_to_menu("Tools")
-        # Add item to the Tools menu
-        subMenu=UI.menu("Tools").add_submenu("PhlatBone") { }
-        # Add sub-items to the PhlatBone menu
-        subMenu.add_item cmd1
-        subMenu.add_item cmd2
-        subMenu.add_item cmd3
-        subMenu.add_item cmd4
-        subMenu.add_item cmd5
-        subMenu.add_item cmd6
-        subMenu.add_item cmd7
-end
+      # Menu Stuff...
+      add_separator_to_menu("Tools")
+      # Add item to the Tools menu
+      subMenu=UI.menu("Tools").add_submenu("PhlatBone") { }
+      # Add sub-items to the PhlatBone menu
+      subMenu.add_item cmd1
+      subMenu.add_item cmd2
+      subMenu.add_item cmd3
+      subMenu.add_item cmd4
+      subMenu.add_item cmd5
+      subMenu.add_item cmd6
+      subMenu.add_item cmd7
+   end #unless
 
 file_loaded("phlatBone.rb")
 
 # Global Defaults - if all else fails :-)
 #-----------------------------------------------------------------------------
-$PhlatBoner_toolDiameter = 3.2.mm  # default value
+$PhlatBoner_toolDiameter = 3.2  # default value
 $PhlatBoner_units = "mm"    # "mm" or "inches"
 #-----------------------------------------------------------------------------
 
@@ -151,26 +151,26 @@ $PhlatBoner_units = "mm"    # "mm" or "inches"
 
 
 def self.getSavePrefs(reading)
-   path = PhlatScript.toolsProfilesPath()
+   path = PhlatScript.toolsProfilesPath() #by using this path we prevent folder permission problems when writing the file
    if not File.exist?(path)
       Dir.mkdir(path)
    end
-#   theFile = "#{Sketchup.find_support_file("Plugins")}/phlatBone/phlatBone_prefs"
+   #   theFile = "#{Sketchup.find_support_file("Plugins")}/phlatBone/phlatBone_prefs"
    theFile = File.join(path , 'phlatBone_prefs')
    if File::exists?(theFile)
       if reading
-	 # Read to a prefsArray
-	 prefsData = IO.readlines(theFile)
-	 $PhlatBoner_toolDiameter = prefsData[0].to_f
-	 $PhlatBoner_units = prefsData[1].chomp
-puts "read #{$PhlatBoner_toolDiameter}  #{$PhlatBoner_units}"
+         # Read to a prefsArray
+         prefsData = IO.readlines(theFile)
+         $PhlatBoner_toolDiameter = prefsData[0].to_f
+         $PhlatBoner_units = prefsData[1].chomp
+         puts "read #{$PhlatBoner_toolDiameter}  #{$PhlatBoner_units}"
       else
-	 # Write prefs
-	 File.open(theFile, "w") { |f|
-	    puts "write tool diam #{$PhlatBoner_toolDiameter}"
-	    f.puts( $PhlatBoner_toolDiameter)
-	    f.puts($PhlatBoner_units)
-	    }
+         # Write prefs
+         File.open(theFile, "w") { |f|
+            puts "write tool diam #{$PhlatBoner_toolDiameter}"
+            f.puts( $PhlatBoner_toolDiameter)
+            f.puts($PhlatBoner_units)
+            }
       end
    else
       # Prefs file missing
@@ -178,9 +178,9 @@ puts "read #{$PhlatBoner_toolDiameter}  #{$PhlatBoner_units}"
       # Write default to the new prefs
       puts "creating new file"
       File.open(theFile, "w") {|f|
-	 f.puts( conformat($PhlatBoner_toolDiameter) )
-	 f.puts("mm")
-	 }
+         f.puts( $PhlatBoner_toolDiameter )
+         f.puts($PhlatBoner_units)
+         }
    end
 end
 
