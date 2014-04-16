@@ -61,7 +61,7 @@ module PhlatScript
 
       def select
 #         path = ENV['APPDATA'] + "\\Sketchup"
-         path = SketchupDirectoryUtils.toolsProfilesPath()
+         path = PhlatScript.toolsProfilesPath()
          if File.exist?(path)
             UI.openURL(path)
          else

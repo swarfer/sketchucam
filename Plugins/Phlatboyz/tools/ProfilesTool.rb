@@ -41,7 +41,7 @@ class ProfileSettings < Hashable
       @prof_spindlespeed = PhlatScript.spindleSpeed.to_i.to_s
       @prof_feedrate    = PhlatScript.conformat(PhlatScript.feedRate)
       @prof_plungerate  = PhlatScript.conformat(PhlatScript.plungeRate)
-      @prof_savematthick = (Profile_save_material_thickness ? '1' : '0')
+      @prof_savematthick = (Profile_save_material_thickness ? '1' : '0') # we save this and only set mattthick if this is 1 when we read
       @prof_matthick    = PhlatScript.conformat(PhlatScript.materialThickness)
       @prof_cutfactor   = PhlatScript.cutFactor.to_s
       @prof_bitdiameter = PhlatScript.conformat(PhlatScript.bitDiameter)
@@ -143,8 +143,8 @@ class ProfilesTool < PhlatTool
          Dir.foreach( path ) {| filename |
             #puts "got #{filename}"
             if filename.index(/\.tpi|\.rb|\.tpr/)
-              filename=filename.gsub(/\.rb|\.tpr|\.tpi/,"")
-              items.push(filename)
+               filename=filename.gsub(/\.rb|\.tpr|\.tpi/,"")
+               items.push(filename)
             end
          }
          items = items.uniq
@@ -239,41 +239,44 @@ class ProfilesLoadTool < ProfilesTool
             filePath= File.join(path , fileNameToOpen)
          end
          if not File.exist?(filePath)
-            die "error finding file"
+            die "error finding file #{filePath}"
          end
          # load and interpret the file, updating variables
          if filePath.index('.tpi')
-         puts 'using ini file'
+            puts 'using ini file'
             ini = IniParser.new()
             sections = ini.parseFileAtPath(filePath)
 #            puts(sections)
             profile = sections['profile'] # get the profile hash
-            puts 'keys'
-            puts profile.keys
-            PhlatScript.spindleSpeed = getvalue(profile['prof_spindlespeed']) if (profile.has_key?('prof_spindlespeed'))
-            PhlatScript.feedRate    = getvalue(profile['prof_feedrate']) if (profile.has_key?('prof_feedrate'))
-            PhlatScript.plungeRate  = getvalue(profile['prof_plungerate']) if (profile.has_key?('prof_plungerate'))
-            PhlatScript.cutFactor   = getvalue(profile['prof_cutfactor']) if (profile.has_key?('prof_cutfactor'))
+#            puts 'keys'
+#            puts profile.keys
+            PhlatScript.spindleSpeed = getvalue(profile['prof_spindlespeed'])    if (profile.has_key?('prof_spindlespeed'))
+            PhlatScript.feedRate    = getvalue(profile['prof_feedrate'])         if (profile.has_key?('prof_feedrate'))
+            PhlatScript.plungeRate  = getvalue(profile['prof_plungerate'])       if (profile.has_key?('prof_plungerate'))
+            PhlatScript.cutFactor   = getvalue(profile['prof_cutfactor'])        if (profile.has_key?('prof_cutfactor'))
             useit = 0
-            useit = getvalue(profile['prof_savematthick']) if (profile.has_key?('prof_savematthick'))
+            useit = getvalue(profile['prof_savematthick'])                       if (profile.has_key?('prof_savematthick'))
             if useit == 1
                PhlatScript.materialThickness = getvalue(profile['prof_matthick']) if (profile.has_key?('prof_matthick'))
             end
-            PhlatScript.bitDiameter = getvalue(profile['prof_bitdiameter']) if (profile.has_key?('prof_bitdiameter'))
-            PhlatScript.tabWidth = getvalue(profile['prof_tabwidth']) if (profile.has_key?('prof_tabwidth'))
-            PhlatScript.tabDepth = getvalue(profile['prof_tabdepth']) if (profile.has_key?('prof_tabdepth'))
-            PhlatScript.safeTravel = getvalue(profile['prof_safetravel']) if (profile.has_key?('prof_safetravel'))
+            PhlatScript.bitDiameter = getvalue(profile['prof_bitdiameter'])      if (profile.has_key?('prof_bitdiameter'))
+            PhlatScript.tabWidth = getvalue(profile['prof_tabwidth'])            if (profile.has_key?('prof_tabwidth'))
+            PhlatScript.tabDepth = getvalue(profile['prof_tabdepth'])            if (profile.has_key?('prof_tabdepth'))
+            PhlatScript.safeTravel = getvalue(profile['prof_safetravel'])        if (profile.has_key?('prof_safetravel'))
 
-            value = 0
-            value = getvalue(profile['prof_usemultipass']) if (profile.has_key?('prof_usemultipass'))
-            PhlatScript.useMultipass = value > 0 ? true :  false
+            value = -1
+            value = getvalue(profile['prof_usemultipass'])                       if (profile.has_key?('prof_usemultipass'))
+            PhlatScript.useMultipass = value > 0 ? true :  false                 if (value != -1)
             PhlatScript.multipassDepth = getvalue(profile['prof_multipassdepth']) if (profile.has_key?('prof_multipassdepth'))
 
-            value = 0
-            value = getvalue(profile['prof_gen3d']) if (profile.has_key?('prof_gen3d'))
-            PhlatScript.gen3D = value > 0 ? true : false
+            value = -1
+            value = getvalue(profile['prof_gen3d'])                              if (profile.has_key?('prof_gen3d'))
+            PhlatScript.gen3D = value > 0 ? true : false                         if (value != -1)
 
-            PhlatScript.stepover = getvalue(profile['prof_stepover']) if (profile.has_key?('prof_stepover'))
+            PhlatScript.stepover = getvalue(profile['prof_stepover'])            if (profile.has_key?('prof_stepover'))
+
+            PhlatScript.commentText = "Loaded profile #{input[0]}"
+            puts "Loaded profile '#{input[0]}' from ini"
 
          else  # read old format
             inf = IO.readlines(filePath)
@@ -350,6 +353,7 @@ end # class
       # input is nil if user cancelled
       if (input)
          path = PhlatScript.toolsProfilesPath()
+=begin         
          toget=input[0] + ".rb"     # delete rb before tpr
          pth = File.join(path,toget)
          if not File.exist?(pth)
@@ -360,19 +364,37 @@ end # class
             toget=input[0] + ".tpi"
             pth = File.join(path,toget)
          end
-
-        # delete the file
-        if File.exist?(pth)
-          if File.delete(pth)
-            UI.messagebox("Deleted the profile #{input[0]}")
-          else
-            UI.messagebox("FAILED to delete the profile #{input[0]}")
-          end
-        else
-          UI.messagebox('Profile does not exist for delete')
-          puts "delete: not found #{pth}"
-        end
-
+=end
+         exts = [".rb",".tpr",".tpi"]  #need to delete all the possible extensions
+         count=0
+         exts.each {|ext|
+            toget=input[0] + ext
+            pth = File.join(path,toget)
+            if File.exist?(pth)
+               if File.delete(pth)
+                  count += 1
+               end
+            end
+            }
+         if count > 0
+            UI.messagebox("Deleted the profile #{input[0]}")      
+         else
+            UI.messagebox('Profile does not exist for delete')
+            puts "delete: not found #{pth}"         
+         end
+         # delete the file
+=begin         
+         if File.exist?(pth)
+            if File.delete(pth)
+               UI.messagebox("Deleted the profile #{input[0]}")
+            else
+               UI.messagebox("FAILED to delete the profile #{input[0]}")
+            end
+         else
+            UI.messagebox('Profile does not exist for delete')
+            puts "delete: not found #{pth}"
+         end
+=end
       end # if input
     end # def select
   end # class
