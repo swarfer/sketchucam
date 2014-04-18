@@ -23,4 +23,3 @@ utilities.rb
 PocketTool.r_b
 attribs*
 test
-IniParser.rb

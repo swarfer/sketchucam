@@ -92,7 +92,7 @@ end
           #write contents to ini file format - this will supplant current tpr format over time
           generator = IniGenerator.new()
           prof = ProfileSettings.new()
-          ohash = {'profile',prof.toHash}
+          ohash = {'profile' => prof.toHash}
           filePath = File.join(path, profilename + '.tpi')
           generator.dumpHashMapToIni(ohash, filePath)
 
