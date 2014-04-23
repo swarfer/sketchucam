@@ -73,6 +73,8 @@ Default_stepover = 30
 
 Default_show_gplot = false
 
+Default_tabletop = false
+
 # - - - - - - - - - - - - - - - - - do not edit this
 #           Cursor image files
 # - - - - - - - - - - - - - - - - -
@@ -128,6 +130,7 @@ Dict_gen3d = "gen3D"
 Dict_stepover = "stepover"
 Dict_construction_mark = "construction_mark"
 Dict_show_gplot = "show_gplot"
+Dict_tabletop = "table_top"
 
 # - - - - - - - - - - - - - - - - - do not edit this
 #           Cut Keys

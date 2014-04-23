@@ -41,6 +41,7 @@ module PhlatScript
       @bit_diameter = 0  #swarfer: need it often enough to be global
 
       @comment = PhlatScript.commentText
+      @extr = "-"
       @cmd_linear = "G1" # Linear interpolation
       @cmd_rapid = "G0" # Rapid positioning
       @cmd_arc = "G17 G2" # coordinated helical motion about Z axis
@@ -51,6 +52,10 @@ module PhlatScript
       @Limit_up_feed = false #swarfer: set this to true to use @speed_plung for Z up moves
       @cw =  PhlatScript.usePlungeCW?           #swarfer: spiral cut direction
     end
+    
+   def set_retract_depth(newdepth)
+      @retract_depth = newdepth
+   end   
 
     def set_bit_diam(diameter)
       #@curr_bit.diam = diameter
@@ -78,7 +83,7 @@ module PhlatScript
       sprintf(" F%-4.0f", feed)
     end
 
-    def job_start(optim)
+    def job_start(optim, extra=@extr)
       if(@output_file_name)
         done = false
         while !done do
@@ -118,6 +123,9 @@ module PhlatScript
         cncPrint("(Optimization is ON)\n")
       else
         cncPrint("(Optimization is OFF)\n")
+      end
+      if (extra != "-")
+         cncPrint("(#{extra})\n")
       end
 
       cncPrint("(www.PhlatBoyz.com)\n")
@@ -231,114 +239,106 @@ module PhlatScript
       end
    end
 
-    def retract(zo=@retract_depth, cmd=@cmd_rapid)
-#      cncPrint("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
-#      if (zo == nil)
-#        zo = @retract_depth
-#      end
+   def retract(zo=@retract_depth, cmd=@cmd_rapid)
+      #      cncPrint("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
+      #      if (zo == nil)
+      #        zo = @retract_depth
+      #      end
       if (@cz == zo)
-        @no_move_count += 1
+         @no_move_count += 1
       else
-        if (zo > @max_z)
-          cncPrint("(RETRACT limiting Z to @max_z)\n")
-          zo = @max_z
-        elsif (zo < @min_z)
-          zo = @min_z
-        end
-        command_out = ""
-        if (@Limit_up_feed) && (cmd="G0") && (zo > 0) && (@cz < 0)
-          cncPrint("(RETRACT G1 to material thickness at plunge rate)\n")
-          command_out += (format_measure(' G1 Z', 0))
-          command_out += (format_feed(@speed_plung))
-          command_out += "\n"
-          $cs = @speed_plung
-#          G0 to zo
-          command_out += "G0" + (format_measure('Z', zo))
-        else
-#          cncPrint("(RETRACT normal #{@cz} to #{zo} )\n")
-          command_out += cmd    if (cmd != @cc)
-          command_out += (format_measure('Z', zo))
-        end
-        command_out += "\n"
-        cncPrint(command_out)
-        @cz = zo
-        @cc = cmd
+         if (zo > @max_z)
+            cncPrint("(RETRACT limiting Z to @max_z)\n")
+            zo = @max_z
+         elsif (zo < @min_z)
+            zo = @min_z
+         end
+         command_out = ""
+         if (@Limit_up_feed) && (cmd="G0") && (zo > 0) && (@cz < 0)
+            cncPrint("(RETRACT G1 to material thickness at plunge rate)\n")
+            command_out += (format_measure(' G1 Z', 0))
+            command_out += (format_feed(@speed_plung))
+            command_out += "\n"
+            $cs = @speed_plung
+            #          G0 to zo
+            command_out += "G0" + (format_measure('Z', zo))
+         else
+            #          cncPrint("(RETRACT normal #{@cz} to #{zo} )\n")
+            command_out += cmd    if (cmd != @cc)
+            command_out += (format_measure('Z', zo))
+         end
+         command_out += "\n"
+         cncPrint(command_out)
+         @cz = zo
+         @cc = cmd
       end
-    end
+   end
 
-    def plung(zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-#      cncPrint("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
+   def plung(zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+      #      cncPrint("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
       if (zo == @cz)
-        @no_move_count += 1
+         @no_move_count += 1
       else
-        if (zo > @max_z)
-          zo = @max_z
-        elsif (zo < @min_z)
-          zo = @min_z
-        end
-        command_out = ""
-        command_out += cmd if (cmd != @cc)
-        command_out += (format_measure('Z', zo))
-        so = @speed_plung  # force using plunge rate for vertical moves
-#        sox = @is_metric ? so.to_mm : so.to_inch
-#        cncPrint("(plunge rate #{sox})\n")
-        command_out += (format_feed(so)) if (so != @cs)
-        command_out += "\n"
-        cncPrint(command_out)
-        @cz = zo
-        @cs = so
-        @cc = cmd
+         if (zo > @max_z)
+            zo = @max_z
+         elsif (zo < @min_z)
+            zo = @min_z
+         end
+         command_out = ""
+         command_out += cmd if (cmd != @cc)
+         command_out += (format_measure('Z', zo))
+         so = @speed_plung  # force using plunge rate for vertical moves
+         #        sox = @is_metric ? so.to_mm : so.to_inch
+         #        cncPrint("(plunge rate #{sox})\n")
+         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n"
+         cncPrint(command_out)
+         @cz = zo
+         @cs = so
+         @cc = cmd
       end
-    end
+   end
 
-    def SpiralAt(xo,yo,zo,yoff)
+    def SpiralAt(xo,yo,zstart,zend,yoff)
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
-      command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{zo.to_mm},#{yoff.to_mm},#{cwstr})\n" if @debug
-      zo = -zo #code was written for positive depths , easier to change this here
+      command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debug
       command_out += "G00" + format_measure("Y",yo-yoff)
       command_out += "\n"
-#      if Use_reduced_safe_height
-#        sh = @retract_depth / 3 # use reduced safe height
-#      else
-#        sh = @retract_depth
-#      end
-##      puts "safe height #{sh.to_mm}"
-#      command_out += "G00"
-#      command_out += format_measure(" Z",sh) + "\n"
       command_out += "G01"
-      command_out += format_measure(" Z",0) + "\n"
+      command_out += format_measure(" Z",zstart) + "\n"
       #// now output spiral cut
       #//G02 X10 Y18.5 Z-3 I0 J1.5 F100
 
       if PhlatScript.useMultipass?
-        step = PhlatScript.multipassDepth
+         step = -PhlatScript.multipassDepth
       else
-        s = (zo / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-        step = zo / s
+         s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+         step = -(zstart-zend) / s
       end
-      puts("Spiralat: step #{step.to_mm} zo #{zo.to_mm}")   if @debug
+      d = zstart-zend
+      puts("Spiralat: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
       command_out += "   (Z step #{step.to_mm})\n"          if @debug
-      now = 0.0
-      while now < zo do
+      now = zstart
+      while now > zend do
         now += step;
-        if (now > zo)
-           now = zo;
+        if (now < zend)
+           now = zend;
         else
-          if ( (zo - now) < (@bit_diameter / 8) )
-            df = zo - now;
-            if (df > 0)
+          if ( (zend - now).abs < (@bit_diameter / 8) )
+            df = zend - now;
+            if (df.abs > 0)
               command_out += "   (SpiralAt: forced depth as very close " if @debug
-              command_out += format_measure("",df) + "\n"                if @debug
+              command_out += format_measure("",df) + ")\n"                if @debug
             end
-            now = zo
+            now = zend
           end
         end
         command_out += "#{cmd} "
         command_out += format_measure(" X",xo)
         command_out += format_measure(" Y",yo-yoff)
-        command_out += format_measure(" Z",-now)
+        command_out += format_measure(" Z",now)
         command_out += " I0"
         command_out += format_measure(" J",yoff)
         command_out += format_feed(@speed_curr) if (@speed_curr != @cs)
@@ -358,8 +358,8 @@ module PhlatScript
 
 #swarfer: instead of a plunged hole, spiral bore to depth
 #handles multipass by itself
-    def plungebore(xo,yo,zo,diam)
-      zos = format_measure("depth=",zo)
+    def plungebore(xo,yo,zStart,zo,diam)
+      zos = format_measure("depth=",zStart-zo)
       ds = format_measure(" diam=", diam)
       cncPrint("(plungebore ", zos, ds,")\n")
       if (zo > @max_z)
@@ -369,72 +369,76 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{zo.to_mm})\n" if @debug
+      cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n" if @debug
 
 #      xs = format_measure('X', xo)
 #      ys = format_measure('Y', yo)
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
       if Use_reduced_safe_height
-        sh = @retract_depth / 3 # use reduced safe height
-        command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
-        command_out += "\n"
+         sh = (@retract_depth - zStart) / 3 # use reduced safe height
+         if zStart > 0
+            sh += zStart.to_f
+         end   
+         puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
+         command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+         command_out += "\n"
       else
-        sh = @retract_depth
+         sh = @retract_depth
       end
 
       so = @speed_plung                     # force using plunge rate for vertical moves
       if PhlatScript.useMultipass?
-        zonow = 0
-        while zonow > zo do
-          zonow -= PhlatScript.multipassDepth
-          if zonow < zo
-            zonow = zo
-          end
-          command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
-          command_out += (format_feed(so)) if (so != @cs)
-          command_out += "\n"
-          @cs = so
-          command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
-          command_out += "\n"
-        end #while
+         zonow = PhlatScript.tabletop? ? @material_thickness : 0
+         while zonow > zo do
+            zonow -= PhlatScript.multipassDepth
+            if zonow < zo
+               zonow = zo
+            end
+            command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
+            command_out += (format_feed(so)) if (so != @cs)
+            command_out += "\n"
+            @cs = so
+            command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
+            command_out += "\n"
+         end #while
       else
-        if (diam > (@bit_diameter*2)) #more optimizing, only bore the center if the hole is big, assuming soft material anyway
-          command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-          command_out += (format_feed(so)) if (so != @cs)
-          command_out += "\n"
-        end
-        @cs = so
-        command_out += "G00 " + format_measure("z",sh)    # retract to reduced safe
-        command_out += "\n"
+         if (diam > (@bit_diameter*2)) #more optimizing, only bore the center if the hole is big, assuming soft material anyway
+            command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
+            command_out += (format_feed(so)) if (so != @cs)
+            command_out += "\n"
+         end
+         @cs = so
+         command_out += "G00 " + format_measure("z",sh)    # retract to reduced safe
+         command_out += "\n"
       end
 
     # if DIA is > 2*BITDIA then we need multiple cuts
       yoff = (diam/2 - @bit_diameter/2)      # offset to start point for final cut
       if (diam > (@bit_diameter*2) )
-        command_out += "  (MULTI spirals)\n"            if @debug
-        ystep = @bit_diameter / 2
-        nowyoffset = 0
-        while (nowyoffset < yoff)
-          nowyoffset += ystep
-          if (nowyoffset > yoff)
-            nowyoffset = yoff;
-            command_out += "  (offset clamped)\n"       if @debug
-          end
-          command_out += SpiralAt(xo,yo,zo,nowyoffset)
-          if (nowyoffset != yoff) # then retract to reduced safe
-            command_out += "G0 " + format_measure("z" , sh)
-            command_out += "\n"
-          end
-        end # while
+         command_out += "  (MULTI spirals)\n"            if @debug
+         ystep = @bit_diameter / 2
+         nowyoffset = 0
+         while (nowyoffset < yoff)
+            nowyoffset += ystep
+            if (nowyoffset > yoff)
+               nowyoffset = yoff;
+               command_out += "  (offset clamped)\n"       if @debug
+            end
+            command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
+            if (nowyoffset != yoff) # then retract to reduced safe
+               command_out += "G0 " + format_measure("z" , sh)
+               command_out += "\n"
+            end
+         end # while
       else
-        if (diam > @bit_diameter) # only need a spiral bore if desired hole is bigger than the drill bit
-          puts " (SINGLE spiral)\n"                    if @debug
-          command_out += SpiralAt(xo,yo,zo,yoff);
-        end
-        if (diam < @bit_diameter)
-          command_out += "(NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter})\n"
-        end
+         if (diam > @bit_diameter) # only need a spiral bore if desired hole is bigger than the drill bit
+            puts " (SINGLE spiral)\n"                    if @debug
+            command_out += SpiralAt(xo,yo,zStart,zo,yoff);
+         end
+         if (diam < @bit_diameter)
+            command_out += "(NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter})\n"
+         end
       end # if diam >
 
       # return to center at safe height
@@ -474,14 +478,14 @@ module PhlatScript
     end
 
     def home
-      if (@cx == @retract_depth) && (@cy == 0) && (@cz == 0)
+      if (@cz == @retract_depth) && (@cy == 0) && (@cx == 0)
         @no_move_count += 1
       else
-        retract()
+        retract(@retract_depth)
         cncPrint("G0 X0 Y0 (home)\n")
         @cx = 0
         @cy = 0
-        @cz = 0
+        @cz = @retract_depth
         @cs = 0
         @cc = ""
       end

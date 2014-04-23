@@ -108,24 +108,14 @@ module PhlatScript
 
   class GcodeUtil < PhlatTool
 
-    @@x_save = nil
-    @@y_save = nil
-    @@cut_depth_save = nil
-    @g_save_point = Geom::Point3d.new(0, 0, 0) #swarfer: after a millEdges call, this will have the last point cut
-    @optimize = true  #set to true to try find the closest point on the next group
-    @current_bit_diameter = 0
-    @tabletop = false  # is the Z0 on the table top?
-
-    #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
-    # by doing this we can have Z0 on the table surface, or at top of material
-    if (@tabletop)
-      @SafeHeight =  PhlatScript.materialThickness + PhlatScript.safeTravel.to_f
-      @MaterialTop = PhlatScript.materialThickness
-    else
-      @SafeHeight = PhlatScript.safeTravel.to_f
-      @MaterialTop = 0
-    end
-
+      @@x_save = nil
+      @@y_save = nil
+      @@cut_depth_save = nil
+      @g_save_point = Geom::Point3d.new(0, 0, 0) #swarfer: after a millEdges call, this will have the last point cut
+      @optimize = true  #set to true to try find the closest point on the next group
+      @current_bit_diameter = 0
+      @tabletop = false
+      
     def initialize
       @tooltype = 3
       @tooltip = PhlatScript.getString("Phlatboyz GCode")
@@ -134,26 +124,27 @@ module PhlatScript
       @statusText = PhlatScript.getString("Phlatboyz GCode")
       @menuItem = PhlatScript.getString("GCode")
       @menuText = PhlatScript.getString("GCode")
-    end
 
-    def select
+   end
+
+   def select
       if PhlatScript.gen3D
-	result = UI.messagebox 'Generate 3D GCode?', MB_OKCANCEL
-	if result == 1  # OK
-	  GCodeGen3D.new.generate
-	  if PhlatScript.showGplot?
-	    GPlot.new.plot
-	  end
-	else 
-	  return 
-	end
+         result = UI.messagebox 'Generate 3D GCode?', MB_OKCANCEL
+         if result == 1  # OK
+            GCodeGen3D.new.generate
+            if PhlatScript.showGplot?
+               GPlot.new.plot
+            end
+         else 
+            return 
+         end
       else
-	GcodeUtil.generate_gcode
-	if PhlatScript.showGplot?
-	  GPlot.new.plot
-	end
+         GcodeUtil.generate_gcode
+         if PhlatScript.showGplot?
+            GPlot.new.plot
+         end
       end
-    end
+   end
 
     def statusText
       return "Generate Gcode output"
@@ -164,6 +155,32 @@ module PhlatScript
         UI.messagebox("GCode generation has been aborted due to the upgrade")
         return
       end
+
+            #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
+      # by doing this we can have Z0 on the table surface, or at top of material
+      @tabletop = PhlatScript.tabletop?
+
+      if (@tabletop)
+         @safeHeight =  PhlatScript.materialThickness + PhlatScript.safeTravel.to_f
+         @materialTop = PhlatScript.materialThickness
+         #ZL = material thickness(MT)
+         #               cut = ZL - (cutfactor * MT)
+         #               safe = ZL+SH  {- safe height is safe margin above material   
+         @zL = PhlatScript.materialThickness
+      else
+         @safeHeight = PhlatScript.safeTravel.to_f
+         @materialTop = 0
+         @zL = 0
+         #Mat Zero : ZL = 0
+         #              cut = ZL - (cf * MT)
+         #              safe = ZL + SH   {- safeheight is mt + some safety margin
+      end   
+
+puts(" safeheight '#{@safeHeight.to_mm}'\n")
+puts(" materialTop '#{@materialTop.to_mm}'\n")
+puts(" ZL '#{@zL.to_mm}'\n") 
+puts(" tabletop '#{@tabletop}'\n")       
+      
       @g_save_point = Geom::Point3d.new(0, 0, 0)
       model = Sketchup.active_model
       if(enter_file_dialog(model))
@@ -191,9 +208,15 @@ module PhlatScript
             aMill = PhlatMill.new(absolute_File_name, min_max_array)
 
             aMill.set_bit_diam(@current_bit_diameter)
+            aMill.set_retract_depth(@safeHeight) #tell amill the retract height, for table zero ops
 
 #   puts("starting aMill absolute_File_name="+absolute_File_name)
-            aMill.job_start(@optimize)
+            if @tabletop
+               ext = "Z ZERO IS TABLETOP"
+            else
+               ext = "-"
+            end   
+            aMill.job_start(@optimize,ext)
 #   puts "amill jobstart done"
             loop_root = LoopNodeFromEntities(Sketchup.active_model.active_entities, aMill, material_thickness)
             loop_root.sort
@@ -201,7 +224,7 @@ module PhlatScript
 
             #puts("done milling")
             if PhlatScript.UseOutfeed?
-               aMill.retract()
+               aMill.retract(@safeHeight)
                aMill.cncPrint("(Outfeed)\n")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
@@ -334,7 +357,7 @@ module PhlatScript
       if (same)  # all same type, if they are connected, cut together, else seperately
 #			puts "SAME #{atype}"
          if (atype == "PhlatScript::CenterLineCut") || (atype == "PhlatScript::FoldCut")
-            puts " same seperates?"
+#            puts " same seperates?"
             cnt = 1
             fend = Geom::Point3d.new
             sstart = Geom::Point3d.new(1,1,1)
@@ -353,17 +376,17 @@ module PhlatScript
                }
                
             if (fend.x == sstart.x	) && (fend.y == sstart.y)
-               puts "   same Together #{atype}"
+#               puts "   same Together #{atype}"
   				   millEdges(aMill, loopNode.sorted_cuts, material_thickness)
             else  # same separate
                loopNode.sorted_cuts.each { |sc| millEdges(aMill, [sc], material_thickness) }
             end
          else
-            puts "  same together #{atype}"
+#            puts "  same together #{atype}"
             millEdges(aMill, loopNode.sorted_cuts, material_thickness)
          end
       else
-   #   create arrays of same types, and cut them together
+#   create arrays of same types, and cut them together
          folds = []
          centers = []
          others = []       #mostly plunge cuts
@@ -432,7 +455,7 @@ module PhlatScript
           trans = P.get_safe_origin_translation()
           trans = trans * mirror if Reflection_output
 
-          aMill.retract()
+          aMill.retract(@safeHeight)
 
           save_point = nil
           cut_depth = 0
@@ -606,7 +629,12 @@ module PhlatScript
         end # optimize
 
          points = edges.size
-         pass_depth = 0
+         if @tabletop
+            pass_depth = material_thickness
+         else
+            pass_depth = 0
+         end
+         max_depth = @zL
          prog = PhProgressBar.new(edges.length)
          prog.symbols("e","E")
 			printPass = true
@@ -619,17 +647,24 @@ module PhlatScript
                prog.update(ecnt)
                cut_started = false
                point = nil
-               cut_depth = 0
-               
+               cut_depth = @zL   #not always 0
+#              puts "cut_depth #{cut_depth}\n"
                phlatcut.cut_points(reverse) { |cp, cut_factor|
                   prev_pass_depth = pass_depth
-                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
+                  #cut = ZL - (cutfactor * MT)
+                  #safe = ZL+SH  {- safe height is safe margin above material
+                  
+#                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
+                  cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                   # store the max depth encountered to determine if another pass is needed
                   max_depth = [max_depth, cut_depth].min
 
                   if PhlatScript.useMultipass?
-                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
+#                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
+                     cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
+#                     puts " cut_depth #{cut_depth.to_mm}\n"
                      pass_depth = [pass_depth, cut_depth].min
+#                     puts " pass_depth #{pass_depth.to_mm}\n"
                   end
 
                   # transform the point if a transformation is provided
@@ -643,17 +678,14 @@ module PhlatScript
                            if (phlatcut.kind_of? PlungeCut)
                               if pass == 1
                                  #puts "plunge multi #{phlatcut}"
-                                 aMill.retract()
+                                 aMill.retract(@safeHeight)
                                  aMill.move(point.x, point.y)
                                  #aMill.plung(cut_depth)
-                                 if phlatcut.diameter > 0
-                                    diam = phlatcut.diameter
-                                 else
-                                    diam = @current_bit_diameter
-                                 end
-                                 c_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
-#                                puts "c_depth #{c_depth.to_mm} #{diam.to_mm}"
-                                 aMill.plungebore(point.x, point.y, c_depth, diam)
+                                 diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
+                                 #c_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f  
+                                 c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+                                #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
+                                 aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
 											printPass = false  # prevent print pass comments because holes are self contained and empty passes freak users out
                               end
                            else
@@ -662,7 +694,7 @@ module PhlatScript
                                  # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
                                  # for pockets.
                                  if (points > 1) #if cutting more than 1 edge at a time, must retract
-                                    aMill.retract()
+                                    aMill.retract(@safeHeight)
                                  else
                        #            if multipass and 1 edge and not finished , then partly retract
 #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}" 
@@ -689,14 +721,14 @@ module PhlatScript
                               end
                            end # if else plungcut
                         else #NOT multipass
-                           aMill.retract()
+                           aMill.retract(@safeHeight)
                            aMill.move(point.x, point.y)
                            if (phlatcut.kind_of? PlungeCut)
                               #puts "plunge #{phlatcut}"
                               #puts "   plunge dia #{phlatcut.diameter}"
                               if phlatcut.diameter > 0
                                  diam = phlatcut.diameter
-                                 aMill.plungebore(point.x, point.y, cut_depth, diam)
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
                               else
                                  aMill.plung(cut_depth, PhlatScript.plungeRate)
                               end
@@ -722,6 +754,11 @@ module PhlatScript
                   save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
                   }
                end # edges.each
+            if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away
+               aMill.cncPrint("(BREAK pass #{pass})\n")
+               puts "BREAK large pass #{pass}\n"
+               break
+            end   
 # new condition, detect 'close enough' to max_depth instead of equality, 
 # for some multipass settings this would result in an extra pass with the same depth
          end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
