@@ -127,96 +127,100 @@ module PhlatScript
       PhlatScript.commentText = encoded_comment_text.chop().chop()
     end #saveValues
 
-    def select
+   def select
 
       model = Sketchup.active_model
 
       if Use_compatible_dialogs
         # prompts
-        prompts = [PhlatScript.getString("Spindle Speed"),
-          PhlatScript.getString("Feed Rate"),
-          PhlatScript.getString("Plunge Rate"),
-          PhlatScript.getString("Material Thickness"),
-          PhlatScript.getString("In/Outside Overcut Percentage") + " ",
-          PhlatScript.getString("Bit Diameter"),
-          PhlatScript.getString("Tab Width"),
-          PhlatScript.getString("Tab Depth Factor"),
-          PhlatScript.getString("Safe Travel"),
-          PhlatScript.getString("Safe Length"),
-          PhlatScript.getString("Safe Width"),
-          PhlatScript.getString("Overhead Gantry")]
+         prompts = [PhlatScript.getString("Spindle Speed"),
+               PhlatScript.getString("Feed Rate"),
+               PhlatScript.getString("Plunge Rate"),
+               PhlatScript.getString("Material Thickness"),
+               PhlatScript.getString("In/Outside Overcut Percentage") + " ",
+               PhlatScript.getString("Bit Diameter"),
+               PhlatScript.getString("Tab Width"),
+               PhlatScript.getString("Tab Depth Factor"),
+               PhlatScript.getString("Safe Travel"),
+               PhlatScript.getString("Safe Length"),
+               PhlatScript.getString("Safe Width"),
+               PhlatScript.getString("Overhead Gantry")]
 
-        if PhlatScript.multipassEnabled?
-          prompts.push(PhlatScript.getString("Generate Multipass"))
-          prompts.push(PhlatScript.getString("Multipass Depth"))
-        end
-        prompts.push(PhlatScript.getString("Generate 3D GCode"))
-        prompts.push(PhlatScript.getString("StepOver Percentage"))
-        prompts.push(PhlatScript.getString("Show Gcode"))
-        prompts.push("Comment Remarks")
+         if PhlatScript.multipassEnabled?
+            prompts.push(PhlatScript.getString("Generate Multipass"))
+            prompts.push(PhlatScript.getString("Multipass Depth"))
+         end
+         prompts.push(PhlatScript.getString("Generate 3D GCode"))
+         prompts.push(PhlatScript.getString("StepOver Percentage"))
+         prompts.push(PhlatScript.getString("Show Gcode"))
+         prompts.push("Table top is Z Zero")
+         prompts.push("Comment Remarks")
 
         # default values
-        encoded_comment_text = PhlatScript.commentText.to_s
+         encoded_comment_text = PhlatScript.commentText.to_s
 
-        defaults = [PhlatScript.spindleSpeed.to_s,
-          Sketchup.format_length(PhlatScript.feedRate),
-          Sketchup.format_length(PhlatScript.plungeRate),
-          Sketchup.format_length(PhlatScript.materialThickness),
-          PhlatScript.cutFactor.to_s,
-          Sketchup.format_length(PhlatScript.bitDiameter),
-          Sketchup.format_length(PhlatScript.tabWidth),
-          PhlatScript.tabDepth.to_s,
-          Sketchup.format_length(PhlatScript.safeTravel),
-          Sketchup.format_length(PhlatScript.safeWidth),
-          Sketchup.format_length(PhlatScript.safeHeight),
-          PhlatScript.useOverheadGantry?.inspect()]
+         defaults = [PhlatScript.spindleSpeed.to_s,
+             Sketchup.format_length(PhlatScript.feedRate),
+             Sketchup.format_length(PhlatScript.plungeRate),
+             Sketchup.format_length(PhlatScript.materialThickness),
+             PhlatScript.cutFactor.to_s,
+             Sketchup.format_length(PhlatScript.bitDiameter),
+             Sketchup.format_length(PhlatScript.tabWidth),
+             PhlatScript.tabDepth.to_s,
+             Sketchup.format_length(PhlatScript.safeTravel),
+             Sketchup.format_length(PhlatScript.safeWidth),
+             Sketchup.format_length(PhlatScript.safeHeight),
+             PhlatScript.useOverheadGantry?.inspect()]
 
-        if PhlatScript.multipassEnabled?
-          defaults.push(PhlatScript.useMultipass?.inspect())
-          defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
-        end
-        defaults.push(PhlatScript.gen3D.inspect())
-        defaults.push(PhlatScript.stepover)
-        defaults.push(PhlatScript.showGplot?.inspect())
-        defaults.push(encoded_comment_text)
+         if PhlatScript.multipassEnabled?
+            defaults.push(PhlatScript.useMultipass?.inspect())
+            defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
+         end
+         defaults.push(PhlatScript.gen3D.inspect())
+         defaults.push(PhlatScript.stepover)
+         defaults.push(PhlatScript.showGplot?.inspect())
+         defaults.push(PhlatScript.tabletop?.inspect())
+         defaults.push(encoded_comment_text)
 
-        # dropdown options can be added here
-        if PhlatScript.multipassEnabled?
-          list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true",""]
-        else
-          list = ["","","","","","","","","","","","false|true","false|true","","false|true",""]
-        end
+         # dropdown options can be added here
+         if PhlatScript.multipassEnabled?
+            list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true","false|true",""]
+         else
+            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true",""]
+         end
 
-        input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
-        # input is nil if user cancelled
-        if (input)
-          PhlatScript.spindleSpeed = input[0].to_i
-          PhlatScript.feedRate = Sketchup.parse_length(input[1]).to_f
-          PhlatScript.plungeRate = Sketchup.parse_length(input[2]).to_f
-          PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
-          PhlatScript.cutFactor = input[4].to_i
-          PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
-          PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
-          PhlatScript.tabDepth = input[7].to_i
-          PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
-          PhlatScript.safeWidth = Sketchup.parse_length(input[9])
-          PhlatScript.safeHeight = Sketchup.parse_length(input[10])
-          PhlatScript.useOverheadGantry = (input[11] == 'true')
+         input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
+         # input is nil if user cancelled
+         if (input)
+            PhlatScript.spindleSpeed = input[0].to_i
+            PhlatScript.feedRate = Sketchup.parse_length(input[1]).to_f
+            PhlatScript.plungeRate = Sketchup.parse_length(input[2]).to_f
+            PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
+            PhlatScript.cutFactor = input[4].to_i
+            PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
+            PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
+            PhlatScript.tabDepth = input[7].to_i
+            PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
+            PhlatScript.safeWidth = Sketchup.parse_length(input[9])
+            PhlatScript.safeHeight = Sketchup.parse_length(input[10])
+            PhlatScript.useOverheadGantry = (input[11] == 'true')
 
-          if PhlatScript.multipassEnabled?
-            PhlatScript.useMultipass = (input[12] == 'true')
-            PhlatScript.multipassDepth = Sketchup.parse_length(input[13]).to_f
-            PhlatScript.gen3D = (input[14] == 'true')
-            PhlatScript.stepover = input[15].to_f
-            PhlatScript.showGplot = (input[16] == 'true')
-            PhlatScript.commentText = input[17].to_s
-          else
-            PhlatScript.gen3D = (input[12] == 'true')
-            PhlatScript.stepover = input[13].to_f
-            PhlatScript.showGplot = (input[14] == 'true')
-            PhlatScript.commentText = input[15].to_s
-          end
-        end # if input
+            if PhlatScript.multipassEnabled?
+               PhlatScript.useMultipass = (input[12] == 'true')
+               PhlatScript.multipassDepth = Sketchup.parse_length(input[13]).to_f
+               PhlatScript.gen3D = (input[14] == 'true')
+               PhlatScript.stepover = input[15].to_f
+               PhlatScript.showGplot = (input[16] == 'true')
+               PhlatScript.tabletop = (input[17] == 'true')
+               PhlatScript.commentText = input[18].to_s
+            else
+               PhlatScript.gen3D = (input[12] == 'true')
+               PhlatScript.stepover = input[13].to_f
+               PhlatScript.showGplot = (input[14] == 'true')
+               PhlatScript.tabletop = (input[15] == 'true')
+               PhlatScript.commentText = input[16].to_s
+            end
+         end # if input
       else #---------------------------webdialog--------------------------------------------
         view = model.active_view
         width = 550

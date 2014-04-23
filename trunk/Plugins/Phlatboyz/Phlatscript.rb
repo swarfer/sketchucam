@@ -330,6 +330,14 @@ module PhlatScript
   def PhlatScript.multipassDepth=(mdepth)
     Sketchup.active_model.set_attribute(Dict_name, Dict_multipass_depth, mdepth)
   end
+  
+  def PhlatScript.tabletop?
+    Sketchup.active_model.get_attribute(Dict_name, Dict_tabletop, Default_tabletop)
+  end
+
+  def PhlatScript.tabletop=(tt)
+    Sketchup.active_model.set_attribute(Dict_name, Dict_tabletop, tt)
+  end
 
   def PhlatScript.commentText
     Sketchup.active_model.get_attribute(Dict_name, Dict_comment_text, Default_comment_remark).to_s

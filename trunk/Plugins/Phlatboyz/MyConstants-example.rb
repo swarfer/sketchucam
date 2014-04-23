@@ -110,5 +110,8 @@ Default_pocket_direction = false
 # Profiles that do not contain a material thickness will load just fine.
 Profile_save_material_thickness = false
 
+#set this to true to default table top to Z0 instead of material top
+Default_tabletop = false
+
 
 end # module PhlatScript
