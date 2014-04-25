@@ -4,7 +4,12 @@ require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatEdge.rb'
 require 'Phlatboyz/PhlatOffset.rb'
 require 'Phlatboyz/tools/OffsetCut.rb'
-
+=begin
+   swarfer: added .center back to phlatarc entities so that gcodeutil can output X Y I J format arcs
+   in the hope of solving the uissues around R format when arcs are very small, which happens when using the
+   phlatbones tool
+   $Id$
+=end
 module PhlatScript
 
   class CutTool < PhlatTool
@@ -123,45 +128,45 @@ module PhlatScript
       lav.load(verts)
       lav.process(dist)
       lav.each { |node|
-        ne = (face.parent.entities.add_edges node.prev.data.bisector[1], node.data.bisector[1])
-        next if ne.nil?
-        new_edges += ne
-        phlatcuts = cut_class.cut([ne[0]])
+         ne = (face.parent.entities.add_edges node.prev.data.bisector[1], node.data.bisector[1])
+         next if ne.nil?
+         new_edges += ne
+         phlatcuts = cut_class.cut([ne[0]])
 
-        e_last = node.data.ea
-        if ((!e_last.nil?) && (!e_last.curve.nil?) && (e_last.curve.kind_of? Sketchup::ArcCurve))
-          c = e_last.curve
+         e_last = node.data.ea
+         if ((!e_last.nil?) && (!e_last.curve.nil?) && (e_last.curve.kind_of? Sketchup::ArcCurve))
+            c = e_last.curve
 
-          pt1 = c.first_edge.vertices.first.position
-          pt2 = c.last_edge.vertices.last.position
-          if pt1 == pt2 then #it's a circle
-            g3 = false
-          else
-            pt3 = Geom::Point3d.new [((pt1.x+pt2.x)/2), ((pt1.y+pt2.y)/2), 0]
-            g3 = !(Geom.point_in_polygon_2D(pt3, face.outer_loop.vertices, false))
-          end
-          phlatcuts.each { |phlatcut| phlatcut.define_arc((c.radius + dist), (c.end_angle - c.start_angle), g3) }
-        end
-      }
+            pt1 = c.first_edge.vertices.first.position
+            pt2 = c.last_edge.vertices.last.position
+            if pt1 == pt2 then #it's a circle
+               g3 = false
+            else
+               pt3 = Geom::Point3d.new [((pt1.x+pt2.x)/2), ((pt1.y+pt2.y)/2), 0]
+               g3 = !(Geom.point_in_polygon_2D(pt3, face.outer_loop.vertices, false))
+            end
+            phlatcuts.each { |phlatcut| phlatcut.define_arc((c.radius + dist), (c.end_angle - c.start_angle), g3, e_last.curve.center) }
+         end
+         }
       ret_f = nil
       new_edges.each { |e| e.find_faces }
       if new_edges.length > 0
-        new_edges.first.faces.each { |f|
-          ret_f = f if (f.outer_loop.edges.include? new_edges.first)
-        }
+         new_edges.first.faces.each { |f|
+            ret_f = f if (f.outer_loop.edges.include? new_edges.first)
+         }
       end
       if (ret_f)
-        Sketchup.active_model.start_operation "Setting face material", true, false
-        ret_f.material = "Hole"
-        ret_f.back_material = "Hole"
-        Sketchup.active_model.commit_operation
-        return ret_f.outer_loop.edges
+         Sketchup.active_model.start_operation "Setting face material", true, false
+         ret_f.material = "Hole"
+         ret_f.back_material = "Hole"
+         Sketchup.active_model.commit_operation
+         return ret_f.outer_loop.edges
       else
-        return new_edges
+         return new_edges
       end
-    end
+   end
 
-  end
+end
 
   class InsideCutTool < CutTool
     def getContextMenuItems

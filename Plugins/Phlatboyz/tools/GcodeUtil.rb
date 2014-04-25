@@ -643,6 +643,8 @@ puts(" tabletop '#{@tabletop}'\n")
 				aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
             ecnt = 0
             edges.each do | phlatcut |
+               center = phlatcut.center
+               puts center
                ecnt = ecnt + 1
                prog.update(ecnt)
                cut_started = false
