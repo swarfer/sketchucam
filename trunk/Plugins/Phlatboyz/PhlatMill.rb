@@ -52,10 +52,10 @@ module PhlatScript
       @Limit_up_feed = false #swarfer: set this to true to use @speed_plung for Z up moves
       @cw =  PhlatScript.usePlungeCW?           #swarfer: spiral cut direction
     end
-    
+
    def set_retract_depth(newdepth)
       @retract_depth = newdepth
-   end   
+   end
 
     def set_bit_diam(diameter)
       #@curr_bit.diam = diameter
@@ -175,8 +175,8 @@ module PhlatScript
          else
             cmd=@cmd_linear
          end
-      end   
-        
+      end
+
       #print "( move xo=", xo, " yo=",yo,  " zo=", zo,  " so=", so,")\n"
       if (xo == @cx) && (yo == @cy) && (zo == @cz)
          #print "(move - already positioned)\n"
@@ -379,7 +379,7 @@ module PhlatScript
          sh = (@retract_depth - zStart) / 3 # use reduced safe height
          if zStart > 0
             sh += zStart.to_f
-         end   
+         end
          puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
          command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
          command_out += "\n"
@@ -463,10 +463,12 @@ module PhlatScript
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
       command_out += cmd if (cmd != @cc)
+      @precision +=1  # circles like a bit of extra precision so output an extra digit
       command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
       command_out += (format_measure("Y", yo)) #if (yo != @cy)
-      command_out += (format_measure("Z", zo)) #if (zo != @cz)
+      command_out += (format_measure("Z", zo)) if (zo != @cz)
       command_out += (format_measure("R", radius))
+      @precision -=1
       command_out += (format_feed(so)) if (so != @cs)
       command_out += "\n"
       cncPrint(command_out)
@@ -476,6 +478,33 @@ module PhlatScript
       @cs = so
       @cc = cmd
     end
+
+    def arcmoveij(xo, yo, centerx,centery, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
+      cmd = @cmd_arc_rev if g3
+  #puts "g3: #{g3} cmd #{cmd}"
+      #G17 G2 x 10 y 16 i 3 j 4 z 9
+      #G17 G2 x 10 y 15 r 20 z 5
+      command_out = ""
+      command_out += cmd if (cmd != @cc)
+      @precision +=1  # circles like a bit of extra precision so output an extra digit
+      command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
+      command_out += (format_measure("Y", yo)) #if (yo != @cy)
+      command_out += (format_measure("Z", zo)) if (zo != @cz)
+      i = centerx - @cx
+      j = centery - @cy
+      command_out += (format_measure("I", i))
+      command_out += (format_measure("J", j))
+      @precision -=1
+      command_out += (format_feed(so)) if (so != @cs)
+      command_out += "\n"
+      cncPrint(command_out)
+      @cx = xo
+      @cy = yo
+      @cz = zo
+      @cs = so
+      @cc = cmd
+    end
+
 
     def home
       if (@cz == @retract_depth) && (@cy == 0) && (@cx == 0)
