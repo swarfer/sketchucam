@@ -244,7 +244,7 @@ Use_outfeed = false
 
 #Set this to true to have pocket zigzags default to along Y axis, false for along X axis
 #setting can be changed on the fly with the END key
-Default_pocket_direction = false
+Default_pocket_direction = true
 
 # Set this to TRUE to have the material thickness saved and restored in Tool Profiles
 # Profiles that do not contain a material thickness will load just fine.

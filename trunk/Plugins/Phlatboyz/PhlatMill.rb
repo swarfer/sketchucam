@@ -299,7 +299,9 @@ module PhlatScript
       end
    end
 
-    def SpiralAt(xo,yo,zstart,zend,yoff)
+# generate code for a spiral bore and return the command string   
+   def SpiralAt(xo,yo,zstart,zend,yoff)
+      @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
@@ -307,7 +309,11 @@ module PhlatScript
       command_out += "G00" + format_measure("Y",yo-yoff)
       command_out += "\n"
       command_out += "G01"
-      command_out += format_measure(" Z",zstart) + "\n"
+      command_out += format_measure(" Z",zstart)
+      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
+      command_out += "\n"
+      @cs = @speed_curr
+      
       #// now output spiral cut
       #//G02 X10 Y18.5 Z-3 I0 J1.5 F100
 
@@ -322,37 +328,38 @@ module PhlatScript
       command_out += "   (Z step #{step.to_mm})\n"          if @debug
       now = zstart
       while now > zend do
-        now += step;
-        if (now < zend)
-           now = zend;
-        else
-          if ( (zend - now).abs < (@bit_diameter / 8) )
-            df = zend - now;
-            if (df.abs > 0)
-              command_out += "   (SpiralAt: forced depth as very close " if @debug
-              command_out += format_measure("",df) + ")\n"                if @debug
+         now += step;
+         if (now < zend)
+            now = zend;
+         else
+            if ( (zend - now).abs < (@bit_diameter / 8) )
+               df = zend - now;
+               if (df.abs > 0)
+                  command_out += "   (SpiralAt: forced depth as very close " if @debug
+                  command_out += format_measure("",df) + ")\n"                if @debug
+               end
+               now = zend
             end
-            now = zend
-          end
-        end
-        command_out += "#{cmd} "
-        command_out += format_measure(" X",xo)
-        command_out += format_measure(" Y",yo-yoff)
-        command_out += format_measure(" Z",now)
-        command_out += " I0"
-        command_out += format_measure(" J",yoff)
-        command_out += format_feed(@speed_curr) if (@speed_curr != @cs)
-        @cs = @speed_curr
-        command_out += "\n"
+         end
+         command_out += "#{cmd} "
+         command_out += format_measure(" X",xo)
+         command_out += format_measure(" Y",yo-yoff)
+         command_out += format_measure(" Z",now)
+         command_out += " I0"
+         command_out += format_measure(" J",yoff)
+#         command_out += format_feed(@speed_curr) if (@speed_curr != @cs)
+#         @cs = @speed_curr
+         command_out += "\n"
       end # while
     # now the bottom needs to be flat at $depth
       command_out += "#{cmd} "
       command_out += format_measure(" X",xo)
       command_out += format_measure(" Y",yo-yoff)
-      command_out += " I0"
+      command_out += " I0.0"
       command_out += format_measure(" J",yoff)
       command_out += "\n";
       command_out += "   (SPIRAL END)\n" if @debug
+      @precision -= 1
       return command_out
     end # SpiralAt
 
@@ -369,7 +376,7 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n" if @debug
+      cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
 #      ys = format_measure('Y', yo)
@@ -390,7 +397,7 @@ module PhlatScript
       so = @speed_plung                     # force using plunge rate for vertical moves
       if PhlatScript.useMultipass?
          zonow = PhlatScript.tabletop? ? @material_thickness : 0
-         while zonow > zo do
+         while (zonow - zo).abs > 0.0001 do
             zonow -= PhlatScript.multipassDepth
             if zonow < zo
                zonow = zo
@@ -406,11 +413,11 @@ module PhlatScript
          if (diam > (@bit_diameter*2)) #more optimizing, only bore the center if the hole is big, assuming soft material anyway
             command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
             command_out += (format_feed(so)) if (so != @cs)
+            command_out += "\n"              
+            @cs = so
+            command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
             command_out += "\n"
          end
-         @cs = so
-         command_out += "G00 " + format_measure("z",sh)    # retract to reduced safe
-         command_out += "\n"
       end
 
     # if DIA is > 2*BITDIA then we need multiple cuts
@@ -427,7 +434,7 @@ module PhlatScript
             end
             command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
             if (nowyoffset != yoff) # then retract to reduced safe
-               command_out += "G0 " + format_measure("z" , sh)
+               command_out += "G0 " + format_measure("Z" , sh)
                command_out += "\n"
             end
          end # while
@@ -444,21 +451,22 @@ module PhlatScript
       # return to center at safe height
 #      command_out += format_measure(" G1 Y",yo)
 #      command_out += "\n";
-      command_out += "G00" + format_measure("Y",yo)
-      command_out += format_measure(" Z",@retract_depth)# // retract to real safe height
-      command_out += "\n";
+      command_out += "G00" + format_measure("Y",yo)      # back to circle center
+      command_out += format_measure(" Z",@retract_depth) # retract to real safe height
+      command_out += "\n(plungebore end)\n"
 
       cncPrint(command_out)
       @cx = xo
       @cy = yo
       @cz = @retract_depth
       @cs = so
-      @cc = 'G0'
+      @cc = '' #resetting command here so next one is forced to be correct
     end
 
-    def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
+# use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
+   def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
-  #puts "g3: #{g3} cmd #{cmd}"
+      #puts "g3: #{g3} cmd #{cmd}"
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
@@ -477,11 +485,12 @@ module PhlatScript
       @cz = zo
       @cs = so
       @cc = cmd
-    end
+   end
 
-    def arcmoveij(xo, yo, centerx,centery, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
+# use IJ format arc movement, more accurate, definitive direction
+   def arcmoveij(xo, yo, centerx,centery, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
-  #puts "g3: #{g3} cmd #{cmd}"
+      #puts "g3: #{g3} cmd #{cmd}"
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
@@ -503,7 +512,7 @@ module PhlatScript
       @cz = zo
       @cs = so
       @cc = cmd
-    end
+   end
 
 
     def home
