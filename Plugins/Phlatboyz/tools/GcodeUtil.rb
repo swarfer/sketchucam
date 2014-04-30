@@ -691,7 +691,7 @@ puts " new #{newedges[i-1]}\n"
    end
 
    def GcodeUtil.millEdges(aMill, edges, material_thickness, reverse=false)
-   if (edges) && (!edges.empty?)
+      if (edges) && (!edges.empty?)
       begin
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
@@ -705,151 +705,151 @@ puts " new #{newedges[i-1]}\n"
       pass = 0
       pass_depth = 0
       if @optimize &&  (@g_save_point != nil)
-	 edges = optimize(edges,reverse,trans)
+         edges = optimize(edges,reverse,trans)
       end # optimize
 
-#edges = dragknife(edges,reverse,trans)
+      #edges = dragknife(edges,reverse,trans)
 
       points = edges.size
       if @tabletop
          pass_depth = material_thickness
       else
-	 pass_depth = 0
+         pass_depth = 0
       end
       max_depth = @zL
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
       begin # multipass
-	 pass += 1
-	 aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
-	 ecnt = 0
-	 edges.each { | phlatcut |
+         pass += 1
+         aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
+         ecnt = 0
+         edges.each { | phlatcut |
 
-	    ecnt = ecnt + 1
-	    prog.update(ecnt)
-	    cut_started = false
-	    point = nil
-	    cut_depth = @zL   #not always 0
-	    #              puts "cut_depth #{cut_depth}\n"
-	    phlatcut.cut_points(reverse) { |cp, cut_factor|
-	       prev_pass_depth = pass_depth
-	       #cut = ZL - (cutfactor * MT)
-	       #safe = ZL+SH  {- safe height is safe margin above material
+            ecnt = ecnt + 1
+            prog.update(ecnt)
+            cut_started = false
+            point = nil
+            cut_depth = @zL   #not always 0
+            #              puts "cut_depth #{cut_depth}\n"
+            phlatcut.cut_points(reverse) { |cp, cut_factor|
+               prev_pass_depth = pass_depth
+               #cut = ZL - (cutfactor * MT)
+               #safe = ZL+SH  {- safe height is safe margin above material
 
-	       #                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
-	       cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
-	       # store the max depth encountered to determine if another pass is needed
-	       max_depth = [max_depth, cut_depth].min
+               #                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
+               cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+               # store the max depth encountered to determine if another pass is needed
+               max_depth = [max_depth, cut_depth].min
 
-	       if PhlatScript.useMultipass?
-		  #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
-		  cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
-		  #                     puts " cut_depth #{cut_depth.to_mm}\n"
-		  pass_depth = [pass_depth, cut_depth].min
-		  #                     puts " pass_depth #{pass_depth.to_mm}\n"
-	       end
+               if PhlatScript.useMultipass?
+                  #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
+                  cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
+                  #                     puts " cut_depth #{cut_depth.to_mm}\n"
+                  pass_depth = [pass_depth, cut_depth].min
+                  #                     puts " pass_depth #{pass_depth.to_mm}\n"
+               end
 
-	       # transform the point if a transformation is provided
-	       point = (trans ? (cp.transform(trans)) : cp)
+               # transform the point if a transformation is provided
+               point = (trans ? (cp.transform(trans)) : cp)
 
-	       # retract if this cut does not start where the last one ended
-	       if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
-		  if (!cut_started)
-		     if PhlatScript.useMultipass?  # multipass retract avoid by Yoram
-		     # If it's peck drilling we want it to retract after each plunge to clear the tool
-			if (phlatcut.kind_of? PlungeCut)
-			   if pass == 1
-			      #puts "plunge multi #{phlatcut}"
-			      aMill.retract(@safeHeight)
-			      aMill.move(point.x, point.y)
-			      #aMill.plung(cut_depth)
-			      diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
-			      #c_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
-			      c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
-			     #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
-			      aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
-										     printPass = false  # prevent print pass comments because holes are self contained and empty passes freak users out
-			   end
-			else
-			   if  ((phlatcut.kind_of? CenterLineCut) || (phlatcut.kind_of? PocketCut))
-			      # for these cuts we must retract else we get collisions with existing material
-			      # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
-			      # for pockets.
-			      if (points > 1) #if cutting more than 1 edge at a time, must retract
-				 aMill.retract(@safeHeight)
-			      else
-		    #            if multipass and 1 edge and not finished , then partly retract
-#                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
-				 if PhlatScript.useMultipass? && (points == 1) &&
-				       (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
-#                                       puts "   part retract"
-#                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
-				    aMill.retract(prev_pass_depth+ 0.5.mm )
-				    ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
-				 end
-			      end
-			      if ccmd
-#                                    aMill.cncPrint("(RAPID #{ccmd})\n")
-				 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, ccmd)
-				 ccmd = nil
-			      else
-				 aMill.move(point.x, point.y)
-			      end
-			      aMill.plung(cut_depth, PhlatScript.plungeRate)
-			   else
-			      # If it's not a peck drilling we don't need retract
-			      aMill.move(point.x, point.y)
-			      aMill.plung(cut_depth, PhlatScript.plungeRate)
-			   end
-			end # if else plungcut
-		     else #NOT multipass
-			aMill.retract(@safeHeight)
-			aMill.move(point.x, point.y)
-			if (phlatcut.kind_of? PlungeCut)
-			   #puts "plunge #{phlatcut}"
-			   #puts "   plunge dia #{phlatcut.diameter}"
-			   if phlatcut.diameter > 0
-			      diam = phlatcut.diameter
-			      aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
-			   else
-			      aMill.plung(cut_depth, PhlatScript.plungeRate)
-			   end
-			else
-			   aMill.plung(cut_depth, PhlatScript.plungeRate)
-			end # if plungecut
-		     end # if else multipass
-		  else #cut in progress
-		     if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
-			g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-			# if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
-			center = phlatcut.center
-			tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
-			if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && (Use_vtab_speed_limit)
-			   aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
-			else
-			   if (center.x == 0) && (center.y == 0) # old code will not have a center point so use radius format
-			      aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
-			   else
-			      aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y,  g3, cut_depth)
-			   end
-			end
-		     else
-			aMill.move(point.x, point.y, cut_depth)
-		     end
-		  end # if !cutstarted
-	       end # if point != savepoint
-	       cut_started = true
-	       save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
-	    }
-	 } # edges.each
-	 if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away
-	    aMill.cncPrint("(BREAK pass #{pass})\n")
-	    puts "BREAK large pass #{pass}\n"
-	    break
-	 end
-# new condition, detect 'close enough' to max_depth instead of equality,
-# for some multipass settings this would result in an extra pass with the same depth
+               # retract if this cut does not start where the last one ended
+               if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
+                  if (!cut_started)
+                     if PhlatScript.useMultipass?  # multipass retract avoid by Yoram
+                        # If it's peck drilling we want it to retract after each plunge to clear the tool
+                        if (phlatcut.kind_of? PlungeCut)
+                           if pass == 1
+                              #puts "plunge multi #{phlatcut}"
+                              aMill.retract(@safeHeight)
+                              aMill.move(point.x, point.y)
+                              #aMill.plung(cut_depth)
+                              diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
+                              #c_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
+                              c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+                              #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
+                              aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
+                              printPass = false  # prevent print pass comments because holes are self contained and empty passes freak users out
+                           end
+                        else
+                           if  ((phlatcut.kind_of? CenterLineCut) || (phlatcut.kind_of? PocketCut))
+                              # for these cuts we must retract else we get collisions with existing material
+                              # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
+                              # for pockets.
+                              if (points > 1) #if cutting more than 1 edge at a time, must retract
+                                 aMill.retract(@safeHeight)
+                              else
+                                 #            if multipass and 1 edge and not finished , then partly retract
+                                 #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
+                                 if PhlatScript.useMultipass? && (points == 1) &&
+                                    (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
+                                    #                                       puts "   part retract"
+                                    #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
+                                    aMill.retract(prev_pass_depth+ 0.5.mm )
+                                    ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
+                                 end
+                              end
+                              if ccmd
+                                 #                                    aMill.cncPrint("(RAPID #{ccmd})\n")
+                                 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, ccmd)
+                                 ccmd = nil
+                              else
+                                 aMill.move(point.x, point.y)
+                              end
+                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                           else
+                              # If it's not a peck drilling we don't need retract
+                              aMill.move(point.x, point.y)
+                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                           end
+                        end # if else plungcut
+                     else #NOT multipass
+                        aMill.retract(@safeHeight)
+                        aMill.move(point.x, point.y)
+                        if (phlatcut.kind_of? PlungeCut)
+                           #puts "plunge #{phlatcut}"
+                           #puts "   plunge dia #{phlatcut.diameter}"
+                           if phlatcut.diameter > 0
+                              diam = phlatcut.diameter
+                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+                           else
+                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                           end
+                        else
+                           aMill.plung(cut_depth, PhlatScript.plungeRate)
+                        end # if plungecut
+                     end # if else multipass
+                  else #cut in progress
+                     if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
+                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                        # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
+                        center = phlatcut.center
+                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                        if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && (Use_vtab_speed_limit)
+                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
+                        else #problem with tab cuts so always use R format for now
+                           if ((center.x == 0) && (center.y == 0)) || ((phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?))               # old code will not have a center point so use radius format
+                              aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
+                           else
+                              aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y,  g3, cut_depth)
+                           end
+                        end
+                     else
+                        aMill.move(point.x, point.y, cut_depth)
+                     end
+                  end # if !cutstarted
+               end # if point != savepoint
+               cut_started = true
+               save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
+            }
+         } # edges.each
+         if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
+            aMill.cncPrint("(BREAK pass #{pass})\n")
+            puts "BREAK large pass #{pass}\n"
+            break
+         end
+         # new condition, detect 'close enough' to max_depth instead of equality,
+         # for some multipass settings this would result in an extra pass with the same depth
       end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
       if save_point != nil
          @g_save_point = save_point   # for optimizer
@@ -857,7 +857,7 @@ puts " new #{newedges[i-1]}\n"
       rescue Exception => e
          UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end
-   end # if edges
+      end # if edges
    end
 
    def GcodeUtil.enter_file_dialog(model=Sketchup.active_model)

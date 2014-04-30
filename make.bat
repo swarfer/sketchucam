@@ -15,7 +15,7 @@ goto zipit
    "c:\program files\7-zip\7z" a  tp.zip *.* -x@..\make.ex -r
 
 rem   del ..\sketchucam-1*.rbz
-   move tp.zip ..\SketchUcam-1_1e-beta.rbz
+   move tp.zip ..\SketchUcam-1_1e-beta2.rbz
 
    cd ..
 goto end
