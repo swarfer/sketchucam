@@ -821,18 +821,26 @@ puts " new #{newedges[i-1]}\n"
                      end # if else multipass
                   else #cut in progress
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
-                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+
+#puts "reverse #{reverse} .g3 #{phlatcut.g3?}"
+#something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
+#                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                        g3 =  reverse  # the fix might be this simple....
+
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
                         center = phlatcut.center
                         tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+#puts "arc length #{phlatcut.edge.length}\n"
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && (Use_vtab_speed_limit)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else #problem with tab cuts so always use R format for now
-                           if ((center.x == 0) && (center.y == 0)) || ((phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?))               # old code will not have a center point so use radius format
+#swarfer: reversed this IJ code, the arc segments at the begining and end of truncated circles always have radius mismatch
+# reported by EMC - lets see how the extra digit of precision works out for R format
+#                           if ((center.x == 0) && (center.y == 0)) || ((phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?))               # old code will not have a center point so use radius format
                               aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
-                           else
-                              aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y,  g3, cut_depth)
-                           end
+#                           else
+#                              aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y,  g3, cut_depth)
+#                           end
                         end
                      else
                         aMill.move(point.x, point.y, cut_depth)
