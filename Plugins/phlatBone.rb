@@ -230,99 +230,110 @@ end
 
 module NorthSouthEastWest
 
-        def nsew(v, q)      # v = picked vertex, q = quadrant vector
+   def nsew(v, q)      # v = picked vertex, q = quadrant vector
 
-        @centre = v.position
-        @normal = Geom::Vector3d.new 0,0,1  # normal vector
+      @centre = v.position
+      @normal = Geom::Vector3d.new 0,0,1  # normal vector
 
-                if @boneType == 1 # Rad bone
-                        offset = Math::sqrt(@toolRadius**2/2)
-            @centre = offsetPoint(@centre, @toolRadius, q)   # point, offset distance, vector direction
-            @vector2 = rotateVector(q, @normal, 135)   # vector, normal, angle in degrees
+      if @boneType == 1 # Rad bone
+	 offset = Math::sqrt(@toolRadius**2/2)
+	 @centre = offsetPoint(@centre, @toolRadius, q)   # point, offset distance, vector direction
+	 @vector2 = rotateVector(q, @normal, 135)   # vector, normal, angle in degrees
 
-                        # Create arcs
-            if !@preview
-                arc = makeArc3
-                deleteSubtention(arc)
-                @vector2 = rotateVector(q, @normal, 45)
-                arc = makeArc3
-                deleteSubtention(arc)
-            else
-                previewArc(45, 135)
-                @vector2 = rotateVector(q, @normal, 45)
-                previewArc(45, 135)
-            end
-                end
+	 # Create arcs
+	 if !@preview
+	    arc = makeArc3
+	    deleteSubtention(arc)
+	    arc.each {|e|		# swarfer - true arcs are very small and generate errors in the Gcode, explode em
+	       e.explode_curve
+	    }
+	    @vector2 = rotateVector(q, @normal, 45)
+	    arc = makeArc3
+	    deleteSubtention(arc)
+	    arc.each {|e|
+	       e.explode_curve
+	    }
+	 else
+	    previewArc(45, 135)
+	    @vector2 = rotateVector(q, @normal, 45)
+	    previewArc(45, 135)
+	 end
+      end
 
-                if @boneType==2 # T Bone
-                @centre = offsetPoint(@centre, @toolRadius, tb_Cdir(q))
-                @vector2 = rotateVector(q, @normal, tb_v2_angle(q))
+      if @boneType==2 # T Bone
+	 @centre = offsetPoint(@centre, @toolRadius, tb_Cdir(q))
+	 @vector2 = rotateVector(q, @normal, tb_v2_angle(q))
 
-                                # Create arc
-                if !@preview
-                    arc = makeArc
-                    deleteSubtention(arc)
-                else
-                    previewArc(0, 180)
-                end
-                end
+	 # Create arc
+	 if !@preview
+	    arc = makeArc
+	    deleteSubtention(arc)
+	    arc.each {|e|
+	       e.explode_curve
+	    }
+	 else
+	    previewArc(0, 180)
+	 end
+      end
 
-                @preview = false
-                faceRepair(v)
-        end
+      @preview = false
+      faceRepair(v)
+   end
 
 
     #-----------------------------------------------------------------------------
+#swarfer, set to 6 segments per arc, makes cut generation better
+   def makeArc
+      @entities.add_arc @centre, @vector2, @normal, @toolRadius, 0, Math::PI, 6
+   end
 
-        def makeArc
-                @entities.add_arc @centre, @vector2, @normal, @toolRadius, 0, Math::PI
-        end
+   def makeArc3
+      @entities.add_arc @centre, @vector2, @normal, @toolRadius, Math::PI/4, (Math::PI/4)*3, 6
+   end
 
-        def makeArc3
-                @entities.add_arc @centre, @vector2, @normal, @toolRadius, Math::PI/4, (Math::PI/4)*3
-        end
+   def previewArc(angle1, angle2)          # draw arc for preview  (start angle, end angle in degrees)
+      arc = []
+      @vector2.normalize!
+      v = Geom::Vector3d.linear_combination(0, @vector2, @toolRadius, @vector2)
+      v = rotateVector(v, @normal, angle1)
+      pt1 = @centre.offset v
+      arc.push pt1
+      n = ((angle2-angle1)/7)
+      for i in 1..n do
+	 v = rotateVector(v, @normal, 7)
+	 pt2 = @centre.offset v
+	 arc.push pt2
+      end
+      Sketchup.active_model.active_view.draw_polyline arc
+   end
 
-    def previewArc(angle1, angle2)          # draw arc for preview  (start andgle, end angle in degrees)
-        arc = []
-        @vector2.normalize!
-        v = Geom::Vector3d.linear_combination(0, @vector2, @toolRadius, @vector2)
-        v = rotateVector(v, @normal, angle1)
-        pt1 = @centre.offset v
-        arc.push pt1
-        n = ((angle2-angle1)/15)
-        for i in 1..n do
-            v = rotateVector(v, @normal, 15)
-            pt2 = @centre.offset v
-            arc.push pt2
-        end
-        Sketchup.active_model.active_view.draw_polyline arc
-    end
+   def faceRepair(aVertex)
+      @aVertexEdges=aVertex.edges
+      @aVertexEdges[0].find_faces
+   end
 
-        def faceRepair(aVertex)
-                @aVertexEdges=aVertex.edges
-                @aVertexEdges[0].find_faces
-        end
+   def offsetPoint(point, offset, vector)  # offset is distance, vector is direction
+      vector.normalize!
+      newVector = Geom::Vector3d.linear_combination(0, vector, offset, vector)
+      newpoint = point.offset newVector
+   end
 
-    def offsetPoint(point, offset, vector)  # offset is distance, vector is direction
-        vector.normalize!
-        newVector = Geom::Vector3d.linear_combination(0, vector, offset, vector)
-        newpoint = point.offset newVector
-    end
+   def rotateVector(vector, normal, angle)  # normal = normal vector, angle = angle in degrees
+      point = Geom::Point3d.new
+      tr = Geom::Transformation.rotation(point, normal, angle.degrees)
+      newVector = vector.transform tr
+   end
 
-    def rotateVector(vector, normal, angle)  # normal = normal vector, angle = angle in degrees
-        point = Geom::Point3d.new
-        tr = Geom::Transformation.rotation(point, normal, angle.degrees)
-        newVector = vector.transform tr
-    end
-
-    def deleteSubtention(arc)       # delete edge under arc
-        aEdge1 = arc[0]; aEdgeLast = arc[arc.length - 1]
-        aVer1 = aEdge1.start; aVer2 = aEdgeLast.end;
-        edges = aVer1.edges
-        edges.each do |e|
-            if (((e.start == aVer1) or (e.start == aVer2)) and ((e.end == aVer1) or (e.end == aVer2))) then e.erase! end
-        end
-    end
+   def deleteSubtention(arc)       # delete edge under arc
+      aEdge1 = arc[0]; aEdgeLast = arc[arc.length - 1]
+      aVer1 = aEdge1.start; aVer2 = aEdgeLast.end;
+      edges = aVer1.edges
+      edges.each do |e|
+	 if (((e.start == aVer1) or (e.start == aVer2)) and ((e.end == aVer1) or (e.end == aVer2))) then
+	    e.erase!
+	 end
+      end
+   end
 
     def tb_Cdir(q)      # direction to move centre for Tbone
         if forwardDiag?(q) then a = -45 else a = 45 end
@@ -349,283 +360,273 @@ end # NorthSouthEastWest
 
 class BoneMulti
 
-        include NorthSouthEastWest
+   include NorthSouthEastWest
 
-        def initialize(type, boneDirection)
-        @boneType = type                                    # 1 = rad-bone,   2 = T-bone
-        @boneDirection = boneDirection                      # true = inside bone
-        @tBoneTop = false                                   # Default T-Bone direction false=horiz
-                if $PhlatBoner_units=="mm"
-                        @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
-                        else
-                        @toolDiameter = $PhlatBoner_toolDiameter
-                end
-        @toolRadius = @toolDiameter/2
-                @model = Sketchup.active_model
-                @entities = @model.active_entities
-                @ip1 = nil
-                @xdown = 0
-                @ydown = 0
+   def initialize(type, boneDirection)
+      @boneType = type                                    # 1 = rad-bone,   2 = T-bone
+      @boneDirection = boneDirection                      # true = inside bone
+      @tBoneTop = false                                   # Default T-Bone direction false=horiz
+      if $PhlatBoner_units=="mm"
+	 @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
+      else
+	 @toolDiameter = $PhlatBoner_toolDiameter
+      end
+      @toolRadius = @toolDiameter/2
+      @model = Sketchup.active_model
+      @entities = @model.active_entities
+      @ip1 = nil
+      @xdown = 0
+      @ydown = 0
 
-                # Cursor data
-                cursor_path = Sketchup.find_support_file("cursor_radbone.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      # Cursor data
+      cursor_path = Sketchup.find_support_file("cursor_radbone.png", "Plugins/phlatBone/")
+      if cursor_path
+	 @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                cursor_path = Sketchup.find_support_file("cursor_tbone.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      cursor_path = Sketchup.find_support_file("cursor_tbone.png", "Plugins/phlatBone/")
+      if cursor_path
+	 @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                cursor_path = Sketchup.find_support_file("cursor_radbone_multi.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @radboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      cursor_path = Sketchup.find_support_file("cursor_radbone_multi.png", "Plugins/phlatBone/")
+      if cursor_path
+	 @radboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                cursor_path = Sketchup.find_support_file("cursor_tbone_multi.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @tboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      cursor_path = Sketchup.find_support_file("cursor_tbone_multi.png", "Plugins/phlatBone/")
+      if cursor_path
+	 @tboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                if @boneType==1
-                        UI.set_cursor(@radboneMultiCursor)
-                        else
-                        UI.set_cursor(@tboneMultiCursor)
-                end
-        end
+      if @boneType==1
+	 UI.set_cursor(@radboneMultiCursor)
+      else
+	 UI.set_cursor(@tboneMultiCursor)
+      end
+   end
 
-        def activate
-                @ip1 = Sketchup::InputPoint.new
-                @ip = Sketchup::InputPoint.new
-                @drawn = false
-                self.reset(nil)
-        end # activate
+   def activate
+      @ip1 = Sketchup::InputPoint.new
+      @ip = Sketchup::InputPoint.new
+      @drawn = false
+      self.reset(nil)
+   end # activate
 
-        def deactivate(view)
-                view.invalidate if @drawn
-        end
+   def deactivate(view)
+      view.invalidate if @drawn
+   end
 
-        def onMouseMove(flags, x, y, view)
-                if( @state == 0 )
-                        @ip.pick view, x, y
-                        if( @ip != @ip1 )
-                                view.invalidate if( @ip.display? or @ip1.display? )
-                                @ip1.copy! @ip
-                                # Set tooltip
-                                view.tooltip = @ip1.tooltip
-                                if @boneType==1
-                                        UI.set_cursor(@radboneMultiCursor)
-                                        else
-                                        UI.set_cursor(@tboneMultiCursor)
-                                end
-                        end
-                end
-        end
+   def onMouseMove(flags, x, y, view)
+      if( @state == 0 )
+	 @ip.pick view, x, y
+	 if( @ip != @ip1 )
+	    view.invalidate if( @ip.display? or @ip1.display? )
+	    @ip1.copy! @ip
+	    # Set tooltip
+	    view.tooltip = @ip1.tooltip
+	    if @boneType==1
+	       UI.set_cursor(@radboneMultiCursor)
+	     else
+	       UI.set_cursor(@tboneMultiCursor)
+	    end
+	 end
+      end
+   end
 
-        def onLButtonDown(flags, x, y, view)
-                if( @state == 0 )
-                        @ip1.pick view, x, y
-                        if( @ip1.valid? )
-                                @state = 1
-                                result = Sketchup.set_status_text "Select point for auto boning", SB_PROMPT
-                                @xdown = x
-                                @ydown = y
+   def onLButtonDown(flags, x, y, view)
+      if( @state == 0 )
+	 @ip1.pick view, x, y
+	 if( @ip1.valid? )
+	    @state = 1
+	    result = Sketchup.set_status_text "Select point for auto boning", SB_PROMPT
+	    @xdown = x
+	    @ydown = y
+	 end
+      end
+      # Clear inference lock (if any)
+      view.lock_inference
+   end
 
-                        end
-                end
-                # Clear inference lock (if any)
-                view.lock_inference
-        end
+   def onLButtonUp(flags, x, y, view)
+      unless @ip1.vertex==nil
+	 @noOfEdges=@ip1.vertex.edges.length
+	 if @noOfEdges==2
+	    @model.start_operation "Create auto bones"
+	    create_bones(false)
+	    @model.commit_operation
+	 end
+      end
+      self.reset(view)
+   end
 
-        def onLButtonUp(flags, x, y, view)
-                unless @ip1.vertex==nil
-                        @noOfEdges=@ip1.vertex.edges.length
-                        if @noOfEdges==2
-                                @model.start_operation "Create auto bones"
-                                create_bones(false)
-                                @model.commit_operation
-                        end
-                end
-                self.reset(view)
-        end
+   # Shift Key
+   def onKeyDown(key, repeat, flags, view)
+      if( key == CONSTRAIN_MODIFIER_KEY )
+	 @tBoneTop=true
+         view.invalidate
+      end
+   end
 
-        # Shift Key
-    def onKeyDown(key, repeat, flags, view)
-                if( key == CONSTRAIN_MODIFIER_KEY )
-                        @tBoneTop=true
-            view.invalidate
-        end
-    end
+# Shift Key Up
+   def onKeyUp(key, repeat, flags, view)
+      if( key == CONSTRAIN_MODIFIER_KEY )
+	 @tBoneTop=false
+	 view.invalidate
+      end
+   end
 
-    # Shift Key Up
-    def onKeyUp(key, repeat, flags, view)
-                if( key == CONSTRAIN_MODIFIER_KEY )
-            @tBoneTop=false
-            view.invalidate
-        end
-    end
+   def reset(view)
+      @state = 0
 
-        def reset(view)
-                @state = 0
+      # Status bar prompt
+      result = Sketchup.set_status_text "Select corner for auto boning" + $keyMsg, SB_PROMPT
 
-                # Status bar prompt
-                result = Sketchup.set_status_text "Select corner for auto boning" + $keyMsg, SB_PROMPT
+      # Clear InputPoints
+      @ip1.clear
 
-                # Clear InputPoints
-                @ip1.clear
+      if( view )
+	 view.tooltip = nil
+	 view.invalidate if @drawn
+      end
+      @drawn = false
+   end
 
-                if( view )
-                        view.tooltip = nil
-                        view.invalidate if @drawn
-                end
-                @drawn = false
-        end
+def resume(view)
+   end
 
-    def resume(view)
-        end
+   def draw(view)
+      unless @ip1==nil
+	 if( @ip1.valid? )
+	    if( @ip1.display? )
+	       @ip1.draw(view)
+	       @drawn = true
+	    end
+	 end
+      end
+      view.drawing_color = "red"
+      view.line_width = 2
+      v = @ip1.vertex
+      if v
+	  create_bones(true)
+      end
+   end
 
-        def draw(view)
-                unless @ip1==nil
-                        if( @ip1.valid? )
-                                if( @ip1.display? )
-                                        @ip1.draw(view)
-                                        @drawn = true
-                                end
-                        end
-                end
-        view.drawing_color = "red"
-        view.line_width = 2
-        v = @ip1.vertex
-        if v
-            create_bones(true)
-        end
-        end
+   def create_bones(preview)
+      savePreview = preview
+      # Where v is the corner vertex ...
+      v=@ip1.vertex
 
-        def create_bones(preview)
+      # Faces only
+      faces=v.faces
 
-        savePreview = preview
-            # Where v is the corner vertex ...
-                v=@ip1.vertex
+      if faces.length > 1
+	 # Is v inside the other poly? (no border hits)
+	 if Geom.point_in_polygon_2D(v, faces[0].outer_loop.vertices, false)==true and Geom.point_in_polygon_2D(v, faces[1].outer_loop.vertices, false)==false
+	    @@myVertices=faces[1].outer_loop.vertices
+	    theFace=faces[1]
+	 else
+	    @@myVertices=faces[0].outer_loop.vertices
+	    theFace=faces[0]
+	 end
+      else
+	 @@myVertices=faces[0].outer_loop.vertices
+	 theFace=faces[0]
+      end
 
-        # Faces only
-                faces=v.faces
+      @@myVertices = theFace.outer_loop.vertices
 
-                if faces.length > 1
-                    # Is v inside the other poly? (no border hits)
-                        if Geom.point_in_polygon_2D(v, faces[0].outer_loop.vertices, false)==true and Geom.point_in_polygon_2D(v, faces[1].outer_loop.vertices, false)==false
-                                @@myVertices=faces[1].outer_loop.vertices
-                                theFace=faces[1]
-                                else
-                                @@myVertices=faces[0].outer_loop.vertices
-                                theFace=faces[0]
-                        end
-                        else
-                        @@myVertices=faces[0].outer_loop.vertices
-                        theFace=faces[0]
-                end
+      # inside=reverse=true
+      if @boneDirection==true
+	 @@myVertices.reverse!
+      end
 
-                @@myVertices = theFace.outer_loop.vertices
+      vLength=@@myVertices.length
 
-                # inside=reverse=true
-                if @boneDirection==true
-                        @@myVertices.reverse!
-                end
+      for n in 1...vLength-1
+	 # Edges attached to each vertex
+	 e1 = @@myVertices[n].edges[0] # previous edge - CCW
+	 e2 = @@myVertices[n].edges[1] # next edge - CCW
 
-                vLength=@@myVertices.length
+	 # Set unit vector
+	 @@u1 = (e1.other_vertex @@myVertices[n]).position - @@myVertices[n].position
+	 @@u1.normalize!
+	 @@u2 = (e2.other_vertex @@myVertices[n]).position - @@myVertices[n].position
+	 @@u2.normalize!
 
-                for n in 1...vLength-1
+	 currentVertex=@@myVertices[n]
+	 previousVertex=@@myVertices[n-1]
+	 nextVertex=@@myVertices[n+1]
 
-                        # Edges attached to each vertex
-                        e1 = @@myVertices[n].edges[0] # previous edge - CCW
-                        e2 = @@myVertices[n].edges[1] # next edge - CCW
+	 theDirection=direction(previousVertex,currentVertex,nextVertex)
 
-                        # Set unit vector
-                        @@u1 = (e1.other_vertex @@myVertices[n]).position - @@myVertices[n].position
-                        @@u1.normalize!
-                        @@u2 = (e2.other_vertex @@myVertices[n]).position - @@myVertices[n].position
-                        @@u2.normalize!
+	 @preview = savePreview
+	 plotBone(n,theDirection)
+      end
 
-                        currentVertex=@@myVertices[n]
-                        previousVertex=@@myVertices[n-1]
-                        nextVertex=@@myVertices[n+1]
+      # Roll-over to edges attached to first & last vertices
 
-                        theDirection=direction(previousVertex,currentVertex,nextVertex)
+      e1 = @@myVertices[0].edges[0] # previous edge - CCW
+      e2 = @@myVertices[0].edges[1] # next edge - CCW
 
-            @preview = savePreview
-                        plotBone(n,theDirection)
+      # Set unit vector
+      @@u1 = (e1.other_vertex @@myVertices[0]).position - @@myVertices[0].position
+      @@u1.normalize!
+      @@u2 = (e2.other_vertex @@myVertices[0]).position - @@myVertices[0].position
+      @@u2.normalize!
 
-                end
+      currentVertex=@@myVertices[0]
+      previousVertex=@@myVertices[vLength-1]
+      nextVertex=@@myVertices[1]
 
-                # Roll-over to edges attached to first & last vertices
+      theDirection=direction(previousVertex,currentVertex,nextVertex)
 
-                e1 = @@myVertices[0].edges[0] # previous edge - CCW
-                e2 = @@myVertices[0].edges[1] # next edge - CCW
+      @preview = savePreview
+      plotBone(0,theDirection)
 
-                # Set unit vector
-                @@u1 = (e1.other_vertex @@myVertices[0]).position - @@myVertices[0].position
-                @@u1.normalize!
-                @@u2 = (e2.other_vertex @@myVertices[0]).position - @@myVertices[0].position
-                @@u2.normalize!
+      e1 = @@myVertices[vLength-1].edges[0] # previous edge - CCW
+      e2 = @@myVertices[vLength-1].edges[1] # next edge - CCW
 
-                currentVertex=@@myVertices[0]
-                previousVertex=@@myVertices[vLength-1]
-                nextVertex=@@myVertices[1]
+      # Set unit vector
+      @@u1 = (e1.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
+      @@u1.normalize!
+      @@u2 = (e2.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
+      @@u2.normalize!
 
-                theDirection=direction(previousVertex,currentVertex,nextVertex)
+      currentVertex=@@myVertices[vLength-1]
+      previousVertex=@@myVertices[vLength-2]
+      nextVertex=@@myVertices[0]
 
-        @preview = savePreview
-                plotBone(0,theDirection)
+      theDirection=direction(previousVertex,currentVertex,nextVertex)
 
-                e1 = @@myVertices[vLength-1].edges[0] # previous edge - CCW
-                e2 = @@myVertices[vLength-1].edges[1] # next edge - CCW
+      @preview = savePreview
+      plotBone(vLength-1,theDirection)
+      #-----------------------------------------------------------------------------
+   end
 
-                # Set unit vector
-                @@u1 = (e1.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
-                @@u1.normalize!
-                @@u2 = (e2.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
-                @@u2.normalize!
+   #-----------------------------------------------------------------------------
 
-                currentVertex=@@myVertices[vLength-1]
-                previousVertex=@@myVertices[vLength-2]
-                nextVertex=@@myVertices[0]
+   def plotBone(n,theDirection)
+      if theDirection < 0         # inside corner when CCW
+	 quadrant = Geom::Vector3d.linear_combination(0.5, @@u1, 0.5, @@u2)
+	 if @@u1.to_a.dot(@@u2).abs < 0.000001 then
+	    nsew(@@myVertices[n], quadrant)
+	 end
+      end
+   end
 
-                theDirection=direction(previousVertex,currentVertex,nextVertex)
+   #-----------------------------------------------------------------------------
 
-        @preview = savePreview
-                plotBone(vLength-1,theDirection)
+   def direction(pV,cV,nV)         # find corner turn direction, returns cross product, neg is inside assuming CCW
+      pP = pV.position
+      cP = cV.position
+      nP = nV.position
 
-                #-----------------------------------------------------------------------------
+      u1 = [(cP.x - pP.x), (cP.y - pP.y), (cP.z - pP.z)]      # pevious vector
+      u2 = [(nP.x - cP.x), (nP.y - cP.y), (nP.z - cP.z)]      # next vector
 
-        end
-
-        #-----------------------------------------------------------------------------
-
-        def plotBone(n,theDirection)
-
-                if theDirection < 0         # inside corner when CCW
-
-                        quadrant = Geom::Vector3d.linear_combination(0.5, @@u1, 0.5, @@u2)
-            if @@u1.to_a.dot(@@u2).abs < 0.000001 then nsew(@@myVertices[n], quadrant) end
-
-                end
-
-        end
-
-        #-----------------------------------------------------------------------------
-
-        def direction(pV,cV,nV)         # find corner turn direction, returns cross product, neg is inside assuming CCW
-
-        pP = pV.position
-                cP = cV.position
-        nP = nV.position
-
-        u1 = [(cP.x - pP.x), (cP.y - pP.y), (cP.z - pP.z)]      # pevious vector
-        u2 = [(nP.x - cP.x), (nP.y - cP.y), (nP.z - cP.z)]      # next vector
-
-        return u1.cross(u2).z
-
-    end
+      return u1.cross(u2).z
+   end
 
 
 end # BoneMulti
@@ -634,171 +635,170 @@ end # BoneMulti
 
 class BoneSingle
 
-        include NorthSouthEastWest
+   include NorthSouthEastWest
 
-        def initialize(type, boneDirection)
+   def initialize(type, boneDirection)
       @boneType = type                                    # 1 = rad-bone,   2 = T-bone
       @boneDirection = boneDirection                      # true = inside bone
       @tBoneTop = false                                   # Default T-Bone direction false=horiz
-                if $PhlatBoner_units=="mm"
-                        @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
-                        else
-                        @toolDiameter = $PhlatBoner_toolDiameter
-                end
+      if $PhlatBoner_units=="mm"
+	 @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
+      else
+	 @toolDiameter = $PhlatBoner_toolDiameter
+      end
       @toolRadius = @toolDiameter/2
-                @model = Sketchup.active_model
-                @entities = @model.active_entities
-                @ip1 = nil
-                @xdown = 0
-                @ydown = 0
+      @model = Sketchup.active_model
+      @entities = @model.active_entities
+      @ip1 = nil
+      @xdown = 0
+      @ydown = 0
 
-                # Cursor data
-                cursor_path = Sketchup.find_support_file("cursor_radbone.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      # Cursor data
+      cursor_path = Sketchup.find_support_file("cursor_radbone.png", "Plugins/phlatBone/")
+      if cursor_path
+	 @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                cursor_path = Sketchup.find_support_file("cursor_tbone.png", "Plugins/phlatBone/")
-                if cursor_path
-                        @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
-                end
+      cursor_path = Sketchup.find_support_file("cursor_tbone.png", "Plugins/phlatBone/")
+      if cursor_path
+         @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
+      end
 
-                if @boneType==1
-                        UI.set_cursor(@radboneCursor)
-                        else
-                        UI.set_cursor(@tboneCursor)
-                end
-        end
+      if @boneType==1
+	 UI.set_cursor(@radboneCursor)
+      else
+	 UI.set_cursor(@tboneCursor)
+      end
+   end
 
-        def activate
-                @ip1 = Sketchup::InputPoint.new
-                @ip = Sketchup::InputPoint.new
-                @drawn = false
-                self.reset(nil)
-        end
+   def activate
+      @ip1 = Sketchup::InputPoint.new
+      @ip = Sketchup::InputPoint.new
+      @drawn = false
+      self.reset(nil)
+   end
 
-        def deactivate(view)
-                view.invalidate if @drawn
-        end
+   def deactivate(view)
+      view.invalidate if @drawn
+   end
 
-        def onMouseMove(flags, x, y, view)
-                if( @state == 0 )
-                        @ip.pick view, x, y
-                        if( @ip != @ip1 )
-                                view.invalidate if( @ip.display? or @ip1.display? )
-                                @ip1.copy! @ip
-                                # Set tooltip
-                                view.tooltip = @ip1.tooltip
-                                if @boneType==1
-                                        UI.set_cursor(@radboneCursor)
-                                        else
-                                        UI.set_cursor(@tboneCursor)
-                                end
-                        end
-                end
-        end
+   def onMouseMove(flags, x, y, view)
+      if( @state == 0 )
+	 @ip.pick view, x, y
+	 if( @ip != @ip1 )
+	    view.invalidate if( @ip.display? or @ip1.display? )
+	    @ip1.copy! @ip
+	    # Set tooltip
+	    view.tooltip = @ip1.tooltip
+	    if @boneType==1
+	       UI.set_cursor(@radboneCursor)
+	    else
+	       UI.set_cursor(@tboneCursor)
+	    end
+	 end
+      end
+   end
 
-        def onLButtonDown(flags, x, y, view)
-                if( @state == 0 )
-                        @ip1.pick view, x, y
-                        if( @ip1.valid? )
-                                @state = 1
-                                result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
-                                @xdown = x
-                                @ydown = y
+   def onLButtonDown(flags, x, y, view)
+      if( @state == 0 )
+	 @ip1.pick view, x, y
+	 if( @ip1.valid? )
+	    @state = 1
+	    result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
+	    @xdown = x
+	    @ydown = y
+	 end
+      end
+      # Clear inference lock (if any)
+      view.lock_inference
+   end
 
-                        end
-                end
-                # Clear inference lock (if any)
-                view.lock_inference
-        end
-
-        def onLButtonUp(flags, x, y, view)
-                unless @ip1.vertex==nil
-                        @noOfEdges=@ip1.vertex.edges.length
-                        if @noOfEdges==2
-                                @model.start_operation "Create Bone Corner"
-                                create_bones(false)
-                                @model.commit_operation
-                        end
-                end
-                self.reset(view)
-        end
+   def onLButtonUp(flags, x, y, view)
+      unless @ip1.vertex==nil
+	 @noOfEdges=@ip1.vertex.edges.length
+	 if @noOfEdges==2
+	    @model.start_operation "Create Bone Corner"
+	    create_bones(false)
+	    @model.commit_operation
+	 end
+      end
+      self.reset(view)
+   end
 
     # Shift Key
-    def onKeyDown(key, repeat, flags, view)
-                if( key == CONSTRAIN_MODIFIER_KEY )
-                        @tBoneTop=true
-            view.invalidate
-        end
-    end
+   def onKeyDown(key, repeat, flags, view)
+      if( key == CONSTRAIN_MODIFIER_KEY )
+	 @tBoneTop=true
+	 view.invalidate
+      end
+   end
 
     # Shift Key Up
-    def onKeyUp(key, repeat, flags, view)
-                if( key == CONSTRAIN_MODIFIER_KEY )
-            @tBoneTop=false
-            view.invalidate
-        end
-    end
+   def onKeyUp(key, repeat, flags, view)
+      if( key == CONSTRAIN_MODIFIER_KEY )
+	 @tBoneTop=false
+	 view.invalidate
+      end
+   end
 
-        def reset(view)
-                @state = 0
+   def reset(view)
+      @state = 0
 
-                # Status bar prompt
-                result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
+      # Status bar prompt
+      result = Sketchup.set_status_text "Select corner for boning" + $keyMsg, SB_PROMPT
 
-                # Clear InputPoints
-                @ip1.clear
+      # Clear InputPoints
+      @ip1.clear
 
-                if( view )
-                        view.tooltip = nil
-                        view.invalidate if @drawn
-                end
-                @drawn = false
-        end
+      if( view )
+	 view.tooltip = nil
+	 view.invalidate if @drawn
+      end
+      @drawn = false
+   end
 
-        def resume(view)
-        end
+   def resume(view)
+   end
 
-        def draw(view)
-                unless @ip1==nil
-                        if( @ip1.valid? )
-                                if( @ip1.display? )
-                                        @ip1.draw(view)
-                                        @drawn = true
-                                end
-                        end
-                end
-        view.drawing_color = "red"
-        view.line_width = 2
-        v = @ip1.vertex
-        if v
-            create_bones(true)
-        end
-        end
+   def draw(view)
+      unless @ip1==nil
+	 if( @ip1.valid? )
+	    if( @ip1.display? )
+	       @ip1.draw(view)
+	       @drawn = true
+	    end
+	 end
+      end
+      view.drawing_color = "red"
+      view.line_width = 2
+      v = @ip1.vertex
+      if v
+	 create_bones(true)
+      end
+   end
 
-        def create_bones(preview)
+   def create_bones(preview)
+      @preview = preview
+      # Where v is a vertex ...
+      v=@ip1.vertex
 
-                @preview = preview
-                # Where v is a vertex ...
-                v=@ip1.vertex
+      # Adjacent edges
+      e1 = v.edges[0]
+      e2 = v.edges[1]
 
-                # Adjacent edges
-                e1 = v.edges[0]
-                e2 = v.edges[1]
+      # Set unit vector length to 1 in place
+      u1 = (e1.other_vertex v).position - v.position
+      u1.normalize!
+      u2 = (e2.other_vertex v).position - v.position
+      u2.normalize!
 
-                # Set unit vector length to 1 in place
-                u1 = (e1.other_vertex v).position - v.position
-                u1.normalize!
-                u2 = (e2.other_vertex v).position - v.position
-                u2.normalize!
+      quadrant = Geom::Vector3d.linear_combination(0.5, u1, 0.5, u2)
 
-                quadrant = Geom::Vector3d.linear_combination(0.5, u1, 0.5, u2)
-
-        # Single bones now works for any right angle, instead of just those aligned with the primary axis
-        if u1.to_a.dot(u2).abs < 0.000001 then nsew(v, quadrant) end
-
-        end
+   # Single bones now works for any right angle, instead of just those aligned with the primary axis
+      if u1.to_a.dot(u2).abs < 0.000001 then
+	 nsew(v, quadrant)
+      end
+   end
 
         #-----------------------------------------------------------------------------
 
