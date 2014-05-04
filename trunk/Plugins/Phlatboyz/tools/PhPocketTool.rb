@@ -89,7 +89,7 @@ module PhlatScript
       if key == VK_END    # toggle zig direction
          toggle_direc_flag()
       end
-   
+
       if (key == VK_SHIFT)
          @keyflag = 1
       else
@@ -128,8 +128,8 @@ module PhlatScript
    # VCB
    def onUserText(text,view)
       super(text,view)
-      
-=begin    now uses centerlinetool depth processing, same as foldtool  
+
+=begin    now uses centerlinetool depth processing, same as foldtool
       begin
          parsed = text.to_f #do not use parse_length function
       rescue
@@ -150,7 +150,7 @@ module PhlatScript
          Sketchup::set_status_text("#{@depth} %", SB_VCB_VALUE)
          puts "New Plunge Depth " + @depth.to_s
       end
-=end                                     
+=end
    end
 
    def activeFaceFromInputPoint(inputPoint)
@@ -167,7 +167,7 @@ module PhlatScript
    def cut_class
       return PocketCut
    end
-   
+
    def activate
       super()
       @ip = Sketchup::InputPoint.new
@@ -216,7 +216,7 @@ module PhlatScript
    def create_geometry(face, view)
       #puts "create geometry"
       model = view.model
-      model.start_operation "Creating Pocket"
+      model.start_operation("Create Pocket",true,true)
 
       if @keyflag == 1 || @keyflag == 0
          zigzag_points = get_zigzag_points(@active_face.outer_loop)
@@ -247,7 +247,7 @@ module PhlatScript
 #               puts "pocket CCW"
                cface = model.entities.add_face(contour_points.reverse!)
             end
-            
+
             cedges = cface.edges
             cuts = PocketCut.cut(cedges)
             cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
@@ -347,7 +347,7 @@ end
       pts.uniq!
       return pts.sort{|a,b| a.x <=> b.x}
    end
-   
+
    # the alternate way, zigs along Y axis - better for phlatprinters
    def get_hatch_points_x(points, x)
       plane = [Geom::Point3d.new(x, 0, 0), Geom::Vector3d.new(1,0,0)]
@@ -368,7 +368,7 @@ end
       pts.uniq!
       return pts.sort{|a,b| a.y <=> b.y}
    end
-   
+
    def get_zigzag_points_y(loop)
       #puts "get zigzag points #{@setOver}"
       dir = 1
@@ -415,15 +415,15 @@ end
       return zigzag_points
    end
 
-   # select between the options   
-   def get_zigzag_points(loop)   
+   # select between the options
+   def get_zigzag_points(loop)
       if PhlatScript.PocketDirection?
          return get_zigzag_points_x(loop)  # zigs along Y - suites phlatprinter
       else
          return get_zigzag_points_y(loop)  # zigs along x - suites gantries
       end
    end
-   
+
 def get_zigzag_points_x(loop)
       #puts "get zigzag points #{@setOver}"
       dir = 1
@@ -473,7 +473,7 @@ def get_zigzag_points_x(loop)
       val = model.get_attribute(Dict_name, Dict_pocket_direction, Default_pocket_direction)
       model.set_attribute(Dict_name, Dict_pocket_direction, !val)
    end
-   
+
 
 end #class
 
