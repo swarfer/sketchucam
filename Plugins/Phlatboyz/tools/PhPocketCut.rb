@@ -55,11 +55,11 @@ class PocketCut < CenterLineCut
     def cut(edge)
 #	    puts "cut #{edge}"
       model = edge.model
-      model.start_operation("Creating Pocket Line", true)
+#      model.start_operation("Creating Pocket Line", true, true)
       @edge = edge
       @edge.material = Color_pocket_cut
       @edge.set_attribute(Dict_name, Dict_edge_type, Key_pocket_cut)
-      model.commit_operation
+#      model.commit_operation
     end
 
    def reset(view)
