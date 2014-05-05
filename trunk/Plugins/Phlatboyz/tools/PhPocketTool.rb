@@ -226,6 +226,9 @@ module PhlatScript
 
       if (@keyflag == 2) || (@keyflag == 0)
          contour_points = get_contour_points(@active_face.outer_loop)
+#         contour_points.each { |cp|
+#            puts "#{cp}\n"
+#            }
       else
          contour_points = nil
       end
@@ -238,17 +241,19 @@ module PhlatScript
          end
       end
       if (contour_points != nil)
-         if (contour_points.length >= 3)
-            # reverse points for counter clockwize loop
+         if (contour_points.length >= 3) 
+            contour_points.push(contour_points[0])  #close the loop for add_curve
+#use add_curve instead of add_face so that the entire outline can be selected easily for delete            
             if PhlatScript.usePocketcw?
-#               print "pocket CW"
-               cface = model.entities.add_face(contour_points)
+#               puts "pocket CW"
+#               cface = model.entities.add_face(contour_points)
+               cedges = model.entities.add_curve(contour_points)
             else
 #               puts "pocket CCW"
-               cface = model.entities.add_face(contour_points.reverse!)
+#               cface = model.entities.add_face(contour_points.reverse!)
+#               cedges = cface.edges               
+               cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
             end
-
-            cedges = cface.edges
             cuts = PocketCut.cut(cedges)
             cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
          end
