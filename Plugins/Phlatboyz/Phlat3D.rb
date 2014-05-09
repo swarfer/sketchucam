@@ -58,7 +58,7 @@ class GCodeGen3D
 
                 #metric by swarfer - this does the basic setting up from the drawing units
                 if PhlatScript.isMetric
-                   @unit_cmd, @precision, @is_metric = ["G21", 2, true]
+                   @unit_cmd, @precision, @is_metric = ["G21", 3, true]
                 else
                    @unit_cmd, @precision, @is_metric = ["G20", 4, false]
                 end
@@ -378,7 +378,7 @@ class GCodeGen3D
 
 #spit out the gcode header, used by both versions of the generator
    def putHeader(nf)
-      nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")%$PhlatScriptExtension.version})\n"		
+      nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")}%#{$PhlatScriptExtension.version})\n"		
       nf.puts "(Bit Diameter: #{Sketchup.format_length(@BitDiam)})"
       nf.puts "(StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%)"
       nf.puts "(Spindle speed: #{@spindle})"
@@ -446,7 +446,7 @@ class GCodeGen3D
          zs = format_measure('Z',curz)
 #                       nf.puts "X#{xval} Y#{yval}"
          fs = format_feed(@feedRate)
-         nf.puts "G1 #{zs} #{fs}"
+#         nf.puts "G1 #{zs} #{fs}"      dont do this, it will bite off too much
 
          for point in grid
 #            xval = sprintf("%f",round_to(point.to_a[0], 5))
