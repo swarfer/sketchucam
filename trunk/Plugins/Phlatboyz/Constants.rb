@@ -69,7 +69,7 @@ Default_overhead_gantry = false
 Default_multipass = false
 Default_multipass_depth = 0.03125.inch
 Default_gen3d = false
-Default_stepover = 30
+Default_stepover = 70
 
 Default_show_gplot = false
 
