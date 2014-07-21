@@ -46,7 +46,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
    </a><br></p>
 <form name="param_form" action="#" style="margin-left: auto; margin-right: auto;">
   
-  <table border=0 cellpadding=1 cellspacing=1 style="margin-left: auto; margin-right: auto;">
+  <table border=0 cellpadding=1 cellspacing=0 style="margin-left: auto; margin-right: auto;">
     <tbody>
     <tr class="profile">
        <td width="35%">Profiles</td>
@@ -59,20 +59,24 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
     </tr>
 
       <tr>
-        <td id="spindlespeed_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
+        <td width="35%" id="spindlespeed_id" class="caption">&nbsp;</td>
+        <td  class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
+        <td width="35%">&nbsp;</td>
+        <td >&nbsp;</td>
       </tr>
 
       <tr>
-        <td width="35%"  id="feedrate_id" class="caption">&nbsp;</td>
-        <td width="20%" class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
-        <td width="25%" id="plungerate_id" class="caption">&nbsp;</td>
-        <td width="20%" class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
+        <td id="feedrate_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
+        <td id="plungerate_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
       </tr>
 
       <tr>
         <td id="materialthickness_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="materialthickness" id="materialthickness" value=""  type="text" size="8"><span>Nominal material thickess</span></td>
+        <td id="tabletop_id" class="caption">&nbsp;</td>        
+        <td class="tooltip"><input name="tabletop" id="tabletop" value=""  type="checkbox"><span>Table top is Z-Zero instead of material top</span></td>
       </tr>
       <tr>
         <td id="cutfactor_id" class="caption">&nbsp;</td>
