@@ -395,6 +395,12 @@ module PhlatScript
     addToolItem(ProfilesSaveTool.new())
     addToolItem(ProfilesLoadTool.new() )
     addToolItem(ProfilesDeleteTool.new() )
+    
+    @@phlatboyz_tools_submenu.add_separator    
+    require 'PhlatBoyz/tools/PhOptions.rb'
+    $phoptions = Options.new()
+    addToolItem( OptionsFilesTool.new($phoptions) );
+    
 
     @@phlatboyz_tools_submenu.add_separator
 
@@ -450,6 +456,7 @@ module PhlatScript
     addToolItem( SummaryTool.new() )
     addToolItem( DisplayProfileFolderTool.new() )
     addToolItem( GroupList.new() )   # from GcodeUtil.rb but want the entry here
+    
 
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
