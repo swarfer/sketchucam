@@ -114,15 +114,15 @@ module PhlatScript
     begin
       p = Sketchup.active_model.path
       if p.empty?
-        default_filename = Default_file_name
+        default_filename = $phoptions.default_file_name
       else
-        default_filename = File.basename(p, ".skp")+ Default_file_ext
+        default_filename = File.basename(p, ".skp")+ $phoptions.default_file_ext
       end
     rescue
       UI.messagebox "Exception in PhlatScript.cncFileName "+$!
     end
     filename = model.get_attribute(Dict_name, Dict_output_file_name, default_filename)
-    filename = (filename == Default_file_name) ? default_filename : filename
+    filename = (filename == $phoptions.default_file_name) ? default_filename : filename
     #UI.messagebox("default_filename: #{default_filename} filename: #{filename}")
     return filename
   end
@@ -132,7 +132,7 @@ module PhlatScript
   end
 
   def PhlatScript.cncFileDir
-    return Sketchup.active_model.get_attribute(Dict_name, Dict_output_directory_name, Default_directory_name)
+    return Sketchup.active_model.get_attribute(Dict_name, Dict_output_directory_name, $phoptions.default_directory_name)
   end
 
   def PhlatScript.cncFileDir=(dir)
@@ -237,7 +237,7 @@ module PhlatScript
   end
 
   def PhlatScript.tabDepth=(tdepth)
-    Sketchup.active_model.set_attribute(Dict_name, Dict_tab_depth_factor, [tdepth.to_i, 80].min)
+    Sketchup.active_model.set_attribute(Dict_name, Dict_tab_depth_factor, [tdepth.to_i, 99].min)
   end
 
   def PhlatScript.safeWidth      # Safe Area Length (Phlatprinter X axis)
@@ -274,15 +274,15 @@ module PhlatScript
   def PhlatScript.useOverheadGantry=(og)
     Sketchup.active_model.set_attribute(Dict_name, Dict_overhead_gantry, og)
   end
-  
+
   def PhlatScript.PocketDirection?
     Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, Default_pocket_direction)
   end
-  
+
   def PhlatScript.PocketDirection=(newd)
     Sketchup.active_model.set_attribute(Dict_name, Dict_pocket_direction, newd)
   end
-  
+
   def PhlatScript.multipassEnabled?
     Use_multipass
   end
@@ -291,24 +291,24 @@ module PhlatScript
   def PhlatScript.useexactpath?
     Use_exact_path
   end
-  
+
   # pockettool needs to know, normally false
   def PhlatScript.usePocketcw?
     Use_pocket_CW
   end
-  
+
   # used in phlatmill
    def PhlatScript.usePlungeCW?
       Use_plunge_CW
    end
-   
+
    def PhlatScript.UseOutfeed?
       Use_outfeed
    end
-   
+
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?
-    Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, Default_show_gplot)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, $phoptions.default_show_gplot?)
   end
 
   def PhlatScript.showGplot=(state)
@@ -330,9 +330,9 @@ module PhlatScript
   def PhlatScript.multipassDepth=(mdepth)
     Sketchup.active_model.set_attribute(Dict_name, Dict_multipass_depth, mdepth)
   end
-  
+
   def PhlatScript.tabletop?
-    Sketchup.active_model.get_attribute(Dict_name, Dict_tabletop, Default_tabletop)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_tabletop, $phoptions.default_tabletop?)
   end
 
   def PhlatScript.tabletop=(tt)
@@ -340,7 +340,7 @@ module PhlatScript
   end
 
   def PhlatScript.commentText
-    Sketchup.active_model.get_attribute(Dict_name, Dict_comment_text, Default_comment_remark).to_s
+    Sketchup.active_model.get_attribute(Dict_name, Dict_comment_text, $phoptions.default_comment_remark).to_s
   end
 
   def PhlatScript.commentText=(ctext)
@@ -348,8 +348,8 @@ module PhlatScript
   end
 
   def PhlatScript.gen3D
-    Sketchup.active_model.get_attribute(Dict_name, Dict_gen3d, Default_gen3d)
-        end
+    Sketchup.active_model.get_attribute(Dict_name, Dict_gen3d, $phoptions.default_gen3d?)
+  end
 
   def PhlatScript.gen3D=(gen3D)
     Sketchup.active_model.set_attribute(Dict_name, Dict_gen3d, gen3D)
@@ -390,17 +390,19 @@ module PhlatScript
 
     require 'Phlatboyz/tools/ParametersTool.rb'
     addToolItem(ParametersTool.new())
-   
+
     require 'Phlatboyz/tools/ProfilesTool.rb'
     addToolItem(ProfilesSaveTool.new())
     addToolItem(ProfilesLoadTool.new() )
     addToolItem(ProfilesDeleteTool.new() )
-    
-    @@phlatboyz_tools_submenu.add_separator    
+
+    @@phlatboyz_tools_submenu.add_separator
     require 'PhlatBoyz/tools/PhOptions.rb'
     $phoptions = Options.new()
-    addToolItem( OptionsFilesTool.new($phoptions) );
-    
+    optionssubmenu = @@phlatboyz_tools_submenu.add_submenu('Options')
+    addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu);
+    addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu);
+
 
     @@phlatboyz_tools_submenu.add_separator
 
@@ -456,24 +458,24 @@ module PhlatScript
     addToolItem( SummaryTool.new() )
     addToolItem( DisplayProfileFolderTool.new() )
     addToolItem( GroupList.new() )   # from GcodeUtil.rb but want the entry here
-    
+
 
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
     @@commandToolbar.show
   end
 
-   def PhlatScript.addToolItem(tool)
+   def PhlatScript.addToolItem(tool, submenu=@@phlatboyz_tools_submenu)
       cmd = UI::Command.new(tool.menuItem) { tool.select }
       cmd.tooltip = tool.tooltip
       cmd.status_bar_text = tool.statusText
       cmd.menu_text = tool.menuText
-      @@phlatboyz_tools_submenu.add_item(cmd) if ((tool.tooltype & PB_MENU_MENU) == PB_MENU_MENU)
+      submenu.add_item(cmd) if ((tool.tooltype & PB_MENU_MENU) == PB_MENU_MENU)
       if ((tool.tooltype & PB_MENU_TOOLBAR) == PB_MENU_TOOLBAR)
          cmd.large_icon = tool.largeIcon  # only need these for a toolbar item
          cmd.small_icon = tool.smallIcon
-         @@commandToolbar.add_item(cmd) 
-      end   
+         @@commandToolbar.add_item(cmd)
+      end
       @@tools.push(tool)
       @@cuts.push(tool.cut_class) if tool.cut_class
    end

@@ -14,9 +14,9 @@ module PhlatScript
       end
     end
   end
-  
+
    class SummaryTool < PhlatTool
-   
+
       def initialize
          @tooltype=(PB_MENU_MENU)
          @tooltip="Options Summary"
@@ -27,11 +27,11 @@ module PhlatScript
 
       def select
          msg = "Summary of your settings from (My)Constants.rb\n" +
-            "  Default_show_gplot = #{Default_show_gplot}\n" +
+            "  Default_show_gplot = #{$phoptions.default_show_gplot}\n" +
             "  Default_pocket_direction = #{Default_pocket_direction}\n" +
             "  Min_z = #{Min_z}\n" +
             "  Max_z = #{Max_z}\n" +
-            "  Use_compatible_dialogs = #{Use_compatible_dialogs}\n" +
+            "  Use_compatible_dialogs = #{$phoptions.use_compatible_dialogs}\n" +
             "  Use_vtab_speed_limit = #{Use_vtab_speed_limit}\n" +
             "  Use_exact_path = #{Use_exact_path}\n" +
             "  Always_show_safearea = #{Always_show_safearea}\n" +
@@ -50,7 +50,7 @@ module PhlatScript
 
 # open a file browser with the APPDATA/Sketchup folder current, probably only work on Windows
    class DisplayProfileFolderTool < PhlatTool
-   
+
       def initialize
          @tooltype=(PB_MENU_MENU)
          @tooltip="Display Profiles folder"
@@ -67,7 +67,7 @@ module PhlatScript
          else
             UI.messagebox('First you need to save a profile before you can display the folder that contains it')
          end
-         
+
       end #select
    end # class
 

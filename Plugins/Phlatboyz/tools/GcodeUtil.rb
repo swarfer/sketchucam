@@ -189,8 +189,8 @@ puts(" tabletop '#{@tabletop}'\n")
         if(material_thickness)
 
           begin
-            output_directory_name = model.get_attribute Dict_name, Dict_output_directory_name, Default_directory_name
-            output_file_name = model.get_attribute Dict_name, Dict_output_file_name, Default_file_name
+            output_directory_name = model.get_attribute Dict_name, Dict_output_directory_name, $phoptions.default_directory_name
+            output_file_name = model.get_attribute Dict_name, Dict_output_file_name, $phoptions.default_file_name
             @current_bit_diameter = model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
 
             # TODO check for existing / on the end of output_directory_name
@@ -875,7 +875,7 @@ puts " new #{newedges[i-1]}\n"
       result = UI.savepanel(PhlatScript.getString("Save CNC File"), output_directory_name, output_filename)
       if(result != nil)
          # if there isn't a file extension set it to the default
-         result += Default_file_ext if (File.extname(result).empty?)
+         result += $phoptions.default_file_ext if (File.extname(result).empty?)
          PhlatScript.cncFile = result
          PhlatScript.checkParens(result, "Output File")
          status = true

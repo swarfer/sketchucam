@@ -378,7 +378,7 @@ class GCodeGen3D
 
 #spit out the gcode header, used by both versions of the generator
    def putHeader(nf)
-      nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")}%#{$PhlatScriptExtension.version})\n"		
+      nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")}%#{$PhlatScriptExtension.version})\n"
       nf.puts "(Bit Diameter: #{Sketchup.format_length(@BitDiam)})"
       nf.puts "(StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%)"
       nf.puts "(Spindle speed: #{@spindle})"
@@ -430,7 +430,7 @@ class GCodeGen3D
       stopnexttime = false
       startxs = format_measure('X',grid[0].to_a[0])
       startys = format_measure('Y',grid[0].to_a[1])
-      
+
       while curz >= (-@MatThick)
          nf.puts "(Pass #{pass})"
          if pass == 1
@@ -984,7 +984,7 @@ class GCodeGen3D
     result = UI.savepanel(PhlatScript.getString("Save CNC File"), output_directory_name, output_filename)
     if(result != nil)
       # if there isn't a file extension set it to the default
-      result += Default_file_ext if (File.extname(result).empty?)
+      result += $phoptions.default_file_ext if (File.extname(result).empty?)
       PhlatScript.cncFile = result
       @FileToSave = result
       #PhlatScript.checkParens(result, "Output File")
