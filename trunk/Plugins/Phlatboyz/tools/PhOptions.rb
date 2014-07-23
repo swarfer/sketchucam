@@ -27,10 +27,75 @@ module PhlatScript
          @default_file_name = Default_file_name
          @default_file_ext = Default_file_ext
          @default_directory_name = Default_directory_name
-         
+         #misc
+         @default_comment_remark = Default_comment_remark
+         @default_gen3d = Default_gen3d
+         @default_show_gplot = Default_show_gplot
+         @default_tabletop = Default_tabletop
+         @use_compatible_dialogs = Use_compatible_dialogs
+
+
+
          # if MyConstats.ini exists then read it
+         path = PhlatScript.toolsProfilesPath()
+
+         filePath = File.join(path , 'MyOptions.ini')
+         if File.exist?(filePath)
+            ini = IniParser.new()
+            sections = ini.parseFileAtPath(filePath)
+            optin = sections['Options']
+         #file
+            @default_file_name = optin['default_file_name']            if (optin.has_key?('default_file_name'))
+            @default_file_ext  = optin['default_file_ext']             if (optin.has_key?('default_file_ext'))
+            @default_directory_name  = optin['default_directory_name'] if (optin.has_key?('default_directory_name'))
+         #misc
+            @default_comment_remark = optin['default_comment_remark']  if (optin.has_key?('default_comment_remark'))
+            value = -1
+            value = getvalue(optin['default_gen3d'])                if (optin.has_key?('default_gen3d'))
+            @default_gen3d = value > 0 ? true :  false              if (value != -1)
+            value = -1
+            value = getvalue(optin['default_show_gplot'])                if (optin.has_key?('default_show_gplot'))
+            @default_show_gplot = value > 0 ? true :  false              if (value != -1)
+            value = -1
+            value = getvalue(optin['default_tabletop'])                if (optin.has_key?('default_tabletop'))
+            @default_tabletop = value > 0 ? true :  false              if (value != -1)
+            value = -1
+            value = getvalue(optin['use_compatible_dialogs'])                if (optin.has_key?('use_compatible_dialogs'))
+            @use_compatible_dialogs = value > 0 ? true :  false              if (value != -1)
+
+   #            PhlatScript.spindleSpeed = getvalue(profile['prof_spindlespeed'])    if (profile.has_key?('prof_spindlespeed'))
+
+         end
+
       end #initialize
-      
+
+# retrieve a constant value from the str, observing units of measurement
+      def getvalue(str)
+         value = 0
+         if str
+            if str.index('.mm')
+               value = str.gsub('.mm','').to_f / 25.4    # to_l does not get it right when drawing is metric
+               #puts "mm to inch #{value}"
+            else
+               if str.index('.inch')
+                  value = str.gsub('.inch','').to_f
+               else
+                  if str == 'true'
+                     value = 1
+                  else
+                     if str == 'false'
+                        value = 0
+                     else
+                        value = str.to_f
+                     end
+                  end
+               end
+            end
+         end
+         return value
+      end
+
+
       def save
          path = PhlatScript.toolsProfilesPath()
 
@@ -43,7 +108,7 @@ module PhlatScript
          if File.exist?(path)
             #write contents to ini file format - this will supplant current tpr format over time
             generator = IniGenerator.new()
-            
+
             ohash = {'Options' => self.toHash}
             filePath = File.join(path, 'MyOptions.ini')
             generator.dumpHashMapToIni(ohash, filePath)
@@ -57,32 +122,68 @@ module PhlatScript
       end
       def default_file_name=(newname)
          @default_file_name = newname
-      end      
-      
+      end
+
       def default_file_ext
          @default_file_ext
       end
       def default_file_ext=(newext)
          @default_file_ext = newext
       end
-      
+
       def default_directory_name
          @default_directory_name
       end
       def default_directory_name=(newname)
          @default_directory_name = newname
       end
-      
+
+      def default_comment_remark
+         @default_comment_remark
+      end
+      def default_comment_remark=(newremark)
+         @default_comment_remark = newremark
+      end
+
+      def default_gen3d?
+         @default_gen3d
+      end
+      def default_gen3d=(newval)
+         @default_gen3d = newval
+      end
+
+      def default_show_gplot?
+         @default_show_gplot
+      end
+      def default_show_gplot=(newval)
+         @default_show_gplot = newval
+      end
+
+      def default_tabletop?
+         @default_tabletop
+      end
+      def default_tabletop=(newval)
+         @default_tabletop = newval
+      end
+
+      def use_compatible_dialogs?
+         @use_compatible_dialogs
+      end
+      def use_compatible_dialogs=(newval)
+         @use_compatible_dialogs = newval
+      end
+
+
    end # class Options
-   
+
    class OptionsFilesTool < PhlatTool
     def initialize(opt)   #give it the options instance
-      @options = opt
+      @options = opt  # store the options instance so we can manipulate it without a global
       @tooltype=(PB_MENU_MENU)
       @tooltip="Default File Options"
       @statusText="File Options1"
       @menuItem="File Options2"
-      @menuText="File Options3"
+      @menuText="File Options"
     end
 
    def select
@@ -110,11 +211,64 @@ module PhlatScript
       end # if input
    end # def select
 end # class
-   
+
+   class OptionsMiscTool < PhlatTool
+      def initialize(opt)   #give it the options instance
+         @options = opt  # store the options instance so we can manipulate it without a global
+         @tooltype=(PB_MENU_MENU)
+         @tooltip="Default Misc Options"
+         @statusText="Misc Options1"
+         @menuItem="Misc Options2"
+         @menuText="Misc Options"
+      end
+
+      def select
+         model=Sketchup.active_model
+
+         # prompts
+         prompts=['Default_comment_remark ',
+            'Default_gen3d',
+            'Default_show_gplot after output ',
+            'Default_tabletop is Z-Zero ',
+            'Use_compatible_dialogs set TRUE if you cannot see the parameters dialog' ]
+
+
+         defaults=[
+            @options.default_comment_remark,
+            @options.default_gen3d?.inspect(),
+            @options.default_show_gplot?.inspect(),
+            @options.default_tabletop?.inspect(),
+            @options.use_compatible_dialogs?.inspect()
+            ]
+         # dropdown options can be added here
+         list=["",
+            "true|false",
+            "true|false",
+            "true|false",
+            "true|false"
+            ]
+
+
+         input=UI.inputbox(prompts, defaults, list, 'Miscallaneous Options')
+         # input is nil if user cancelled
+         if (input)
+            @options.default_comment_remark  = input[0].to_s
+            @options.default_gen3d           = (input[1] == 'true')
+            @options.default_show_gplot      = (input[2] == 'true')
+            @options.default_tabletop        = (input[3] == 'true')
+            @options.use_compatible_dialogs  = (input[4] == 'true')
+
+
+            @options.save
+         end # if input
+      end # def select
+   end # class
+
+
 
 end # module PhlatScript
 =begin
-File 
+File
    Default_file_name = "gcode_out.cnc"
    Default_file_ext = ".cnc"
    Default_directory_name = Dir.pwd + "\\"
@@ -146,15 +300,14 @@ Machine
    Min_z = -1.4
    Max_z = 1.4
 
-Misc   
+Misc
    Default_comment_remark = ""
    Default_gen3d = false
    Default_show_gplot = false
    Default_tabletop = false
-   # Set this to true if you have problems with the parameter dialog being blank or crashing SU
    Use_compatible_dialogs = false
 
-   
+
 Features
 
    # Set this to true if you have an older version of Mach that does not slow down

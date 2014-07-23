@@ -181,7 +181,15 @@ class ProfilesLoadTool < ProfilesTool
             if str.index('.inch')
                value = str.gsub('.inch','').to_f
             else
-               value = str.to_f
+               if str == 'true'
+                  value = 1
+               else
+                  if str == 'false'
+                     value = 0
+                  else
+                     value = str.to_f
+                  end
+               end
             end
          end
       end
@@ -353,7 +361,7 @@ end # class
       # input is nil if user cancelled
       if (input)
          path = PhlatScript.toolsProfilesPath()
-=begin         
+=begin
          toget=input[0] + ".rb"     # delete rb before tpr
          pth = File.join(path,toget)
          if not File.exist?(pth)
@@ -377,13 +385,13 @@ end # class
             end
             }
          if count > 0
-            UI.messagebox("Deleted the profile #{input[0]}")      
+            UI.messagebox("Deleted the profile #{input[0]}")
          else
             UI.messagebox('Profile does not exist for delete')
-            puts "delete: not found #{pth}"         
+            puts "delete: not found #{pth}"
          end
          # delete the file
-=begin         
+=begin
          if File.exist?(pth)
             if File.delete(pth)
                UI.messagebox("Deleted the profile #{input[0]}")

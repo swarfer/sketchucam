@@ -45,7 +45,7 @@ module PhlatScript
 
       wd.setCaption('materialthickness_id', PhlatScript.getString("Material Thickness"))
       wd.setValue('materialthickness', format_length(PhlatScript.materialThickness))
-      
+
       wd.setCaption('tabletop_id', PhlatScript.getString("Table top is Z-Zero"))
       wd.execute_script("setCheckbox('tabletop','"+PhlatScript.tabletop?.inspect()+"')")
 
@@ -123,10 +123,10 @@ module PhlatScript
 
       wd.execute_script("isChecked('showgplot')")
       PhlatScript.showGplot = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-      
+
       wd.execute_script("isChecked('tabletop')")
       PhlatScript.tabletop = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-      
+
 
       comment_text = wd.get_element_value("commenttext").delete("'\"")
       encoded_comment_text = ""
@@ -138,7 +138,7 @@ module PhlatScript
 
       model = Sketchup.active_model
 
-      if Use_compatible_dialogs
+      if $phoptions.use_compatible_dialogs?
         # prompts
          prompts = [PhlatScript.getString("Spindle Speed"),
                PhlatScript.getString("Feed Rate"),
@@ -261,7 +261,7 @@ module PhlatScript
             web_dialog.setValue('safetravel', Default_safe_travel)
             web_dialog.setValue('safewidth', Default_safe_width)
             web_dialog.setValue('safeheight', Default_safe_height)
-            web_dialog.setValue('commenttext', Default_comment_remark)
+            web_dialog.setValue('commenttext', $phoptions.default_comment_remark)
             web_dialog.setValue('multipassdepth', Default_multipass_depth)
             #web_dialog.setValue('gen3D',Default_gen3d)
             web_dialog.setValue('stepover',Default_stepover)
@@ -269,9 +269,9 @@ module PhlatScript
 
             web_dialog.execute_script("setCheckbox('overheadgantry','"+ Default_overhead_gantry.inspect()+"')")
             web_dialog.execute_script("setCheckbox('multipass','"+      Default_multipass.inspect()+"')")
-            web_dialog.execute_script("setCheckbox('showgplot','"+      Default_show_gplot.inspect()+"')")
-            web_dialog.execute_script("setCheckbox('gen3D','"+          Default_gen3d.inspect()+"')")
-            web_dialog.execute_script("setCheckbox('tabletop','"+       Default_tabletop.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('showgplot','"+      $phoptions.default_show_gplot?.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('gen3D','"+          $phoptions.default_gen3d?.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('tabletop','"+       $phoptions.default_tabletop?.inspect()+"')")
 
           elsif(action_name == 'pload')   # profile load
             ptool = ProfilesLoadTool.new()   # in ProfilesTool.rb
