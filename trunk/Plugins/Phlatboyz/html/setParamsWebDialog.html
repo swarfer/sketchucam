@@ -51,7 +51,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
     <tr class="profile">
        <td width="35%">Profiles</td>
        <td width="65%" colspan=3 class="buttons">
-         <input name="checkbox_hidden" value="" type="hidden">
+         <input name="checkbox_hidden" id="checkbox_hidden" value="" type="hidden">
          <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
          <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
          <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
@@ -117,7 +117,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
 
       <tr id="multipass_row1">
         <td id="multipass_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="multipass" type="checkbox">&nbsp;<span>Use multipass for hard materials</span></td>
+        <td class="tooltip"><input name="multipass" id="multipass" type="checkbox">&nbsp;<span>Use multipass for hard materials</span></td>
         <td id="multipassdepth_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="multipassdepth"  id="multipassdepth" value=""  type="text" size="8"><span>Depth of cut for each pass</span></td>
       </tr>
