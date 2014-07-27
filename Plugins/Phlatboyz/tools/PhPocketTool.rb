@@ -23,7 +23,7 @@
 # $Id$
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/tools/CenterLineTool.rb'
 require 'Phlatboyz/Tools/PhPocketCut.rb'
@@ -241,9 +241,9 @@ module PhlatScript
          end
       end
       if (contour_points != nil)
-         if (contour_points.length >= 3) 
+         if (contour_points.length >= 3)
             contour_points.push(contour_points[0])  #close the loop for add_curve
-#use add_curve instead of add_face so that the entire outline can be selected easily for delete            
+#use add_curve instead of add_face so that the entire outline can be selected easily for delete
             if PhlatScript.usePocketcw?
 #               puts "pocket CW"
 #               cface = model.entities.add_face(contour_points)
@@ -251,7 +251,7 @@ module PhlatScript
             else
 #               puts "pocket CCW"
 #               cface = model.entities.add_face(contour_points.reverse!)
-#               cedges = cface.edges               
+#               cedges = cface.edges
                cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
             end
             cuts = PocketCut.cut(cedges)
@@ -422,7 +422,7 @@ end
 
    # select between the options
    def get_zigzag_points(loop)
-      if PhlatScript.PocketDirection?
+      if PhlatScript.pocketDirection?
          return get_zigzag_points_x(loop)  # zigs along Y - suites phlatprinter
       else
          return get_zigzag_points_y(loop)  # zigs along x - suites gantries
@@ -475,7 +475,7 @@ def get_zigzag_points_x(loop)
    end
 
    def toggle_direc_flag(model=Sketchup.active_model)
-      val = model.get_attribute(Dict_name, Dict_pocket_direction, Default_pocket_direction)
+      val = model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)
       model.set_attribute(Dict_name, Dict_pocket_direction, !val)
    end
 

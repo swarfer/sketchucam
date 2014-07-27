@@ -1,5 +1,5 @@
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 #see note at end of file
 module PhlatScript
 
@@ -80,7 +80,7 @@ module PhlatScript
 
     def format_feed(f)
       feed = @is_metric ? f.to_mm : f.to_inch
-      sprintf(" F%-4.0f", feed)
+      sprintf(" F%-4d", feed.to_i)
     end
 
     def job_start(optim, extra=@extr)
@@ -97,7 +97,8 @@ module PhlatScript
           end
         end
       end
-      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+#      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+      @bit_diameter = PhlatScript.bitDiameter
 
       cncPrint("%\n")
       cncPrint("(#{PhlatScript.getString("PhlatboyzGcodeTrailer")%$PhlatScriptExtension.version})\n")
@@ -140,7 +141,7 @@ module PhlatScript
         unit_cmd, @precision, @is_metric = ["G20", 4, false]
         end
 
-      stop_code = Use_exact_path ? "G61" : "" # G61 - Exact Path Mode
+      stop_code = $phoptions.use_exact_path? ? "G61" : "" # G61 - Exact Path Mode
       cncPrint("G90 #{unit_cmd} G49 #{stop_code}\n") # G90 - Absolute programming (type B and C systems)
       #cncPrint("G20\n") # G20 - Programming in inches
       #cncPrint("G49\n") # G49 - Tool offset compensation cancel
@@ -299,7 +300,7 @@ module PhlatScript
       end
    end
 
-# generate code for a spiral bore and return the command string   
+# generate code for a spiral bore and return the command string
    def SpiralAt(xo,yo,zstart,zend,yoff)
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
@@ -313,7 +314,7 @@ module PhlatScript
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       @cs = @speed_curr
-      
+
       #// now output spiral cut
       #//G02 X10 Y18.5 Z-3 I0 J1.5 F100
 
@@ -382,7 +383,7 @@ module PhlatScript
 #      ys = format_measure('Y', yo)
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
-      if Use_reduced_safe_height
+      if $phoptions.use_reduced_safe_height?
          sh = (@retract_depth - zStart) / 3 # use reduced safe height
          if zStart > 0
             sh += zStart.to_f
@@ -413,7 +414,7 @@ module PhlatScript
          if (diam > (@bit_diameter*2)) #more optimizing, only bore the center if the hole is big, assuming soft material anyway
             command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
             command_out += (format_feed(so)) if (so != @cs)
-            command_out += "\n"              
+            command_out += "\n"
             @cs = so
             command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
             command_out += "\n"

@@ -49,7 +49,7 @@ module PhlatScript
       @edge.delete_attribute Dict_name, Dict_edge_type
       @edge.material = nil
     end
-  
+
     def initialize(edge=nil)
       super()
       @edge = edge
@@ -82,7 +82,7 @@ module PhlatScript
 
     # returns the dictionary attribute for cut_depth_factor of the first entity
     def cut_factor
-      return @edge.get_attribute(Dict_name, Dict_cut_depth_factor, Default_fold_depth_factor)
+      return @edge.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_fold_depth_factor)
     end
 
     # sets the cut_depth_facotr attribute for all entities that are part of this cut

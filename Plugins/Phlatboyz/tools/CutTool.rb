@@ -1,6 +1,6 @@
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatEdge.rb'
 require 'Phlatboyz/PhlatOffset.rb'
 require 'Phlatboyz/tools/OffsetCut.rb'
@@ -22,21 +22,22 @@ module PhlatScript
       @tooltype = (PB_MENU_MENU | PB_MENU_TOOLBAR | PB_MENU_CONTEXT)
       @@N = 0
       @active_face = nil
-      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+#      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+      @bit_diameter = PhlatScript.bitDiameter
     end
 
     def activate
       super
-      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+      @bit_diameter = PhlatScript.bitDiameter
     end
 
     def onContextMenu(menuItem)
-      cut_class.cut(Sketchup.active_model.selection) 
+      cut_class.cut(Sketchup.active_model.selection)
     end
 
     def onMouseMove(flags, x, y, view)
       @ip.pick view, x, y
-      view.invalidate 
+      view.invalidate
     end
 
     def onLButtonDown(flags, x, y, view)
@@ -76,7 +77,7 @@ module PhlatScript
         view.invalidate
       end
     end
-    
+
     def draw(view)
       self.calcPreviewPoints(@ip)
       OffsetCut.preview(view, @preview_pts) if @preview_pts
@@ -87,7 +88,7 @@ module PhlatScript
       face = nil
       edge_from_input_point = in_inputPoint.edge
       face_from_input_point = in_inputPoint.face
-      
+
       # check edge for non-phlatboyz edge
       if edge_from_input_point and not (edge_from_input_point.phlatedge?)
         faces = edge_from_input_point.faces
@@ -195,18 +196,18 @@ end
       return OutsideCut
     end
   end
-	
+
 	def PhlatScript.apply_hole_texture(sel)			# new context menu item to apply "Hole" face texture
 		face = sel[0]
 		if sel[0].class == Sketchup::Face
         Sketchup.active_model.start_operation "Setting face material"
 			face.material = "Hole"
 			face.back_material = "Hole"
-        Sketchup.active_model.commit_operation				
+        Sketchup.active_model.commit_operation
 		else
 			UI.messagebox 'Error: You must select a Face.'
 		end
-	
+
 	end
 
 end

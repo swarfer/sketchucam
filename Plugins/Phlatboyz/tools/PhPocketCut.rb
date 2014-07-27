@@ -71,7 +71,7 @@ class PocketCut < CenterLineCut
 
     # returns the dictionary attribute for cut_depth_factor of the first entity
    def cut_factor
-      return @edge.get_attribute(Dict_name, Dict_pocket_depth_factor, Default_pocket_depth_factor)
+      return @edge.get_attribute(Dict_name, Dict_pocket_depth_factor, $phoptions.default_pocket_depth_factor)
    end
 
    # sets the cut_depth_factor attribute for all entities that are part of this cut

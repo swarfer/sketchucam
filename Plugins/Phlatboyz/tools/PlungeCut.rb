@@ -7,7 +7,8 @@ module PhlatScript
     attr_accessor :edge
 
     def PlungeCut.radius
-      return (Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter) / 2.0
+#      return (Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter) / 2.0
+      return (PhlatScript.bitDiameter) / 2.0
     end
 
     def PlungeCut.cut_key

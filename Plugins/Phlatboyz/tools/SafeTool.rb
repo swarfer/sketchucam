@@ -1,6 +1,6 @@
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatTool.rb'
 
 module PhlatScript
@@ -47,25 +47,25 @@ module PhlatScript
       #@ip.draw view
       view.draw_polyline @point_array
     end
-    
+
     def create_geometry(view)
       model = view.model
       entities = model.entities
 
       model.start_operation "Creating Safe Area"
-      
+
       x0 = @point_array[0].x
       y0 = @point_array[0].y
       w = @point_array[0].distance @point_array[1]
       h = @point_array[0].distance @point_array[3]
-      
+
       P.set_safe_array(x0, y0, w, h, model)
       P.draw_safe_area(model)
-      
+
       model.commit_operation
         #Sketchup::set_status_text "Fold Created", SB_VCB_LABEL
       Sketchup.send_action "selectSelectionTool:"
-      
+
     end
 
     def statusText

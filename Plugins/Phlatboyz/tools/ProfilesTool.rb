@@ -41,7 +41,7 @@ class ProfileSettings < Hashable
       @prof_spindlespeed = PhlatScript.spindleSpeed.to_i.to_s
       @prof_feedrate    = PhlatScript.conformat(PhlatScript.feedRate)
       @prof_plungerate  = PhlatScript.conformat(PhlatScript.plungeRate)
-      @prof_savematthick = (Profile_save_material_thickness ? '1' : '0') # we save this and only set mattthick if this is 1 when we read
+      @prof_savematthick = ($phoptions.profile_save_material_thickness? ? '1' : '0') # we save this and only set mattthick if this is 1 when we read
       @prof_matthick    = PhlatScript.conformat(PhlatScript.materialThickness)
       @prof_cutfactor   = PhlatScript.cutFactor.to_s
       @prof_bitdiameter = PhlatScript.conformat(PhlatScript.bitDiameter)
@@ -105,7 +105,7 @@ end
           outf.print "prof_spindlespeed=" + PhlatScript.spindleSpeed.to_i.to_s  + "\n"
           outf.print "prof_feedrate="     + PhlatScript.conformat(PhlatScript.feedRate)  + "\n"
           outf.print "prof_plungerate="   + PhlatScript.conformat(PhlatScript.plungeRate)  + "\n"
-          if (Profile_save_material_thickness)
+#          if (Profile_save_material_thickness)
             outf.print "prof_matthick="   + PhlatScript.conformat(PhlatScript.materialThickness)  + "\n"
           end
           outf.print "prof_cutfactor="    + PhlatScript.cutFactor.to_s   + "\n"
