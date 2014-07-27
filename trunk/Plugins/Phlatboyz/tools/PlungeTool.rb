@@ -1,6 +1,6 @@
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/Tools/PlungeCut.rb'
 
 module PhlatScript

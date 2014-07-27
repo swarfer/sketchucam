@@ -1,5 +1,5 @@
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 
 require 'Phlatboyz/PhlatboyzMethods.rb'
 require 'Phlatboyz/PhlatOffset.rb'
@@ -185,13 +185,14 @@ puts(" tabletop '#{@tabletop}'\n")
       model = Sketchup.active_model
       if(enter_file_dialog(model))
         # first get the material thickness from the model dictionary
-        material_thickness = Sketchup.active_model.get_attribute Dict_name, Dict_material_thickness, Default_material_thickness
+        material_thickness = PhlatScript.materialThickness
         if(material_thickness)
 
           begin
             output_directory_name = model.get_attribute Dict_name, Dict_output_directory_name, $phoptions.default_directory_name
             output_file_name = model.get_attribute Dict_name, Dict_output_file_name, $phoptions.default_file_name
-            @current_bit_diameter = model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+#            @current_bit_diameter = model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+            @current_bit_diameter = PhlatScript.bitDiameter
 
             # TODO check for existing / on the end of output_directory_name
             absolute_File_name = output_directory_name + output_file_name
@@ -203,7 +204,7 @@ puts(" tabletop '#{@tabletop}'\n")
             max_y = safe_array[3]
             safe_area_points = P.get_safe_area_point3d_array()
 
-            min_max_array = [min_x, max_x, min_y, max_y, Min_z, Max_z]
+            min_max_array = [min_x, max_x, min_y, max_y, $phoptions.min_z, $phoptions.max_z]
             #aMill = CNCMill.new(nil, nil, absolute_File_name, min_max_array)
             aMill = PhlatMill.new(absolute_File_name, min_max_array)
 
@@ -234,11 +235,11 @@ puts(" tabletop '#{@tabletop}'\n")
                aMill.home()
             end
             if (PhlatScript.useOverheadGantry?)
-              if (Use_Home_Height != nil)
-                if (Use_Home_Height)
-                  aMill.retract(Default_Home_Height)
+#              if ($phoptions.use_home_height? != nil)
+                if ($phoptions.use_home_height?)
+                  aMill.retract($phoptions.default_home_height)
                 end
-              end
+#              end
             end
 
             #puts("finishing up")
@@ -432,7 +433,7 @@ puts(" tabletop '#{@tabletop}'\n")
         loopNode.loop.edgeuses.each{ |eu|
           pe = PhlatCut.from_edge(eu.edge)
           if (pe) && (!pe.processed)
-            if (!Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, Default_overhead_gantry))
+            if (!Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?))
                 reverse = reverse || (pe.kind_of?(PhlatScript::InsideCut)) || eu.reversed?
             else
                 reverse = reverse || (pe.kind_of?(PhlatScript::OutsideCut)) || eu.reversed?
@@ -831,7 +832,7 @@ puts " new #{newedges[i-1]}\n"
                         center = phlatcut.center
                         tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
 #puts "arc length #{phlatcut.edge.length}\n"
-                        if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && (Use_vtab_speed_limit)
+                        if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else #problem with tab cuts so always use R format for now
 #swarfer: reversed this IJ code, the arc segments at the begining and end of truncated circles always have radius mismatch

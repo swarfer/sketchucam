@@ -1,6 +1,6 @@
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/tools/TabCut.rb'
 
@@ -19,18 +19,18 @@ module PhlatScript
       @auto_pts = nil
       @pcut = nil
       @pt = nil
-      
+
       if(@@nCursor == 0)
         cursorPath = Sketchup.find_support_file(Cursor_tab_tool, Cursor_directory)
         if(cursorPath)
           @@nCursor = UI.create_cursor(cursorPath, 13, 16)
-        end	
+        end
       end
       if(@@vCursor == 0)
         cursorPath = Sketchup.find_support_file(Cursor_vtab_tool, Cursor_directory)
         if(cursorPath)
           @@vCursor = UI.create_cursor(cursorPath, 13, 16)
-        end	
+        end
       end
     end
 
@@ -46,7 +46,7 @@ module PhlatScript
 
     def onMouseMove(flags, x, y, view)
       res, @pcut, @pt = pick_point(x, y, view)
-      if @leftButtonDown == true 
+      if @leftButtonDown == true
         # create the tab cut
         TabCut.cut(@pcut, @pt).vtab = get_vtab_flag(view.model) if (@pcut && @pt)
         view.model.selection.clear
@@ -54,7 +54,7 @@ module PhlatScript
         self.reset(view)
         Sketchup::set_status_text("Tab complete", SB_VCB_LABEL)
       end
-      if (@auto) 
+      if (@auto)
       end
       view.invalidate
     end
@@ -69,7 +69,7 @@ module PhlatScript
         @pcut.loop.edges.each { |le| @loop_length += le.length } if (@pcut.loop)
       end
     end
- 
+
     def onLButtonUp(flags, x, y, view)
       @leftButtonDown = false
         # create the tab cut
@@ -119,11 +119,11 @@ module PhlatScript
     private
 
     def get_vtab_flag(model=Sketchup.active_model)
-    	return model.get_attribute(Dict_name, Dict_vtabs, Default_vtabs)
+    	return model.get_attribute(Dict_name, Dict_vtabs, $phoptions.default_vtabs?)
     end
 
     def toggle_vtab_flag(model=Sketchup.active_model)
-    	val = model.get_attribute(Dict_name, Dict_vtabs, Default_vtabs)
+    	val = model.get_attribute(Dict_name, Dict_vtabs, $phoptions.default_vtabs?)
     	model.set_attribute(Dict_name, Dict_vtabs, !val)
     end
 

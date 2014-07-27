@@ -1,6 +1,6 @@
 # $Id$
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/Tools/CenterLineCut.rb'
 
 module PhlatScript

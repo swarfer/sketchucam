@@ -204,10 +204,10 @@ def PhlatScript.isMetric()
 end
 
 def PhlatScript.get_safe_array(model=Sketchup.active_model)
-	x = model.get_attribute(Dict_name, Dict_safe_origin_x, Default_safe_origin_x)
-	y = model.get_attribute(Dict_name, Dict_safe_origin_y, Default_safe_origin_y)
-	w = model.get_attribute(Dict_name, Dict_safe_width, Default_safe_width)
-	h = model.get_attribute(Dict_name, Dict_safe_height, Default_safe_height)
+	x = model.get_attribute(Dict_name, Dict_safe_origin_x, $phoptions.default_safe_origin_x)
+	y = model.get_attribute(Dict_name, Dict_safe_origin_y, $phoptions.default_safe_origin_y)
+	w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
+	h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
 	return [x,y,w,h]
 end
 
@@ -220,14 +220,14 @@ def PhlatScript._get_area_point3d_array(x, y, w, h)
 end
 
 def PhlatScript.get_safe_origin_translation(model=Sketchup.active_model)
-	x = model.get_attribute(Dict_name, Dict_safe_origin_x, Default_safe_origin_x)
-	y = model.get_attribute(Dict_name, Dict_safe_origin_y, Default_safe_origin_y)
+	x = model.get_attribute(Dict_name, Dict_safe_origin_x, $phoptions.default_safe_origin_x)
+	y = model.get_attribute(Dict_name, Dict_safe_origin_y, $phoptions.default_safe_origin_y)
 	return Geom::Transformation.translation(Geom::Vector3d.new(-x, -y, 0))
 end
 
 def PhlatScript.get_safe_reflection_translation_old(model=Sketchup.active_model)
-	y = model.get_attribute(Dict_name, Dict_safe_origin_y, Default_safe_origin_y)
-	h = model.get_attribute(Dict_name, Dict_safe_height, Default_safe_height)
+	y = model.get_attribute(Dict_name, Dict_safe_origin_y, $phoptions.default_safe_origin_y)
+	h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
 	origin = Geom::Point3d.new(0, (2*y + h), 0)
 	xp = Geom::Vector3d.new(1, 0, 0)
 	yp = Geom::Vector3d.new(0,-1, 0)
@@ -236,8 +236,8 @@ def PhlatScript.get_safe_reflection_translation_old(model=Sketchup.active_model)
 end
 
 def PhlatScript.get_safe_reflection_translation(model=Sketchup.active_model)
-	x = model.get_attribute(Dict_name, Dict_safe_origin_x, Default_safe_origin_x)
-	w = model.get_attribute(Dict_name, Dict_safe_width, Default_safe_width)
+	x = model.get_attribute(Dict_name, Dict_safe_origin_x, $phoptions.default_safe_origin_x)
+	w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
 	origin = Geom::Point3d.new((2*x + w), 0, 0)
 	xp = Geom::Vector3d.new(-1, 0, 0)
 	yp = Geom::Vector3d.new( 0, 1, 0)
@@ -275,7 +275,7 @@ def PhlatScript.add_point_label(in_entities, in_point, in_height, in_align)
 	label = in_point.x.to_s+", "+in_point.y.to_s
 
 	g = in_entities.add_group()
-   g.name = "safearea#{in_align}"  # needs a name to be exluded from group summary list 
+   g.name = "safearea#{in_align}"  # needs a name to be exluded from group summary list
 	g_entities = g.entities
 	construction_point = g_entities.add_3d_text(label, TextAlignLeft, "Times", false, false, in_height, 0.1.inch, 0, true, 0)
 	bbox = g.bounds

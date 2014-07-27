@@ -23,7 +23,8 @@ module PhlatScript
           point1 = pcut.edge.start.position
           point2 = pcut.edge.end.position
         else
-          current_tab_width = view.model.get_attribute(Dict_name, Dict_tab_width, Default_tab_width)
+#          current_tab_width = view.model.get_attribute(Dict_name, Dict_tab_width, Default_tab_width)
+          current_tab_width = PhlatScript.tabWidth
           ep1 = pcut.edge.start.position
           ep2 = pcut.edge.end.position
           v = ep1.vector_to ep2
@@ -46,7 +47,8 @@ module PhlatScript
         point1 = pcut.edge.start.position
         point2 = pcut.edge.end.position
       else
-        current_tab_width = model.get_attribute(Dict_name, Dict_tab_width, Default_tab_width)
+#        current_tab_width = model.get_attribute(Dict_name, Dict_tab_width, Default_tab_width)
+        current_tab_width = PhlatScript.tabWidth
         ep1 = pcut.edge.start.position
         ep2 = pcut.edge.end.position
         v = ep1.vector_to ep2
@@ -95,7 +97,7 @@ module PhlatScript
 
     def erase(delete=false)
       return if !@edge.valid?
-      if delete then      
+      if delete then
         Sketchup.active_model.entities.erase_entities @edge
         return
       end
@@ -173,7 +175,7 @@ module PhlatScript
     end
 
     def vtab?
-      return @edge.get_attribute(Dict_name, Dict_vtab, Default_vtabs)
+      return @edge.get_attribute(Dict_name, Dict_vtab, $phoptions.default_vtabs?)
     end
 
     def parent_cut

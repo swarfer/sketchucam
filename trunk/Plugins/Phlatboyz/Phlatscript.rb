@@ -76,7 +76,7 @@ module PhlatScript
   end
 
   def PhlatScript.get_fold_depth_factor(model=Sketchup.active_model)
-    return model.get_attribute(Dict_name, Dict_fold_depth_factor, Default_fold_depth_factor)
+    return model.get_attribute(Dict_name, Dict_fold_depth_factor, $phoptions.default_fold_depth_factor)
   end
 
   def PhlatScript.set_fold_depth_factor(in_factor, model=Sketchup.active_model)
@@ -169,7 +169,7 @@ module PhlatScript
   # Parameters
 
   def PhlatScript.spindleSpeed
-    Sketchup.active_model.get_attribute(Dict_name, Dict_spindle_speed, Default_spindle_speed)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_spindle_speed, $phoptions.default_spindle_speed).to_i
   end
 
   def PhlatScript.spindleSpeed=(sspeed)
@@ -177,7 +177,7 @@ module PhlatScript
   end
 
   def PhlatScript.feedRate
-    Sketchup.active_model.get_attribute(Dict_name, Dict_feed_rate, Default_feed_rate)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_feed_rate, $phoptions.default_feed_rate)
   end
 
   def PhlatScript.feedRate=(frate)
@@ -185,7 +185,7 @@ module PhlatScript
   end
 
   def PhlatScript.plungeRate
-    Sketchup.active_model.get_attribute(Dict_name, Dict_plunge_rate, Default_plunge_rate)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_plunge_rate, $phoptions.default_plunge_rate)
   end
 
   def PhlatScript.plungeRate=(prate)
@@ -193,7 +193,7 @@ module PhlatScript
   end
 
   def PhlatScript.safeTravel        # Safe Travel Height
-        Sketchup.active_model.get_attribute(Dict_name, Dict_safe_travel, Default_safe_travel)
+        Sketchup.active_model.get_attribute(Dict_name, Dict_safe_travel, $phoptions.default_safe_travel)
   end
 
   def PhlatScript.safeTravel=(st)
@@ -201,7 +201,7 @@ module PhlatScript
   end
 
   def PhlatScript.materialThickness
-    Sketchup.active_model.get_attribute(Dict_name, Dict_material_thickness, Default_material_thickness)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_material_thickness, $phoptions.default_material_thickness)
   end
 
   def PhlatScript.materialThickness=(mthickness)
@@ -209,7 +209,7 @@ module PhlatScript
   end
 
   def PhlatScript.cutFactor     # Inside/Outside Overcut %
-    Sketchup.active_model.get_attribute(Dict_name, Dict_cut_depth_factor, Default_cut_depth_factor)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_cut_depth_factor)
   end
 
   def PhlatScript.cutFactor=(cfactor)
@@ -217,7 +217,7 @@ module PhlatScript
   end
 
   def PhlatScript.bitDiameter
-    Sketchup.active_model.get_attribute(Dict_name, Dict_bit_diameter, Default_bit_diameter)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_bit_diameter, $phoptions.default_bit_diameter)
   end
 
   def PhlatScript.bitDiameter=(bdiameter)
@@ -225,7 +225,7 @@ module PhlatScript
   end
 
   def PhlatScript.tabWidth
-    Sketchup.active_model.get_attribute(Dict_name, Dict_tab_width, Default_tab_width)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_tab_width, $phoptions.default_tab_width)
   end
 
   def PhlatScript.tabWidth=(twidth)
@@ -233,7 +233,7 @@ module PhlatScript
   end
 
   def PhlatScript.tabDepth     # Tab Depth (% of what is cut away)
-    Sketchup.active_model.get_attribute(Dict_name, Dict_tab_depth_factor, Default_tab_depth_factor)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_tab_depth_factor, $phoptions.default_tab_depth_factor)
   end
 
   def PhlatScript.tabDepth=(tdepth)
@@ -241,7 +241,7 @@ module PhlatScript
   end
 
   def PhlatScript.safeWidth      # Safe Area Length (Phlatprinter X axis)
-    Sketchup.active_model.get_attribute(Dict_name, Dict_safe_width, Default_safe_width)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
   end
 
   def PhlatScript.safeWidth=(swidth)
@@ -249,7 +249,7 @@ module PhlatScript
       changed = true
     end
     Sketchup.active_model.set_attribute(Dict_name, Dict_safe_width, swidth)
-    if Always_show_safearea then
+    if $phoptions.always_show_safearea? then
       draw_safe_area(Sketchup.active_model)
     elsif changed == true then
       draw_safe_area(Sketchup.active_model)
@@ -257,29 +257,29 @@ module PhlatScript
   end
 
   def PhlatScript.safeHeight      # Safe Area Width (Phlatprinter Y axis)
-    Sketchup.active_model.get_attribute(Dict_name, Dict_safe_height, Default_safe_height)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
   end
 
   def PhlatScript.safeHeight=(sheight)
                 if sheight != PhlatScript.safeHeight then changed = true end
     Sketchup.active_model.set_attribute(Dict_name, Dict_safe_height, sheight)
-                if Always_show_safearea then draw_safe_area(Sketchup.active_model)
+                if $phoptions.always_show_safearea? then draw_safe_area(Sketchup.active_model)
                 elsif changed == true then draw_safe_area(Sketchup.active_model) end
   end
 
   def PhlatScript.useOverheadGantry?
-    Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, Default_overhead_gantry)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?)
   end
 
   def PhlatScript.useOverheadGantry=(og)
     Sketchup.active_model.set_attribute(Dict_name, Dict_overhead_gantry, og)
   end
 
-  def PhlatScript.PocketDirection?
-    Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, Default_pocket_direction)
+  def PhlatScript.pocketDirection?
+    Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)
   end
 
-  def PhlatScript.PocketDirection=(newd)
+  def PhlatScript.pocketDirection=(newd)
     Sketchup.active_model.set_attribute(Dict_name, Dict_pocket_direction, newd)
   end
 
@@ -289,21 +289,21 @@ module PhlatScript
 
   #swarfer, Phlat3d needs to know
   def PhlatScript.useexactpath?
-    Use_exact_path
+    $phoptions.use_exact_path?
   end
 
   # pockettool needs to know, normally false
   def PhlatScript.usePocketcw?
-    Use_pocket_CW
+    $phoptions.use_pocket_cw?
   end
 
   # used in phlatmill
    def PhlatScript.usePlungeCW?
-      Use_plunge_CW
+      $phoptions.use_plunge_cw?
    end
 
    def PhlatScript.UseOutfeed?
-      Use_outfeed
+      $phoptions.use_outfeed?
    end
 
   #swarfer - if true gplot will be called after gcode generation
@@ -316,7 +316,7 @@ module PhlatScript
   end
 
   def PhlatScript.useMultipass?
-    Use_multipass ? Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, Default_multipass) : false
+    Use_multipass ? Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, $phoptions.default_multipass?) : false
   end
 
   def PhlatScript.useMultipass=(mp)
@@ -324,7 +324,7 @@ module PhlatScript
   end
 
   def PhlatScript.multipassDepth
-    Sketchup.active_model.get_attribute(Dict_name, Dict_multipass_depth, Default_multipass_depth)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_multipass_depth, $phoptions.default_multipass_depth)
   end
 
   def PhlatScript.multipassDepth=(mdepth)
@@ -355,17 +355,21 @@ module PhlatScript
     Sketchup.active_model.set_attribute(Dict_name, Dict_gen3d, gen3D)
   end
 
-        def PhlatScript.stepover
-                Sketchup.active_model.get_attribute(Dict_name, Dict_stepover, Default_stepover)
+  def PhlatScript.stepover
+    Sketchup.active_model.get_attribute(Dict_name, Dict_stepover, $phoptions.default_stepover).to_f
   end
 
   def PhlatScript.stepover=(stepover)
-                Sketchup.active_model.set_attribute(Dict_name, Dict_stepover, stepover.to_i)
+                Sketchup.active_model.set_attribute(Dict_name, Dict_stepover, stepover.to_f)
+  end
+
+  def PhlatScript.vtabs?
+    return model.get_attribute(Dict_name, Dict_vtabs, $phoptions.default_vtabs?)
   end
 
   def PhlatScript.safeAreaArray=(sarea)
-    safe_x = Sketchup.active_model.get_attribute(Dict_name, Dict_safe_origin_x, Default_safe_origin_x).to_f
-    safe_y = Sketchup.active_model.get_attribute(Dict_name, Dict_safe_origin_y, Default_safe_origin_y).to_f
+    safe_x = Sketchup.active_model.get_attribute(Dict_name, Dict_safe_origin_x, $phoptions.default_safe_origin_x).to_f
+    safe_y = Sketchup.active_model.get_attribute(Dict_name, Dict_safe_origin_y, $phoptions.default_safe_origin_y).to_f
     safe_w = Sketchup.parse_length(params_dialog.get_element_value("safewidth")).to_f
     safe_h = Sketchup.parse_length(params_dialog.get_element_value("safeheight")).to_f
     Sketchup.active_model.set_attribute(Dict_name, Dict_safe_origin_x, safe_x)
@@ -400,8 +404,11 @@ module PhlatScript
     require 'PhlatBoyz/tools/PhOptions.rb'
     $phoptions = Options.new()
     optionssubmenu = @@phlatboyz_tools_submenu.add_submenu('Options')
-    addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu);
-    addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu);
+    addToolItem( OptionsToolsTool.new($phoptions) , optionssubmenu)
+    addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu)
+    addToolItem( OptionsMachTool.new($phoptions) , optionssubmenu)
+    addToolItem( OptionsFeatTool.new($phoptions) , optionssubmenu)
+    addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
 
 
     @@phlatboyz_tools_submenu.add_separator

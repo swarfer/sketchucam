@@ -27,23 +27,23 @@ module PhlatScript
 
       def select
          msg = "Summary of your settings from (My)Constants.rb\n" +
-            "  Default_show_gplot = #{$phoptions.default_show_gplot}\n" +
-            "  Default_pocket_direction = #{Default_pocket_direction}\n" +
-            "  Min_z = #{Min_z}\n" +
-            "  Max_z = #{Max_z}\n" +
-            "  Use_compatible_dialogs = #{$phoptions.use_compatible_dialogs}\n" +
-            "  Use_vtab_speed_limit = #{Use_vtab_speed_limit}\n" +
-            "  Use_exact_path = #{Use_exact_path}\n" +
-            "  Always_show_safearea = #{Always_show_safearea}\n" +
-            "  Use_reduced_safe_height = #{Use_reduced_safe_height}\n" +
-            "  Use_pocket_CW = #{Use_pocket_CW}\n" +
-            "  Use_plunge_CW = #{Use_plunge_CW}\n" +
-            "  Use_outfeed = #{Use_outfeed}\n" +
-            "  Use_Home_Height = #{Use_Home_Height}\n"
-            if Use_Home_Height
-               msg += "  Default_Home_Height = #{Default_Home_Height}\n"
+            "  Default_show_gplot = #{$phoptions.default_show_gplot?}\n" +
+            "  Default_pocket_direction = #{$phoptions.default_pocket_direction?}\n" +
+            "  Min_z = #{$phoptions.min_z}\n" +
+            "  Max_z = #{$phoptions.max_z}\n" +
+            "  Use_compatible_dialogs = #{$phoptions.use_compatible_dialogs?}\n" +
+            "  Use_vtab_speed_limit = #{$phoptions.use_vtab_speed_limit?}\n" +
+            "  Use_exact_path = #{$phoptions.use_exact_path?}\n" +
+            "  Always_show_safearea = #{$phoptions.always_show_safearea?}\n" +
+            "  Use_reduced_safe_height = #{$phoptions.use_reduced_safe_height?}\n" +
+            "  Use_pocket_CW = #{$phoptions.use_pocket_cw?}\n" +
+            "  Use_plunge_CW = #{$phoptions.use_plunge_cw?}\n" +
+            "  Use_outfeed = #{$phoptions.use_outfeed?}\n" +
+            "  Use_Home_Height = #{$phoptions.use_home_height?}\n"
+            if $phoptions.use_home_height?
+               msg += "  Default_Home_Height = #{$phoptions.default_home_height}\n"
             end
-            msg += "  Profile_save_material_thickness = #{Profile_save_material_thickness}\n"
+            msg += "  Profile_save_material_thickness = #{$phoptions.profile_save_material_thickness?}\n"
          UI.messagebox(msg,MB_MULTILINE)
       end #select
    end # class

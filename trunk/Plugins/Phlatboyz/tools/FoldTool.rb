@@ -1,6 +1,6 @@
 
 require 'sketchup.rb'
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/tools/CenterLineTool.rb'
 require 'Phlatboyz/Tools/FoldCut.rb'
@@ -9,9 +9,9 @@ module PhlatScript
 
   class FoldTool < CenterLineTool
     @@wide_cut = false
-    
+
     def onLButtonUp(flags, x, y, view)
-      @leftButtonDown = false  
+      @leftButtonDown = false
       edges = view.model.selection
       cuts = FoldCut.cut(edges, @@wide_cut)
       cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }

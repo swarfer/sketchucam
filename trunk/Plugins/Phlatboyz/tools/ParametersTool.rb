@@ -200,8 +200,8 @@ module PhlatScript
          # input is nil if user cancelled
          if (input)
             PhlatScript.spindleSpeed = input[0].to_i
-            PhlatScript.feedRate = Sketchup.parse_length(input[1]).to_f
-            PhlatScript.plungeRate = Sketchup.parse_length(input[2]).to_f
+            PhlatScript.feedRate    = Sketchup.parse_length(input[1]).to_f
+            PhlatScript.plungeRate  = Sketchup.parse_length(input[2]).to_f
             PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
             PhlatScript.cutFactor = input[4].to_i
             PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
@@ -250,25 +250,25 @@ module PhlatScript
           elsif(action_name == 'cancel')
             params_dialog.close()
           elsif(action_name =='restore_defaults')
-            web_dialog.setValue('spindlespeed', Default_spindle_speed)
-            web_dialog.setValue('feedrate', Default_feed_rate)
-            web_dialog.setValue('plungerate', Default_plunge_rate)
-            web_dialog.setValue('materialthickness', Default_material_thickness)
-            web_dialog.setValue('cutfactor', Default_cut_depth_factor)
-            web_dialog.setValue('bitdiameter', Default_bit_diameter)
-            web_dialog.setValue('tabwidth', Default_tab_width)
-            web_dialog.setValue('tabdepthfactor', Default_tab_depth_factor)
-            web_dialog.setValue('safetravel', Default_safe_travel)
-            web_dialog.setValue('safewidth', Default_safe_width)
-            web_dialog.setValue('safeheight', Default_safe_height)
+            web_dialog.setValue('spindlespeed', $phoptions.default_spindle_speed)
+            web_dialog.setValue('feedrate', $phoptions.default_feed_rate)
+            web_dialog.setValue('plungerate', $phoptions.default_plunge_rate)
+            web_dialog.setValue('materialthickness', $phoptions.default_material_thickness)
+            web_dialog.setValue('cutfactor', $phoptions.default_cut_depth_factor)
+            web_dialog.setValue('bitdiameter', $phoptions.default_bit_diameter)
+            web_dialog.setValue('tabwidth', $phoptions.default_tab_width)
+            web_dialog.setValue('tabdepthfactor', $phoptions.default_tab_depth_factor)
+            web_dialog.setValue('safetravel', $phoptions.default_safe_travel)
+            web_dialog.setValue('safewidth', $phoptions.default_safe_width)
+            web_dialog.setValue('safeheight', $phoptions.default_safe_height)
             web_dialog.setValue('commenttext', $phoptions.default_comment_remark)
-            web_dialog.setValue('multipassdepth', Default_multipass_depth)
+            web_dialog.setValue('multipassdepth', $phoptions.default_multipass_depth)
             #web_dialog.setValue('gen3D',Default_gen3d)
-            web_dialog.setValue('stepover',Default_stepover)
+            web_dialog.setValue('stepover',$phoptions.default_stepover)
             #web_dialog.setValue('showgplot',Default_show_gplot)
 
-            web_dialog.execute_script("setCheckbox('overheadgantry','"+ Default_overhead_gantry.inspect()+"')")
-            web_dialog.execute_script("setCheckbox('multipass','"+      Default_multipass.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('overheadgantry','"+ $phoptions.default_overhead_gantry?.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('multipass','"+      $phoptions.default_multipass?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('showgplot','"+      $phoptions.default_show_gplot?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('gen3D','"+          $phoptions.default_gen3d?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('tabletop','"+       $phoptions.default_tabletop?.inspect()+"')")

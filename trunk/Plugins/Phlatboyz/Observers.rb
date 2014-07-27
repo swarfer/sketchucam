@@ -1,5 +1,5 @@
 
-require 'Phlatboyz/Constants.rb'
+#require 'Phlatboyz/Constants.rb'
 require 'Phlatboyz/PSUpgrade.rb'
 
 module PhlatScript

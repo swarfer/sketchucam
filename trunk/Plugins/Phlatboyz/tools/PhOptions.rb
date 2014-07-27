@@ -5,15 +5,6 @@
 # $Id$
 
 require 'PhlatBoyz/Constants.rb'
-#if  __FILE__ does not contain 'myconstants' then try to load it
-res = __FILE__
-res = res.scan(/myconstant/i)
-if  (res.empty? )
-  myc = Sketchup.find_support_file( 'Plugins' ) + '/Phlatboyz/MyConstants.rb'
-  if File.exist?(myc)
-    res = load(myc)
-  end
-end
 
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'
@@ -22,8 +13,63 @@ require('Phlatboyz/utils/IniParser.rb')
 
 module PhlatScript
 
-   class Options < Hashable
+   class OptionsWriter < Hashable  # sets the values in the right format for reading back units
+
+      def initialize(phoptions)
+         #file
+         @default_file_name = phoptions.default_file_name.to_s
+         @default_file_ext = phoptions.default_file_ext.to_s
+         @default_directory_name = phoptions.default_directory_name.to_s
+
+         #misc
+         @default_comment_remark = phoptions.default_comment_remark.to_s
+
+         @default_gen3d =        (phoptions.default_gen3d? ? '1' : '0')
+         @default_show_gplot =   (phoptions.default_show_gplot? ? '1' : '0')
+         @default_tabletop =     (phoptions.default_tabletop? ? '1' : '0')
+         @use_compatible_dialogs = (phoptions.use_compatible_dialogs? ? '1' : '0')
+         #tools
+         @default_spindle_speed = phoptions.default_spindle_speed.to_i.to_s
+         @default_feed_rate =     PhlatScript.conformat(phoptions.default_feed_rate)
+         @default_plunge_rate =   PhlatScript.conformat(phoptions.default_plunge_rate)
+         @default_safe_travel =   PhlatScript.conformat(phoptions.default_safe_travel)
+         @default_material_thickness = PhlatScript.conformat(phoptions.default_material_thickness)
+         @default_cut_depth_factor   = phoptions.default_cut_depth_factor.to_i.to_s
+         @default_bit_diameter      = PhlatScript.conformat(phoptions.default_bit_diameter)
+         @default_tab_width         = PhlatScript.conformat(phoptions.default_tab_width)
+         @default_tab_depth_factor  = phoptions.default_tab_depth_factor.to_i.to_s
+         @default_vtabs             = (phoptions.default_vtabs? ? '1' : '0')
+         @default_fold_depth_factor = phoptions.default_fold_depth_factor.to_i.to_s
+         @default_pocket_depth_factor = phoptions.default_pocket_depth_factor.to_i.to_s
+         @default_pocket_direction  = (phoptions.default_pocket_direction? ? '1' : '0')
+      #machine
+         @default_safe_origin_x  =  PhlatScript.conformat(phoptions.default_safe_origin_x)
+         @default_safe_origin_y  =  PhlatScript.conformat(phoptions.default_safe_origin_y)
+         @default_safe_width     =  PhlatScript.conformat(phoptions.default_safe_width)
+         @default_safe_height    =  PhlatScript.conformat(phoptions.default_safe_height)
+         @default_overhead_gantry =  (phoptions.default_overhead_gantry? ? '1' : '0')
+         @default_multipass      =   (phoptions.default_multipass? ? '1' : '0')
+         @default_multipass_depth =  PhlatScript.conformat(phoptions.default_multipass_depth)
+         @default_stepover       =   phoptions.default_stepover.to_i.to_s
+         @min_z                  =   PhlatScript.conformat(phoptions.min_z)
+         @max_z                  =   PhlatScript.conformat(phoptions.max_z)
+      #features
+         @use_vtab_speed_limit   =   (phoptions.use_vtab_speed_limit? ? '1' : '0')
+         @use_exact_path         =   (phoptions.use_exact_path? ? '1' : '0')
+         @always_show_safearea   =   (phoptions.always_show_safearea? ? '1' : '0')
+         @use_reduced_safe_height =  (phoptions.use_reduced_safe_height? ? '1' : '0')
+         @use_pocket_cw          =   (phoptions.use_pocket_cw? ? '1' : '0')
+         @use_plunge_cw          =   (phoptions.use_plunge_cw? ? '1' : '0')
+         @use_outfeed            =   (phoptions.use_outfeed? ? '1' : '0')
+         @profile_save_material_thickness =   (phoptions.profile_save_material_thickness? ? '1' : '0')
+         @use_home_height        =   (phoptions.use_home_height? ? '1' : '0')
+         @default_home_height    =   PhlatScript.conformat(phoptions.default_home_height)
+      end
+   end
+
+   class Options
       def initialize
+
          @default_file_name = Default_file_name
          @default_file_ext = Default_file_ext
          @default_directory_name = Default_directory_name
@@ -33,8 +79,42 @@ module PhlatScript
          @default_show_gplot = Default_show_gplot
          @default_tabletop = Default_tabletop
          @use_compatible_dialogs = Use_compatible_dialogs
-
-
+         #tools
+         @default_spindle_speed = Default_spindle_speed
+         @default_feed_rate = Default_feed_rate
+         @default_plunge_rate = Default_plunge_rate
+         @default_safe_travel = Default_safe_travel
+         @default_material_thickness = Default_material_thickness
+         @default_cut_depth_factor = Default_cut_depth_factor
+         @default_bit_diameter = Default_bit_diameter
+         @default_tab_width = Default_tab_width
+         @default_tab_depth_factor = Default_tab_depth_factor
+         @default_vtabs = Default_vtabs
+         @default_fold_depth_factor = Default_fold_depth_factor
+         @default_pocket_depth_factor = Default_pocket_depth_factor
+         @default_pocket_direction = Default_pocket_direction
+         #machine
+         @default_safe_origin_x = Default_safe_origin_x
+         @default_safe_origin_y = Default_safe_origin_y
+         @default_safe_width = Default_safe_width
+         @default_safe_height = Default_safe_height
+         @default_overhead_gantry = Default_overhead_gantry
+         @default_multipass = Default_multipass
+         @default_multipass_depth = Default_multipass_depth
+         @default_stepover = Default_stepover
+         @min_z = Min_z
+         @max_z = Max_z
+         #features
+         @use_vtab_speed_limit = Use_vtab_speed_limit
+         @use_exact_path = Use_exact_path
+         @always_show_safearea = Always_show_safearea
+         @use_reduced_safe_height = Use_reduced_safe_height
+         @use_pocket_cw = Use_pocket_CW
+         @use_plunge_cw = Use_plunge_CW
+         @use_outfeed = Use_outfeed
+         @profile_save_material_thickness = Profile_save_material_thickness
+         @use_home_height = Use_Home_Height
+         @default_home_height = Default_Home_Height
 
          # if MyConstats.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -45,6 +125,7 @@ module PhlatScript
             sections = ini.parseFileAtPath(filePath)
             optin = sections['Options']
          #file
+
             @default_file_name = optin['default_file_name']            if (optin.has_key?('default_file_name'))
             @default_file_ext  = optin['default_file_ext']             if (optin.has_key?('default_file_ext'))
             @default_directory_name  = optin['default_directory_name'] if (optin.has_key?('default_directory_name'))
@@ -63,7 +144,93 @@ module PhlatScript
             value = getvalue(optin['use_compatible_dialogs'])                if (optin.has_key?('use_compatible_dialogs'))
             @use_compatible_dialogs = value > 0 ? true :  false              if (value != -1)
 
-   #            PhlatScript.spindleSpeed = getvalue(profile['prof_spindlespeed'])    if (profile.has_key?('prof_spindlespeed'))
+         #tools
+            @default_spindle_speed = getvalue(optin['default_spindle_speed'])    if (optin.has_key?('default_spindle_speed'))
+            @default_feed_rate = getvalue(optin['default_feed_rate'])            if (optin.has_key?('default_feed_rate'))
+            @default_plunge_rate = getvalue(optin['default_plunge_rate'])        if (optin.has_key?('default_plunge_rate'))
+            @default_safe_travel = getvalue(optin['default_safe_travel'])        if (optin.has_key?('default_safe_travel'))
+            @default_material_thickness = getvalue(optin['default_material_thickness'])    if (optin.has_key?('default_material_thickness'))
+            @default_cut_depth_factor = getvalue(optin['default_cut_depth_factor'])    if (optin.has_key?('default_cut_depth_factor'))
+            @default_bit_diameter = getvalue(optin['default_bit_diameter'])      if (optin.has_key?('default_bit_diameter'))
+            @default_tab_width = getvalue(optin['default_tab_width'])            if (optin.has_key?('default_tab_width'))
+            @default_tab_depth_factor = getvalue(optin['default_tab_depth_factor'])    if (optin.has_key?('default_tab_depth_factor'))
+            # Default_vtabs?
+            value = -1
+            value = getvalue(optin['default_vtabs'])                if (optin.has_key?('default_vtabs'))
+            @default_vtabs = value > 0 ? true :  false              if (value != -1)
+
+            @default_fold_depth_factor = getvalue(optin['default_fold_depth_factor'])     if (optin.has_key?('default_fold_depth_factor'))
+            @default_pocket_depth_factor = getvalue(optin['default_pocket_depth_factor']) if (optin.has_key?('default_pocket_depth_factor'))
+            # Default_pocket_direction?
+            value = -1
+            value = getvalue(optin['default_pocket_direction'])                if (optin.has_key?('default_pocket_direction'))
+            @default_pocket_direction = value > 0 ? true :  false              if (value != -1)
+         #machine
+            @default_safe_origin_x = getvalue(optin['default_safe_origin_x'])    if (optin.has_key?('default_safe_origin_x'))
+            @default_safe_origin_y = getvalue(optin['default_safe_origin_y'])    if (optin.has_key?('default_safe_origin_y'))
+            @default_safe_width = getvalue(optin['default_safe_width'])    if (optin.has_key?('default_safe_width'))
+            @default_safe_height = getvalue(optin['default_safe_height'])    if (optin.has_key?('default_safe_height'))
+            # Default_overhead_gantry = false
+            value = -1
+            value = getvalue(optin['default_overhead_gantry'])                if (optin.has_key?('default_overhead_gantry'))
+            @default_overhead_gantry = value > 0 ? true :  false              if (value != -1)
+
+            # Default_multipass = false
+            value = -1
+            value = getvalue(optin['default_multipass'])                if (optin.has_key?('default_multipass'))
+            @default_multipass = value > 0 ? true :  false              if (value != -1)
+
+            @default_multipass_depth = getvalue(optin['default_multipass_depth'])    if (optin.has_key?('default_multipass_depth'))
+            @default_stepover = optin['default_stepover']            if (optin.has_key?('default_stepover'))
+            @min_z = getvalue(optin['min_z'])            if (optin.has_key?('min_z'))
+            @max_z = getvalue(optin['max_z'])            if (optin.has_key?('max_z'))
+         #features
+         # Use_vtab_speed_limit = false
+            value = -1
+            value = getvalue(optin['use_vtab_speed_limit'])                if (optin.has_key?('use_vtab_speed_limit'))
+            @use_vtab_speed_limit = value > 0 ? true :  false              if (value != -1)
+
+         # Use_exact_path = false
+            value = -1
+            value = getvalue(optin['use_exact_path'])                if (optin.has_key?('use_exact_path'))
+            @use_exact_path = value > 0 ? true :  false              if (value != -1)
+
+         # Always_show_safearea = true
+            value = -1
+            value = getvalue(optin['always_show_safearea'])                if (optin.has_key?('always_show_safearea'))
+            @always_show_safearea = value > 0 ? true :  false              if (value != -1)
+
+         # Use_reduced_safe_height = true
+            value = -1
+            value = getvalue(optin['use_reduced_safe_height'])                if (optin.has_key?('use_reduced_safe_height'))
+            @use_reduced_safe_height = value > 0 ? true :  false              if (value != -1)
+
+         # Use_pocket_CW = false
+            value = -1
+            value = getvalue(optin['use_pocket_cw'])                if (optin.has_key?('use_pocket_cw'))
+            @use_pocket_cw = value > 0 ? true :  false              if (value != -1)
+
+         # Use_plunge_CW = false
+            value = -1
+            value = getvalue(optin['use_plunge_cw'])                if (optin.has_key?('use_plunge_cw'))
+            @use_plunge_cw = value > 0 ? true :  false              if (value != -1)
+
+         # Use_outfeed = false
+            value = -1
+            value = getvalue(optin['use_outfeed'])                if (optin.has_key?('use_outfeed'))
+            @use_outfeed = value > 0 ? true :  false              if (value != -1)
+
+         # Profile_save_material_thickness = false
+            value = -1
+            value = getvalue(optin['profile_save_material_thickness'])                if (optin.has_key?('profile_save_material_thickness'))
+            @profile_save_material_thickness = value > 0 ? true :  false              if (value != -1)
+
+         # Use_Home_Height = false
+            value = -1
+            value = getvalue(optin['use_home_height'])                if (optin.has_key?('use_home_height'))
+            @use_home_height = value > 0 ? true :  false              if (value != -1)
+
+            @default_home_height = getvalue(optin['default_home_height'])    if (optin.has_key?('default_home_height'))
 
          end
 
@@ -108,8 +275,8 @@ module PhlatScript
          if File.exist?(path)
             #write contents to ini file format - this will supplant current tpr format over time
             generator = IniGenerator.new()
-
-            ohash = {'Options' => self.toHash}
+            writeThis = OptionsWriter.new(self)
+            ohash = {'Options' => writeThis.toHash}
             filePath = File.join(path, 'MyOptions.ini')
             generator.dumpHashMapToIni(ohash, filePath)
          else
@@ -172,10 +339,239 @@ module PhlatScript
       def use_compatible_dialogs=(newval)
          @use_compatible_dialogs = newval
       end
+#tools
+      def default_spindle_speed
+         @default_spindle_speed
+      end
+      def default_spindle_speed=(newval)
+         @default_spindle_speed = newval
+      end
 
+      def default_feed_rate
+         @default_feed_rate
+      end
+      def default_feed_rate=(newval)
+         @default_feed_rate = newval
+      end
 
+      def default_plunge_rate
+         @default_plunge_rate
+      end
+      def default_plunge_rate=(newval)
+         @default_plunge_rate = newval
+      end
+
+      def default_safe_travel
+         @default_safe_travel
+      end
+      def default_safe_travel=(newval)
+         @default_safe_travel = newval
+      end
+
+      def default_material_thickness
+         @default_material_thickness
+      end
+      def default_material_thickness=(newval)
+         @default_material_thickness = newval
+      end
+
+      def default_cut_depth_factor
+         @default_cut_depth_factor
+      end
+      def default_cut_depth_factor=(newval)
+         @default_cut_depth_factor = newval
+      end
+
+      def default_bit_diameter
+         @default_bit_diameter
+      end
+      def default_bit_diameter=(newval)
+         @default_bit_diameter = newval
+      end
+
+      def default_tab_width
+         @default_tab_width
+      end
+      def default_tab_width=(newval)
+         @default_tab_width = newval
+      end
+
+      def default_tab_depth_factor
+         @default_tab_depth_factor
+      end
+      def default_tab_depth_factor=(newval)
+         @default_tab_depth_factor = newval
+      end
+
+      def default_vtabs?
+         @default_vtabs
+      end
+      def default_vtabs=(newval)
+         @default_vtabs = newval
+      end
+
+      def default_fold_depth_factor
+         @default_fold_depth_factor
+      end
+      def default_fold_depth_factor=(newval)
+         @default_fold_depth_factor = newval
+      end
+
+      def default_pocket_depth_factor
+         @default_pocket_depth_factor
+      end
+      def default_pocket_depth_factor=(newval)
+         @default_pocket_depth_factor = newval
+      end
+
+      def default_pocket_direction?
+         @default_pocket_direction
+      end
+      def default_pocket_direction=(newval)
+         @default_pocket_direction = newval
+      end
+#machine
+      def default_safe_origin_x
+         @default_safe_origin_x
+      end
+      def default_safe_origin_x=(newval)
+         @default_safe_origin_x = newval
+      end
+
+      def default_safe_origin_y
+         @default_safe_origin_y
+      end
+      def default_safe_origin_y=(newval)
+         @default_safe_origin_y = newval
+      end
+
+      def default_safe_width
+         @default_safe_width
+      end
+      def default_safe_width=(newval)
+         @default_safe_width = newval
+      end
+
+      def default_safe_height
+         @default_safe_height
+      end
+      def default_safe_height=(newval)
+         @default_safe_height = newval
+      end
+
+      def default_overhead_gantry?
+         @default_overhead_gantry
+      end
+      def default_overhead_gantry=(newval)
+         @default_overhead_gantry = newval
+      end
+
+      def default_multipass?
+         @default_multipass
+      end
+      def default_multipass=(newval)
+         @default_multipass = newval
+      end
+
+      def default_multipass_depth
+         @default_multipass_depth
+      end
+      def default_multipass_depth=(newval)
+         @default_multipass_depth = newval
+      end
+
+      def default_stepover
+         @default_stepover
+      end
+      def default_stepover=(newval)
+         @default_stepover = newval
+      end
+
+      def min_z
+         @min_z
+      end
+      def min_z=(newval)
+         @min_z = newval
+      end
+
+      def max_z
+         @max_z
+      end
+      def max_z=(newval)
+         @max_z = newval
+      end
+#features
+      def use_vtab_speed_limit?
+         @use_vtab_speed_limit
+      end
+      def use_vtab_speed_limit=(newval)
+         @use_vtab_speed_limit = newval
+      end
+
+      def use_exact_path?
+         @use_exact_path
+      end
+      def use_exact_path=(newval)
+         @use_exact_path = newval
+      end
+
+      def always_show_safearea?
+         @always_show_safearea
+      end
+      def always_show_safearea=(newval)
+         @always_show_safearea = newval
+      end
+
+      def use_reduced_safe_height?
+         @use_reduced_safe_height
+      end
+      def use_reduced_safe_height=(newval)
+         @use_reduced_safe_height = newval
+      end
+
+      def use_pocket_cw?
+         @use_pocket_cw
+      end
+      def use_pocket_cw=(newval)
+         @use_pocket_cw = newval
+      end
+
+      def use_plunge_cw?
+         @use_plunge_cw
+      end
+      def use_plunge_cw=(newval)
+         @use_plunge_cw = newval
+      end
+
+      def use_outfeed?
+         @use_outfeed
+      end
+      def use_outfeed=(newval)
+         @use_outfeed = newval
+      end
+
+      def profile_save_material_thickness?
+         @profile_save_material_thickness
+      end
+      def profile_save_material_thickness=(newval)
+         @profile_save_material_thickness = newval
+      end
+
+      def use_home_height?
+         @use_home_height
+      end
+      def use_home_height=(newval)
+         @use_home_height = newval
+      end
+
+      def default_home_height
+         @default_home_height
+      end
+      def default_home_height=(newval)
+         @default_home_height = newval
+      end
    end # class Options
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    class OptionsFilesTool < PhlatTool
     def initialize(opt)   #give it the options instance
       @options = opt  # store the options instance so we can manipulate it without a global
@@ -211,7 +607,7 @@ module PhlatScript
       end # if input
    end # def select
 end # class
-
+#========================================================
    class OptionsMiscTool < PhlatTool
       def initialize(opt)   #give it the options instance
          @options = opt  # store the options instance so we can manipulate it without a global
@@ -258,6 +654,232 @@ end # class
             @options.default_tabletop        = (input[3] == 'true')
             @options.use_compatible_dialogs  = (input[4] == 'true')
 
+
+            @options.save
+         end # if input
+      end # def select
+   end # class
+#===============================================================================
+   class OptionsToolsTool < PhlatTool
+      def initialize(opt)   #give it the options instance
+         @options = opt  # store the options instance so we can manipulate it without a global
+         @tooltype=(PB_MENU_MENU)
+         @tooltip="Default Tool Options"
+         @statusText="Tool Options1"
+         @menuItem="Tool Options2"
+         @menuText="Tool Options"
+      end
+
+      def select
+#         model=Sketchup.active_model
+
+         # prompts
+
+         prompts=[
+            'Default_spindle_speed ',
+            'Default_feed_rate ',
+            'Default_plunge_rate ',
+            'Default_safe_travel ',
+            'Default_material_thickness ',
+            'Default_cut_depth_factor ',
+            'Default_bit_diameter ',
+            'Default_tab_width ',
+            'Default_tab_depth_factor ',
+            'Default_vtabs ',
+            'Default_fold_depth_factor ',
+            'Default_pocket_depth_factor ',
+            'Default_pocket_direction '
+         ]
+         defaults=[
+            @options.default_spindle_speed.to_s,
+            Sketchup.format_length(@options.default_feed_rate),
+            Sketchup.format_length(@options.default_plunge_rate),
+            Sketchup.format_length(@options.default_safe_travel),
+            Sketchup.format_length(@options.default_material_thickness),
+            @options.default_cut_depth_factor.to_s,
+            Sketchup.format_length(@options.default_bit_diameter),
+            Sketchup.format_length(@options.default_tab_width),
+            @options.default_tab_depth_factor.to_s,
+            @options.default_vtabs?.inspect(),
+            @options.default_fold_depth_factor.to_s,
+            @options.default_pocket_depth_factor.to_s,
+            @options.default_pocket_direction?.inspect()
+            ]
+         list=[
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            'true|false',
+            '',
+            '',
+            'true|false'
+            ]
+
+
+         input=UI.inputbox(prompts, defaults, list, 'Tool Options')
+         # input is nil if user cancelled
+         if (input)
+            @options.default_spindle_speed      = input[0].to_i
+            @options.default_feed_rate          = Sketchup.parse_length(input[1])
+            @options.default_plunge_rate        = Sketchup.parse_length(input[2])
+            @options.default_safe_travel        = Sketchup.parse_length(input[3])
+            @options.default_material_thickness = Sketchup.parse_length(input[4])
+            @options.default_cut_depth_factor   = input[5].to_f
+            @options.default_bit_diameter       = Sketchup.parse_length(input[6])
+            @options.default_tab_width          = Sketchup.parse_length(input[7])
+            @options.default_tab_depth_factor   = input[8].to_f
+            @options.default_vtabs              = (input[9] == 'true')
+            @options.default_fold_depth_factor  = input[10].to_f
+            @options.default_pocket_depth_factor = input[11].to_f
+            @options.default_pocket_direction   = (input[12] == 'true')
+            @options.save
+         end # if input
+      end # def select
+   end # class
+
+#===============================================================================
+   class OptionsMachTool < PhlatTool
+      def initialize(opt)   #give it the options instance
+         @options = opt  # store the options instance so we can manipulate it without a global
+         @tooltype=(PB_MENU_MENU)
+         @tooltip="Default Machine Options"
+         @statusText="Machine Options1"
+         @menuItem="Machine Options2"
+         @menuText="Machine Options"
+      end
+
+      def select
+#         model=Sketchup.active_model
+
+         # prompts
+
+         prompts=[
+            'Default_safe_origin_x ',
+            'Default_safe_origin_y ',
+            'Default_safe_width (X) ',
+            'Default_safe_height (Y) ',
+            'Default_overhead_gantry ',
+            'Default_multipass ',
+            'Default_multipass_depth ',
+            'Default_stepover ',
+            'Min_z ',
+            'Max_z '
+            ];
+         defaults=[
+            Sketchup.format_length(@options.default_safe_origin_x),
+            Sketchup.format_length(@options.default_safe_origin_y),
+            Sketchup.format_length(@options.default_safe_width),
+            Sketchup.format_length(@options.default_safe_height),
+            @options.default_overhead_gantry?.inspect(),
+            @options.default_multipass?.inspect(),
+            Sketchup.format_length(@options.default_multipass_depth),
+            @options.default_stepover.to_s,
+            Sketchup.format_length(@options.min_z),
+            Sketchup.format_length(@options.max_z)
+            ];
+         list=[
+            '',
+            '',
+            '',
+            '',
+            'true|false',
+            'true|false',
+            '',
+            '',
+            '',
+            ''
+            ];
+
+
+         input=UI.inputbox(prompts, defaults, list, 'Tool Options')
+         # input is nil if user cancelled
+         if (input)
+            @options.default_safe_origin_x   = Sketchup.parse_length(input[0]);
+            @options.default_safe_origin_y   = Sketchup.parse_length(input[1]);
+            @options.default_safe_width      = Sketchup.parse_length(input[2]);
+            @options.default_safe_height     = Sketchup.parse_length(input[3]);
+            @options.default_overhead_gantry = (input[4] == 'true');
+            @options.default_multipass       = (input[5] == 'true');
+            @options.default_multipass_depth = Sketchup.parse_length(input[6]);
+            @options.default_stepover        = input[7].to_f;
+            @options.min_z                   = Sketchup.parse_length(input[8]);
+            @options.max_z                   = Sketchup.parse_length(input[9]);
+
+            @options.save
+         end # if input
+      end # def select
+   end # class
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   class OptionsFeatTool < PhlatTool
+      def initialize(opt)   #give it the options instance
+         @options = opt  # store the options instance so we can manipulate it without a global
+         @tooltype=(PB_MENU_MENU)
+         @tooltip="Default FeatOptions"
+         @statusText="Feature Options1"
+         @menuItem="Feature Options2"
+         @menuText="Feature Options"
+      end
+
+      def select
+         model=Sketchup.active_model
+
+         # prompts
+         prompts=[
+            'Use_exact_path (G61) ',
+            'Always_show_safearea ',
+            'Use_reduced_safe_height ',
+            'Use_pocket_CW ',
+            'Use_plunge_CW ',
+            'Use_outfeed ',
+            'Use_vtab_speed_limit ',
+            'Profile_save_material_thickness ',
+            'Use_Home_Height ',
+            'Default_Home_Height '
+            ];
+         defaults=[
+            @options.use_exact_path?.inspect(),
+            @options.always_show_safearea?.inspect(),
+            @options.use_reduced_safe_height?.inspect(),
+            @options.use_pocket_cw?.inspect(),
+            @options.use_plunge_cw?.inspect(),
+            @options.use_outfeed?.inspect(),
+            @options.use_vtab_speed_limit?.inspect(),
+            @options.profile_save_material_thickness?.inspect(),
+            @options.use_home_height?.inspect(),
+            Sketchup.format_length(@options.default_home_height)
+            ];
+         list=[
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false',
+            ''
+            ];
+
+         input=UI.inputbox(prompts, defaults, list, 'Feature Options')
+         # input is nil if user cancelled
+         if (input)
+            @options.use_exact_path          = (input[0] == 'true')
+            @options.always_show_safearea    = (input[1] == 'true')
+            @options.use_reduced_safe_height = (input[2] == 'true')
+            @options.use_pocket_cw           = (input[3] == 'true')
+            @options.use_plunge_cw           = (input[4] == 'true')
+            @options.use_outfeed             = (input[5] == 'true')
+            @options.use_vtab_speed_limit    = (input[6] == 'true')
+            @options.profile_save_material_thickness         = (input[7] == 'true')
+            @options.use_home_height         = (input[8] == 'true')
+            @options.default_home_height     = Sketchup.parse_length(input[9])
 
             @options.save
          end # if input
@@ -359,6 +981,12 @@ Features
    # Set this true and set the height and the Z will retract to this at the end of the job
    # really only useful for overhead gantries
    Use_Home_Height = false
-   Default_Home_Height = Default_safe_travel
+   Default_Home_Height = Default_safe
+------------------------
+
+------------------------
+
+
 
 =end
+

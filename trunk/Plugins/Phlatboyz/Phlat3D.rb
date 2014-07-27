@@ -24,18 +24,18 @@ class GCodeGen3D
                 # the starting values
                 @spindle = PhlatScript.spindleSpeed #8000
                 @feedRate = PhlatScript.feedRate #100
-                @BitDiam = PhlatScript.bitDiameter.to_f #0.125
-                @MatThick = PhlatScript.materialThickness.to_f #2.0
-                @SafeLength = PhlatScript.safeWidth.to_f  #42.0
-                @SafeWidth = PhlatScript.safeHeight.to_f#22.0
-                @MultiPass = PhlatScript.useMultipass? # PhlatScript.multipassEnabled #false
-                @MultiPassDepth = PhlatScript.multipassDepth.to_f #0.1
-                @OvercutPercent = PhlatScript.cutFactor #1.40
-                @Phlat_SafeHeight = PhlatScript.safeTravel.to_f #2.50
-                @SafeHeight = (@Phlat_SafeHeight.to_f) # + @MatThick.to_f)
+                @bitDiam = PhlatScript.bitDiameter.to_f #0.125
+                @matThick = PhlatScript.materialThickness.to_f #2.0
+                @safeLength = PhlatScript.safeWidth.to_f  #42.0
+                @safeWidth = PhlatScript.safeHeight.to_f #22.0
+                @multiPass = PhlatScript.useMultipass? # PhlatScript.multipassEnabled #false
+                @multiPassDepth = PhlatScript.multipassDepth.to_f #0.1
+                @overcutPercent = PhlatScript.cutFactor #1.40
+                @phlat_SafeHeight = PhlatScript.safeTravel.to_f #2.50
+                @safeHeight = (@phlat_SafeHeight.to_f) # + @matThick.to_f)
 
-                @SafeXOffset = 0.0
-                @SafeYOffset = 0.0
+                @safeXOffset = 0.0
+                @safeYOffset = 0.0
                 @modelMaxX = 0.0
                 @modelMaxY = 0.0
                 @modelMaxZ = 0.0
@@ -43,18 +43,18 @@ class GCodeGen3D
                 @modelMinY = 99999.0
                 @modelMinZ = 99999.0
 
-                @FileToSave = "D:/test.cnc"
+                @sileToSave = "D:/test.cnc"
 
                 #Calculated Values
-                @BitOffset = @BitDiam/2
-                @stepOver = @BitOffset
+                @bitOffset = @bitDiam/2
+                @stepOver = @bitOffset
                 @modelgrid = Array.new
                 @gCodegrid = Array.new
                 @verticalgrid = Array.new
                 @optimizedgrid = Array.new
 
                 @optgrid2 = Array.new
-                @GCodeOffset = 50
+#                @gCodeOffset = 50
 
                 #metric by swarfer - this does the basic setting up from the drawing units
                 if PhlatScript.isMetric
@@ -90,8 +90,8 @@ class GCodeGen3D
     #prompts = ["Enter StepOver as Percentage of Bit Diameter"]
     #defaults = ["30"]
     #results = inputbox prompts, defaults, "StepOver Percentage"
-    #@stepOver = @BitDiam * ( results[0].to_f/100)
-    @stepOver = @BitDiam * ( PhlatScript.stepover.to_f/100)
+    #@stepOver = @bitDiam * ( results[0].to_f/100)
+    @stepOver = @bitDiam * ( PhlatScript.stepover.to_f/100)
 
 
     #need to Cycle through all entities finding the minimum and max points if inside the safe area
@@ -103,18 +103,18 @@ class GCodeGen3D
       puts "(StepOver: #@stepOver)"
       puts "(Spindle speed: #@spindle)"
       puts "(FeedRate: #@feedRate)"
-      puts "(Bit Diameter: #@BitDiam)"
-      puts "(Material Thickness: #@MatThick)"
-      puts "(Safe Length: #@SafeLength)"
-      puts "(Safe Width: #@SafeWidth)"
-      puts "(Multipass: #@MultiPass)"
-      puts "(Multipass Depth: #@MultiPassDepth)"
-#      puts "(OverCut: #@OvercutPercent)"
-      puts "(SafeHeight: #@SafeHeight)"
-      puts "(BitOffset: #@BitOffset)"
+      puts "(Bit Diameter: #@bitDiam)"
+      puts "(Material Thickness: #@matThick)"
+      puts "(Safe Length: #@safeLength)"
+      puts "(Safe Width: #@safeWidth)"
+      puts "(Multipass: #@multiPass)"
+      puts "(Multipass Depth: #@multiPassDepth)"
+#      puts "(OverCut: #@overcutPercent)"
+      puts "(SafeHeight: #@safeHeight)"
+      puts "(BitOffset: #@bitOffset)"
 
       for ent in @ents
-        if (@SafeXOffset < ent.bounds.min.x) and (@SafeYOffset < ent.bounds.min.y) and (@SafeXOffset+@SafeLength > ent.bounds.max.x) and (@SafeYOffset + @SafeWidth > ent.bounds.max.y)
+        if (@safeXOffset < ent.bounds.min.x) and (@safeYOffset < ent.bounds.min.y) and (@safeXOffset+@safeLength > ent.bounds.max.x) and (@safeYOffset + @safeWidth > ent.bounds.max.y)
           @modelMaxX = ent.bounds.max.x if ent.bounds.max.x > @modelMaxX
           @modelMaxY = ent.bounds.max.y if ent.bounds.max.y > @modelMaxY
           @modelMaxZ = ent.bounds.max.z if ent.bounds.max.z > @modelMaxZ
@@ -141,7 +141,7 @@ class GCodeGen3D
         @optgrid2 = optimizeGrid2(@optimizedgrid)
 
         #output the GCode
-        if @MultiPass
+        if @multiPass
           printGCodeInterval(@optgrid2) #@gCodegrid) @optimizedgrid)
         else
           printGCode(@optgrid2)
@@ -379,19 +379,19 @@ class GCodeGen3D
 #spit out the gcode header, used by both versions of the generator
    def putHeader(nf)
       nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")}%#{$PhlatScriptExtension.version})\n"
-      nf.puts "(Bit Diameter: #{Sketchup.format_length(@BitDiam)})"
+      nf.puts "(Bit Diameter: #{Sketchup.format_length(@bitDiam)})"
       nf.puts "(StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%)"
       nf.puts "(Spindle speed: #{@spindle})"
       nf.puts "(FeedRate: #{Sketchup.format_length(@feedRate)})"
-      nf.puts "(Material Thickness: #{Sketchup.format_length(@MatThick)})"
-      nf.puts "(Safe Length: #{Sketchup.format_length(@SafeLength)})"
-      nf.puts "(Safe Width: #{Sketchup.format_length(@SafeWidth)})"
-      if (@MultiPass)
-         nf.puts "(Multipass: #@MultiPass)"
-         nf.puts "(Multipass Depth: #{Sketchup.format_length(@MultiPassDepth)})"
+      nf.puts "(Material Thickness: #{Sketchup.format_length(@matThick)})"
+      nf.puts "(Safe Length: #{Sketchup.format_length(@safeLength)})"
+      nf.puts "(Safe Width: #{Sketchup.format_length(@safeWidth)})"
+      if (@multiPass)
+         nf.puts "(Multipass: #@multiPass)"
+         nf.puts "(Multipass Depth: #{Sketchup.format_length(@multiPassDepth)})"
       end
-      #                nf.puts "(OverCut: #@OvercutPercent)"
-      nf.puts "(SafeHeight: #{Sketchup.format_length(@SafeHeight)})"
+      #                nf.puts "(OverCut: #@overcutPercent)"
+      nf.puts "(SafeHeight: #{Sketchup.format_length(@safeHeight)})"
 
       exact = PhlatScript.useexactpath? ? "G61" : ""         # G61 - Exact Path Mode
       nf.puts "G90 #{@unit_cmd} G49 #{exact}"
@@ -416,22 +416,22 @@ class GCodeGen3D
 #       end
 
    def printGCodeInterval(grid)
-      puts "Writing File #@FileToSave"
-      Sketchup.status_text = "Writing File #@FileToSave"
-      nf = File.new @FileToSave, "w+"
+      puts "Writing File #@sileToSave"
+      Sketchup.status_text = "Writing File #@sileToSave"
+      nf = File.new @sileToSave, "w+"
       nf.puts "%"
       putHeader(nf)
 
       #               nf.puts "G90 #{@unit_cmd} G49"
-      curz = 0.0 - @MultiPassDepth
-      zsafe = format_measure('Z',@Phlat_SafeHeight)
+      curz = 0.0 - @multiPassDepth
+      zsafe = format_measure('Z',@phlat_SafeHeight)
       nf.puts "M3 S#@spindle"
       pass = 1
       stopnexttime = false
       startxs = format_measure('X',grid[0].to_a[0])
       startys = format_measure('Y',grid[0].to_a[1])
 
-      while curz >= (-@MatThick)
+      while curz >= (-@matThick)
          nf.puts "(Pass #{pass})"
          if pass == 1
             nf.puts "G0 #{zsafe}"
@@ -476,11 +476,11 @@ class GCodeGen3D
             nf.puts "G0 X0.0 Y0.0"
             break
          end
-         curz -= @MultiPassDepth
-#         puts "#{pass} #{curz} #{-@MatThick} #{(curz - (-@MatThick)).abs}"
-         if ((curz - (-@MatThick)).abs < 0.001) || (curz < -@MatThick)                         #if lower than bottom of material, clamp to table top, and stop next time
+         curz -= @multiPassDepth
+#         puts "#{pass} #{curz} #{-@matThick} #{(curz - (-@matThick)).abs}"
+         if ((curz - (-@matThick)).abs < 0.001) || (curz < -@matThick)                         #if lower than bottom of material, clamp to table top, and stop next time
 #            puts "clamped"
-            curz = -@MatThick
+            curz = -@matThick
             stopnexttime = true
          end
          pass += 1
@@ -499,13 +499,13 @@ class GCodeGen3D
    end
 
   def printGCode(grid)
-	 puts "Writing File #@FileToSave"
-	 Sketchup.status_text = "Writing File #@FileToSave"
-	 nf = File.new @FileToSave, "w+"
+	 puts "Writing File #@sileToSave"
+	 Sketchup.status_text = "Writing File #@sileToSave"
+	 nf = File.new @sileToSave, "w+"
 	 nf.puts "%"
 	 putHeader(nf)
 	 nf.puts "M3 S#{@spindle}"
-	 zsafe = format_measure('Z',@Phlat_SafeHeight)
+	 zsafe = format_measure('Z',@phlat_SafeHeight)
 	 nf.puts "G0 #{zsafe}"
 #               xval = sprintf("%f",round_to(grid[0].to_a[0],5))
 #               yval = sprintf("%f",round_to(grid[0].to_a[1],5))
@@ -579,7 +579,7 @@ class GCodeGen3D
 
 
 								  if newpt != nil
-											 newpt.z -= @MatThick
+											 newpt.z -= @matThick
 											 @gCodegrid += [(Geom::Point3d.new [newpt.x, newpt.y, newpt.z])]
 								  end
 
@@ -666,7 +666,7 @@ class GCodeGen3D
                                                         #       newpt = nil
                                                         #else
 
-                                                                newpt.y -= @BitOffset
+                                                                newpt.y -= @bitOffset
                                                         #end
                                                 else
                                                         #Condition 2B
@@ -675,7 +675,7 @@ class GCodeGen3D
                                                         #       newpt = nil
                                                         #else
 
-                                                                newpt.y -= @BitOffset
+                                                                newpt.y -= @bitOffset
                                                         #end
                                                 end
                                         elsif con == "LMH"
@@ -686,7 +686,7 @@ class GCodeGen3D
                                                         #       newpt = nil
                                                         #       else
 
-                                                                newpt.y += @BitOffset
+                                                                newpt.y += @bitOffset
                                                         #end
                                                 else
                                                         #Condition 3B
@@ -696,7 +696,7 @@ class GCodeGen3D
                                                         #       newpt = nil
                                                         #       else
 
-                                                                newpt.y += @BitOffset
+                                                                newpt.y += @bitOffset
                                                         #end
                                                 end
                                         end
@@ -718,7 +718,7 @@ class GCodeGen3D
                                                                 newpt = nil
                                                                 else
 
-                                                                newpt.y += @BitOffset
+                                                                newpt.y += @bitOffset
                                                         end
                                                 when "MMH", "LMM", "LMH"
                                                         #conditions 7,9,11 move the bit south
@@ -728,7 +728,7 @@ class GCodeGen3D
                                                                 newpt = nil
                                                                 else
 
-                                                                newpt.y -= @BitOffset
+                                                                newpt.y -= @bitOffset
                                                         end
                                         end
 
@@ -748,9 +748,9 @@ class GCodeGen3D
                                 #       newpt.z += @stepOver
                                 #       adjustpoint3(prevpt, newpt, nextpt)
                                 #elsif east[0]
-                                #       newpt.x -= (@BitOffset - east[1].abs)
+                                #       newpt.x -= (@bitOffset - east[1].abs)
                                 #elsif west[0]
-                                #       newpt.x += (@BitOffset - west[1].abs)
+                                #       newpt.x += (@bitOffset - west[1].abs)
                                 #end
                         #end
 
@@ -764,7 +764,7 @@ class GCodeGen3D
         def adjustpoint2(point, hitarray, alreadyAdjusted, retest)
 
                 if point != nil
-                        if point.z < @MatThick
+                        if point.z < @matThick
                                 acollision = false
                                 hitarray.clear
                                 north = determineBitCollision point, Geom::Vector3d.new(0,1,0)
@@ -807,7 +807,7 @@ class GCodeGen3D
 
                                         elsif hitarray.include?("North")
                                                 if not alreadyAdjusted.include?("North")
-                                                        point.y -= (@BitOffset - north[1].abs)
+                                                        point.y -= (@bitOffset - north[1].abs)
                                                         alreadyAdjusted += ["North"]
                                                         operatedOn = true
                                                         adjustpoint2(point, hitarray,alreadyAdjusted, true)
@@ -816,7 +816,7 @@ class GCodeGen3D
                                         elsif hitarray.include?("South")
                                                 #puts "#{point} #{south}"
                                                 if not alreadyAdjusted.include?("South")
-                                                        point.y += (@BitOffset - south[1].abs)
+                                                        point.y += (@bitOffset - south[1].abs)
                                                         alreadyAdjusted += ["South"]
                                                         operatedOn = true
                                                         adjustpoint2(point, hitarray,alreadyAdjusted, true)
@@ -832,14 +832,14 @@ class GCodeGen3D
                                                 adjustpoint2(point, hitarray,alreadyAdjusted, true)
                                         elsif hitarray.include?("East")
                                                 if not alreadyAdjusted.include?("East")
-                                                        point.x -= (@BitOffset - east[1].abs)
+                                                        point.x -= (@bitOffset - east[1].abs)
                                                         alreadyAdjusted += ["East"]
                                                         operatedOn = true
                                                         adjustpoint2(point, hitarray,alreadyAdjusted, true)
                                                 end
                                         elsif hitarray.include?("West")
                                                 if not alreadyAdjusted.include?("West")
-                                                        point.x += (@BitOffset - west[1].abs)
+                                                        point.x += (@bitOffset - west[1].abs)
                                                         alreadyAdjusted += ["West"]
                                                         operatedOn = true
                                                         adjustpoint2(point, hitarray,alreadyAdjusted, true)
@@ -876,7 +876,7 @@ class GCodeGen3D
                         return [false,0]
                 else
                         distance = colpt.distance point
-                        if distance > (@BitOffset*2) #The reduction in bit offset is needed so that we don't always return nil after a retest
+                        if distance > (@bitOffset*2) #The reduction in bit offset is needed so that we don't always return nil after a retest
                                 return [false,distance]
                         else
                                 #if distance < 0.001
@@ -896,7 +896,7 @@ class GCodeGen3D
                         return [false,0]
                 else
                         distance = colpt.distance point
-                        if distance > (@BitOffset - 0.001) #The reduction in bit offset is needed so that we don't always return nil after a retest
+                        if distance > (@bitOffset - 0.001) #The reduction in bit offset is needed so that we don't always return nil after a retest
                                 return [false,distance]
                         else
                                 #if distance < 0.001
@@ -914,14 +914,14 @@ class GCodeGen3D
     currposy = @modelMinY
     ydir = 1
     Sketchup.status_text = "Starting Generate Model Grid"
-    puts " BitOffset: #@BitOffset"
+    puts " BitOffset: #@bitOffset"
     puts " modelMaxX: #@modelMaxX"
     puts " modelMaxY: #@modelMaxY"
     puts " modelMaxZ: #@modelMaxZ"
     puts " modelMinX: #@modelMinX"
     puts " modelMinY: #@modelMinY"
     puts " modelMinZ: #@modelMinZ"
-    planval =0 #  @BitDiam * @OvercutPercent
+    planval =0 #  @bitDiam * @overcutPercent
 
     @basefloor = Sketchup.active_model.entities.add_group
     @basefloor.entities.add_face [@modelMinX-5,@modelMinY-5,-planval], [@modelMaxX +5 , @modelMinY-5,-planval], [@modelMaxX+5, @modelMaxY+5,-planval], [@modelMinX-5, @modelMaxY+5,-planval]
@@ -986,7 +986,7 @@ class GCodeGen3D
       # if there isn't a file extension set it to the default
       result += $phoptions.default_file_ext if (File.extname(result).empty?)
       PhlatScript.cncFile = result
-      @FileToSave = result
+      @sileToSave = result
       #PhlatScript.checkParens(result, "Output File")
       status = true
     end
