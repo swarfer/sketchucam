@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO set default options</title>
+<meta name="id" content="$Id: howto_changeconstants.html 6 2014-02-19 14:22:19Z swarfer@gmail.com $">
+<style type="text/css">
+	body, div, span {
+			font-family: Verdana;
+	}
+	body {
+			background-color: grey;
+			text-align: center;
+			width: 1024px;
+			padding-left:0.5%;
+			padding-right:0.5%;
+	}
+	div.shell {
+			/*background-color: #eee;*/
+			background-color: #ddeeff;
+			/*background-color: white;*/
+			font-size: 1.05em;
+	}
+
+	div.intro-name {
+			text-align:center;
+			font-size: 1.20em;
+			font-weight: bold;
+			padding-top:25px;
+	}
+	div.intro-name div {
+			font-size: 0.60em;
+			font-weight: normal;
+	}
+	div.intro-title {
+			text-align:center;
+			margin:10px;
+			font-size: 1.10em;
+			font-weight: bold;
+			padding-top: 15px;
+	}
+	div.intro {
+			text-align:left;
+			margin:5px;
+			padding: 5px;
+			font-size: 0.90em;
+	}
+
+	.command-image {
+			/*background-color: #ededed;*/
+			background-color: #ddeeff;
+			height: 100px;
+			font-weight: bold;
+			font-size: 0.90em;
+			vertical-align:center;
+			padding:10px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+	}
+	.command-description {
+			/*background-color: #ededed;*/
+			background-color: #eaecfa;
+			/*margin: 2px;*/
+			padding: 15px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+			font-size: 0.90em;
+	}
+
+	.command-title {
+			font-size: 1.00em;
+			font-weight: bold;
+			/*border-bottom: thin solid blue;*/
+			text-align: center;
+			padding-top: 25px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+			text-decoration: underline;
+	}
+	.command-subtitle {
+			font-size: 0.70em;
+			font-style: italic;
+	}
+   hr {
+      background-color: #6699ff; 
+      height: 2px; 
+      border: 0; 
+      }
+   dt {
+      margin-top: 7px;
+      font-weight: bold;
+      font-size: smaller;
+      }
+</style>
+
+</head>
+<body>
+
+
+<div class="shell">
+
+<br>
+<div class="intro-name">Phlatboyz PhlatScripT
+	<div><b>SketchUcam Version 1.2</b><br>July 2014</div>
+</div>
+<hr width="100%">
+<div class="intro">
+<span style="float: right;"><a href="help.html">Back to help index</a></span>
+<h2>HOWTO set default options</h2>
+
+<div  style="background-color: cyan;">
+<p>
+Please note that this mechanism supercedes the Constants.rb and MyConstants.rb files.  However, DO NOT DELETE ANY FILES.<br>
+Current settings in Constants.rb and MyConstants.rb will be honored but overridden by this new settings mechanism, but the Constants.rb file is still <b>required</b> so please do not delete it.
+</p>
+</div>
+
+<p>
+<img src="images/options.png" style="float: right;">
+The Phlatscript system has long had a file called Constants.rb which contains
+a long list of constant values.  Some of them are used only by the system and are not user settable 
+while others were designed to be user settings that you set once and forget.
+</p>
+<p>Current development of the system revealed that Constants.rb will be changing often as new features 
+are added, thus presenting the problem of 'merging' the new file with your existing options such as default 
+safe cut area and so on.
+</p>
+<p>
+
+A new system had to be designed and the simplest is to have a secondary constants file in which you set your options.
+However, this proved to be complicated by changes in Windows 7 and 8, differing paths in Mac and Linux, and other niggles.
+</p>
+<p>
+Thus the new Options Menu is an evolution of this default options mechanism and allow a user to set default settings that affect
+their computer or CNC machine  environment using simple menus as shown at right.
+</p>
+<h2>The Options menu</h2>
+<p>
+The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items with subitems as follows:
+<dl>
+<dt><a href="#a1">Tool Options</a>
+   <dd>Things affecting tools
+<dt><a href="#a2">Misc Options</a>
+   <dd>Miscallaneous things
+<dt><a href="#a3">Machine Options</a>
+   <dd>Things affecting your machine type and size
+<dt><a href="#a4">Feature Options</a>
+   <dd>Things you may want to change to get different Gcode output options
+<dt><a href="#a5">File Options</a>
+   <dd>Default file naming options
+</dl>
+</p>
+<br clear="all">
+
+<h2><a id="a1">Tool Options</a></h2>
+<p>   
+<img src="images/options-tool.png" style="float: right;">
+These defaults will only be seen on new drawings.  These settings should reflect your most commonly used cutting tool and material.
+These settings can easily be overridden by using the Tool Profiles save and load mechanism.
+<dl>
+   <dt>Default_spindle_speed
+      <dd>This sets the default 'S' word written to the Gcode, which sets the spindle speed if your controller supports it.
+   <dt>Default_feed_rate 
+      <dd>This is the default cutting feed rate in current drawing units per minute
+   <dt>Default_plunge_rate 
+      <dd>In hard materials you need a slower plunge feed rate, set it here in drawing units per minute
+   <dt>Default_safe_travel 
+      <dd>Height above the workpiece where it is safe to move rapidly to the next cut.
+   <dt>Default_material_thickness 
+      <dd>The default material thickness in drawing units.
+   <dt>Default_cut_depth_factor 
+      <dd>Set this to 100% if you are using a table type machine, or 110 to 140% for a Phlatprinter.
+   <dt>Default_bit_diameter 
+      <dd> Set to your most commonly used bit size.
+   <dt>Default_tab_width 
+      <dd> Set to 3X your most common bit size.
+   <dt>Default_tab_depth_factor 
+      <dd>Experience will show you how much tab depth your prefer, set it here.
+   <dt>Default_vtabs 
+      <dd>Normal tabs have vertical edges, V-tabs ave sloped edges and allow the cutter to keep moving at a constant speed.
+         By setting this to true the default tab style willb e Vtab.  You can still change it whiel placing tabs with the END key.
+   <dt>Default_fold_depth_factor 
+      <dd>Your preferred fold depth factor in %
+   <dt>Default_pocket_depth_factor 
+      <dd>Your preferred pocket depth factor in %
+   <dt>Default_pocket_direction 
+      <dd>Set this to true to have pocket zigzags default to along Y axis, false for along X axis.
+         This setting can be changed on the fly with the END key
+</dl>
+</p>
+
+<h2><a id="a2">Misc Options</a></h2>
+<p>
+<img src="images/options-misc.png" style="float: right;">
+<dl>
+   <dt>Default_comment_remark
+      <dd>A default text string for the Comment area of the parameters.  This will be written in the Gcode header.
+   <dt>Default_gen3d
+      <dd>This is normally false since most use of SketchUcam is for 2.5D cutting.  Set to true if all you do is 3D.
+   <dt>Default_show_gplot after output 
+      <dd>Set this to true to have the gplot program open with your new Gcode file EVERY TIME after generating Gcode.
+   <dt>Default_tabletop is Z-Zero 
+      <dd>Set this TRUE if you want to always zero your tool to the table top instead of the material top.
+      Phlatprinters must use the material top for Z-Zero (set this false), but all other machines can use the table top.
+      If you fit an automatic tool zero sensor level with the table top, Mach3 and LinuxCNC make this very easy to use.
+      Using the table as zero will also all you to generate Gcode that can cut many thicknesses of material up to the maximum of the
+      thickness you specified.
+   <dt id="compat">Use_compatible_dialogs set TRUE if you cannot see the parameters dialog
+      <dd>This one is rather obvious.  If the main Parameters Dialog shows up largely blank, you need to set this to true.
+      Mac and Linux users will be most in need of this setting.   Linux users running Sketchup under WINE can work around this issue
+      by installing 'winetricks' and then issuing the command 'winetricks ie8'.  This will install IE8 and allow the Parameters dialog to work
+      correctly with this setting set to false.
+</dl>   
+</p>
+<h2><a id="a3">Machine Options</a></h2>
+<p>
+<img src="images/options-machine.png" style="float: right;">
+These options set defaults taken from the size and shape of your CNC machine.  If you have more than one machine, set these to the largest
+machines values and be careful when generating code for the smaller ones.
+<dl>
+   <dt>Default_safe_origin_x 
+      <dd>   Normally 0, this is where the safe area is placed by default.
+   <dt>Default_safe_origin_y 
+      <dd>   Normally 0, this is where the safe area is placed by default.            
+   <dt>Default_safe_width (X)
+      <dd>Set this to the largest workpiece your machien can take in the X direction.
+   <dt>Default_safe_height (Y) 
+      <dd>Set this to the largest workpiece Y size.
+   <dt>Default_overhead_gantry
+      <dd>If all you have is a Phlatprinter, set this to false.
+      If all you have is a gantry type machine, set this to true.
+      If you have both styles, set to the one you use the most.
+   <dt>Default_multipass
+      <dd>Set TRUE if you most often do multipass cuts
+   <dt>Default_multipass_depth 
+      <dd>Set to your preferred multipass cut depth.  Note that you can optimize multipass cuts by calculating this figure
+      so that the last pass is the same size as all other passes.
+      <pre>cuts = Overcut%/100 * MatThickness / Multipassdepth</pre>
+      will give you the number of passes at the current settings.  If there are any numbers after the decimal point there will be
+      1 extra pass with that fraction of the multipass depth as the cut depth.<br>
+      For example
+<pre>6mm material
+2mm multipass depth
+110% overcut
+cuts = 110/100 * 6 / 2
+cuts = 3.3</pre>
+      will actually result in 4 passes, with the last pass being only 0.3*2 = 0.6mm deep.
+      </p>
+      <p>To optimize
+      <ol>
+      <li>Round the number of cuts UP if the material is hard, DOWN if the material is soft
+      <li>3.3 becomes 4 (for hard material)
+      <li>new multipass depth = 110/100 * 6 / roundedcuts
+         <pre> 110 / 100 * 6 / 4 = 1.65mm</pre>
+      <li>Set multipass depth to 1.65 to achieve 4 equal passes.
+      </ol>
+   <dt>Default_stepover
+      <dd>The default percentage of the tool diameter to stepover in pockets and in 3D cuts.
+      Tool manufactuers discourage values between 30 and 70% as this shortens tool life, 
+      so for soft material use 70 or more and for hard materials use 30% or less.
+   <dt>Min_z 
+      <dd>Set this to negative (-) your Z travel.   Gcode will never contain Z travel more than this figure.
+   <dt>Max_z
+      <dd>Set this to your Z travel. Gcode will never contain Z travel more than this figure.
+</dl>
+</p>
+<h2><a id="a4">Feature Options</a></h2>
+<img src="images/options-feature.png" style="float: right;">
+<dl>
+   <dt>Use_exact_path (G61)
+      <dd>Set this to true to use G61. This will make the machine come to a complete
+         stop when changing directions instead of rounding out square corners. When
+         set to false the default for your CNC software will be used. Without G61
+         the machine will maintain the best possible speed for the cut even if the
+         tool isn't true to the cut path. Rounded corners at low feedrates aren't
+         very noticeable but anything over 200 starts to generate large radii so
+         that the momentum of the machine can be maintained.
+            
+   <dt>Always_show_safearea
+      <dd>Set this to true, if you want the safe area to always show, when parameters are saved.<br>
+         Otherwise the safe area will only show, if it's size has been changed.
+            
+   <dt>Use_reduced_safe_height
+      <dd>Set this to true to use 1/3 of the usual safe travel height during plunge boring moves
+            
+   <dt>Use_pocket_CW
+      <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
+         Please research 'climb milling' before changing this.<br>
+         Note this is a draw time option, if you change it in the Gcode you have to redraw all pocket cuts.
+            
+   <dt>Use_plunge_CW
+      <dd>Set this true to generate plunge hole cuts in CW instead of usual CCW cut direction<br>
+         Please research 'climb milling' before changing this.
+            
+   <dt>Use_outfeed 
+      <dd>Outfeed: phlatprinters only!<br>
+         Set this to true to enable outfeed.  At the end of the job it will feed the material out the front of the
+         machine instead of stopping at X0 with the material out the back.<br>
+         It will feed to 75% of the material size as given by the safe area settings.
+            
+   <dt>Use_vtab_speed_limit
+      <dd>Set this to true if you have an older version of Mach that does not slow down
+         to the Z maximum speed during helical linear interpolation (G2/3 with Z
+         movement A.K.A vtabs on an arc). Vtabs on arcs will cut at the defined plunge rate.
+            
+   <dt>Profile_save_material_thickness
+      <dd>Set this to TRUE to have the material thickness saved and restored in Tool Profiles.
+          Profiles that do not contain a material thickness will load just fine.
+            
+   <Dt>Use_Home_Height 
+      <dd>Set this true and set the height and the Z will retract to this at the end of the job
+         really only useful for overhead gantries
+   <dt>Default_Home_Height 
+      <dd>If Use_Home_Height is true, then a G00 Z movement will be issued at the end of the job, using this height for Z.<br>
+      If you have material top as Z-zero, it will retract this high above the material.<br>
+      If you have table top as Z-Zero, it will retract this high above the table.
+   </dl>
+</p>
+   
+<h2><a id="a5">File Options</a></h2>
+<p>
+<img src="images/options-file.png" style="float: right;">
+   Some options that affect saving Gcode files.
+<dl>
+   <dt>Default_file_name
+      <dd>The default gocode file name, with extension
+   <dt>Default_file_ext
+      <dd>The default extension to use for Gcode files.  This will be added to the name if you do not give an extension in the save dialog.
+   <dt>Default_directory_name
+      <dd>The default directory to save Gcode into.  Make sure it exists!
+</dl>      
+</p>
+
+
+<br clear=all>
+</div>
+<hr>
+</div>
+</body>
+</html>

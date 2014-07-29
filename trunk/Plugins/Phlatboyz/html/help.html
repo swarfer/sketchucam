@@ -98,7 +98,12 @@
    td {
       text-align: justify;
       }
-
+   dt {
+      margin-top: 5px;
+      }
+   .index {
+      line-height: 1.6em;
+      }
    </style>
 </head>
 <body>
@@ -107,28 +112,19 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz PhlatScripT<div><b>SketchUcam Version 1.1d</b><br>Mar 2014</div></div>
+<div class="intro-name">Phlatboyz PhlatScripT<div><b>SketchUcam Version 1.2</b><br>Jul 2014</div></div>
 
-<br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">
-Check for Latest Version of the Phlatscript</a>
+<br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of the Phlatscript</a>
 <hr width="100%">
         <div class="intro-title">
         Introduction
         </div>
 
-<table summary="help 1">
+<table summary="help 1" cellspacing=0 cellpadding=1>
 <tbody>
 <tr>
    <td>
-      <div>
       <div class="intro">
-         <div class="command-description" style="float: right; width: 220px; display: block; margin-left: 10px;">
-            <b>HOWTO:</b><br>
-            <a href="howto-changegplot.html">Change Gcode plotter</a><br>
-            <a href="howto_changeconstants.html">Change MyConstants.rb defaults</a>		<br>
-            <a href="howto_phlatbones.html">Use the PhlatBones tool</a><br>
-            <a href="howto_profileexchange.html">Exchange Profiles with friends</a>
-         </div>						
          The PhlatScripT is a set of tools in the form of a plugin for Google
          SketchUp. It allows for assigning of CNC cut/fold/drill/mill, etc.
          functions to SketchUp designs as a full featured CAM solution. It was
@@ -149,6 +145,28 @@ Check for Latest Version of the Phlatscript</a>
          <i>This is a great project and if you would like to contribute your time and talents to help the Phlatscript grow,
          please <a href="mailto:kram2422@comcast.net">contact us</a></i>
       </div>
+   </td>
+   <td>
+         <div class="command-description" style="float: right; width: 220px; display: block; margin-left: 10px; font-size: 0.80em;">
+            <b>HOWTO:</b><br>
+            <ul style="padding-left: 2px;">
+               <li><a class="index" href="howto_options.html">Change Default Options</a>
+               <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog blank</a>            
+               <li><a class="index" href="howto-changegplot.html">Change Gcode plotter</a>
+               <li><a class="index" href="howto_phlatbones.html">Use the PhlatBones tool</a>
+               <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
+               <li><a class="index" href="#toolbar">Toolbar Icons</a>
+               <li><a class="index" href="#edgecontext">Edge Context Menu</a>
+               <li><a class="index" href="#tools">Tools|PhlatBoyz Menu</a>
+            </ul>
+         </div>						
+   </td>   
+</tr>
+</table>
+<table cellspacing=0 cellpadding=1>
+<tr>
+   <td width="90%">
+   
       <div class="intro">
          Since the PhlatScripT is released as open source, anyone and everyone
          is welcome to download it and experiment with it. The ultimate goal is
@@ -167,19 +185,38 @@ Check for Latest Version of the Phlatscript</a>
             Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
          </div>
       </div>
+      <div class="intro">
+      <h4>New in V1.2</h4>
+         <ul>
+         <li>The '<u>Table top is Z-Zero</u>' checkbox.  If this is ticked the table top will be used as the Z zero reference
+         instead of the material top surface.  This is most useful on overhead gantry machines, and <i>not at all useful</i> on Phlatprinters.
+         <li>The <a href="howto_options.html">Options Menu</a> allows you to set default options that will be applied to new drawings.  These options affect such things as
+         your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and Gcode generation options.
+         <i>This menu system replaces the MyConstants.rb file in a transparent way.  Your existing settings will be used until you use the Options menu to change them.</i>
+         <li>  profile file format was changed to ini format, extension .pri
+         <li>  fix for parameters tool on mac
+         <li>  phlatBones preferences file moved to profiles folder, solves write permissions issue on Win7/8
+         <li>  Pocketcut: improved undo so entire pocket cut will undo in one operation
+         <li>  arcs, extra digit of precision
+         <li>  3D - removed full depth plunge at start of last multipass pass that may remove extra material.
+         <li>  added Z-Zero option to parameters dialog 
+         
+         </ul>
+      </div>
+      
    </td>
-   <td>
+   <td width="10%">
       <img alt="" src="../images/andy.png" title="Andy the Aviator" border="0">
    </td>
 </tr>
 </tbody>
 </table>
 		
-<table summary="help 2">
+<table summary="help 2" id="toolbar">
    <tbody>
    <tr>
       <th colspan="2" class="command-title">
-         Phlatboyz Command Toolbar
+         Phlatboyz Command Toolbar<br> <img src="images/toolbar.png" style="float: center;" alt="toolbar image">
       </th>
    </tr>
    <tr>
@@ -188,6 +225,7 @@ Check for Latest Version of the Phlatscript</a>
       </td>
       <td class="command-description">
       <img align=right src="images/params.png" title="params" border="0" style="margin-left: 10px;" alt="params menu">
+         <p>
          Enter <b>Phlatboyz Parameters</b> to set: [spindle speed, feed rate, plunge rate, safe travel,
          material thickness, bit diameter, tab width, tab depth factor, the safe
          cutting area size and comment text] which will appear in
@@ -197,14 +235,16 @@ Check for Latest Version of the Phlatscript</a>
          allow designs requiring multiple sheets to be contained within one
          SketchUp file and the cut codes processed as one sheet at a time for
          separate g-code files for each sheet.  The safe area is assumed to be
-         at sketchup's origin, unless placed elsewhere using the Safe Area Tool.<br><br>
+         at sketchup's origin, unless placed elsewhere using the Safe Area Tool.</p>
 
          Also, there are 2 check boxes for additional options: <br>
-         1) "<u>multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
+         1) "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
          by cutting multiple thin layers. <br>
          2) "<u>Overhead Gantry</u>".  The original 2
          Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
-         cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br><br>
+         cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
+         See the <a href="howto_options.html">Options Menu help</a> for setting this as a default
+         <br><br>
 
          <p><u>Note</u>: When you press "OK", these settings will be saved as attributes to your
          sketchup model.  So each sketchup file will retain their individual settings.
@@ -262,18 +302,24 @@ Check for Latest Version of the Phlatscript</a>
          <p class="newcolour">
          <img alt="" src="images/optsummary.png" align=right style="margin-left: 10px;">
          Also on that menu us the <b>Options Summary</b> entry.
-         This will display your current settings for a number of global options settable in the <a href="howto_changeconstants.html">MyConstants.rb</a> file.
+         This will display your current settings for a number of global options settable in the <a href="howto_options.html">Options menu</a>.
          Yes, we know it is misnamed 'Validity Check', that is a Sketchup default we cannot change :-)
-         Please see the <a href="howto_changeconstants.html">MyConstants.rb</a> help.
+         Please see the <a href="howto_options.html">Options</a> help.
          </p>
          <hr>
          
          <b>Some points to note:</b>         
          <dl>
-           <dt><br>Plunge rate:</dt>
+            <dt>Inside/Outside overcut%
+            <dd>This value is used as a multiplier on the material thickness.   The Phlatprinter is designed to cut through sheet material
+            so normal cuts must go deeper than the material thickness.  This is normally about 140%, ie through the material and 40% 
+            out the other side to account for wavy dollar tree blue foam.   If you are using an overhead gantry and do not want to cut 
+            into your spoil board then set this value to 100% and zero your toolbit end accurately.
+           <dt>Plunge rate:</dt>
            <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
            <dt>Step Over %</dt>
            <dd>This percentage is used by the 3D code generator and by the <b>Pocket Tool</b> to determine how much of the bit diameter to overlap each cut pass.
+               Tool manufacturers recommend using 1-30% or 70 to 100%, but not 30-70% as this range increases tool wear.
            <br><b>Only select 'Generate 3D Code' for an actual 3D model.  IF selected for a plain flat drawing, Sketchup Will Stop Responding</b></dd>
             <dt>Tab width
             <dd>Half the bit diameter will be removed from each end of the tab.  Thus a tab width equal or less than the
@@ -286,6 +332,28 @@ Check for Latest Version of the Phlatscript</a>
            <dd>Ticking this will cause Gplot to display the Gcode directly after generating it. The Gplot program will open after you click 'Ok' to confirm the file save.</dd>
          </dl>
          Tooltips will displayed for each edit box with simplified help.  
+      </td>
+   </tr>
+
+   <tr>
+      <td class="command-image" valign=top>
+         <img alt="" src="../images/outsidecuttool_large.png" title="Phlatboyz Outside Cut Tool" width="32">
+      </td>
+      <td class="command-description">
+         <b>Outside Cut Tool</b> - This tool is used to cut the outside contour
+         of your part. It is assigned to a closed loop of edges and requires a corresponding face.
+         The cut path is offset to the outside, to compensate for the material removed by the cutter.
+         The thin face between the original line and the Outside Cut line will get a transparent texture.
+         It differs from the inside cut tool in that the path cut direction, will be clockwise.
+         <br>
+         <br>
+         Use the<u>["Shift" key]</u> if the preview shows the outside cut on the wrong side. Just press and
+         hold "Shift" prior to clicking.                                                          <br><br>
+
+         Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
+         hover over faces instead of edges.                             &nbsp;   <br><br>
+
+         Note: reversing the face (Edit/Face/Reverse Faces) <i>prior</i> to using the Outside Cut Tool will cause the cut direction to be reversed.  This works the same as the Inside Cut Tool.
       </td>
    </tr>
 
@@ -317,28 +385,6 @@ Check for Latest Version of the Phlatscript</a>
          short, make sure that the grey side is facing up and the PhlatScripT
          will cut your part file in the right direction leaving a nice clean
          edge on the part.
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top>
-         <img alt="" src="../images/outsidecuttool_large.png" title="Phlatboyz Outside Cut Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Outside Cut Tool</b> - This tool is used to cut the outside contour
-         of your part. It is assigned to a closed loop of edges and requires a corresponding face.
-         The cut path is offset to the outside, to compensate for the material removed by the cutter.
-         The thin face between the original line and the Outside Cut line will get a transparent texture.
-         It differs from the inside cut tool in that the path cut direction, will be clockwise.
-         <br>
-         <br>
-         Use the<u>["Shift" key]</u> if the preview shows the outside cut on the wrong side. Just press and
-         hold "Shift" prior to clicking.                                                          <br><br>
-
-         Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
-         hover over faces instead of edges.                             &nbsp;   <br><br>
-
-         Note: reversing the face (Edit/Face/Reverse Faces) <i>prior</i> to using the Outside Cut Tool will cause the cut direction to be reversed.  This works the same as the Inside Cut Tool.
       </td>
    </tr>
 
@@ -438,7 +484,7 @@ Check for Latest Version of the Phlatscript</a>
          and do a circle with constant Z instead.
          <li>The normal cut direction is anticlockwise giving a 'climbing cut'.  On stiff machines this will
          give a superior surface finish.   If your machine gives a bad finish in this and pocket cuts, please review the
-         <i>Use_pocket_CW</i> and <i>Use_plunge_CW</i> settings in the <a href="howto_changeconstants.html">MyConstants.rb</a> section
+         <i>Use_pocket_CW</i> and <i>Use_plunge_CW</i> settings in the <a href="howto_options.html">Options menu</a> section
          </ol>
       </td>
    </tr>
@@ -486,7 +532,7 @@ Check for Latest Version of the Phlatscript</a>
             </ol>
          <li class="newcolour">press the END key to swap zigzag direction from 'along X' to 'along Y'.  Each time you press END, the direction will
          toggle.  'Along Y' is particularly useful on Phlatprinters as it helps prevent the material slipping.<br>
-         You can set the default direction in <a href="howto_changeconstants.html">MyConstants.rb</a>
+         You can set the default direction in <a href="howto_options.html">Options menu</a>
          </ul>
          <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
          is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 99%.
@@ -571,7 +617,8 @@ The output g-code file has the extension .cnc but is simply a text file
 of X, Y, Z coordinates for the Phlatboyz machine to follow. Depending
 on your control software, this extension can be renamed to anything
 desired. To edit the g-code file, you can right click and open with a
-text editor of your choice. &nbsp; </td>
+text editor of your choice. If you alter this file, your machine may 
+do unexpected things, be very careful! &nbsp; </td>
                 </tr>
 
                 <tr>
@@ -589,83 +636,87 @@ text editor of your choice. &nbsp; </td>
                                 <img alt="" src="../images/helptool_large.png" title="Open Phlatboyz Help" width="32">
                         </td>
                         <td class="command-description">
-                                Opens this help file.
+                                Opens this help file.  <br>
+                                Known to not display on Linux under WINE, search for file help.html under the Sketchup Plugins folder within ~/.wine.
+                                Installing IE8 using 'winetricks ie8' may solve this.
                                 &nbsp;
                         </td>
                 </tr>
         </tbody></table>
 
 
-        <table summary="edge context menu help table">
-                <tbody><tr>
-                        <th colspan="2" class="command-title">
-                        Phlatboyz Edge Context Menu
-                        </th>
-                </tr>
-                <tr>
-                        <th colspan="2" class="command-subtitle">
-                        These menu items appear in the "Phlat Edge" sub menu when right clicking on any edge.
-                        </th>
-                </tr>
-                <tr>
-                        <td class="command-image" valign=top>
-                                Inside Edge
-                                &nbsp;
-                        </td>
-                        <td class="command-description">
-Selecting this command will mark selected edges as Phlatboyz Inside
-edge. No other change will be made to the edge. This allows you to
-select individual edges in SketchUp and create Phlatboyz cut edges from
-them. &nbsp; </td>
-                </tr>
-                <tr>
-                        <td class="command-image" valign=top>
-                                Outside Edge
-                                &nbsp;
-                        </td>
-                        <td class="command-description">
-Selecting this command will mark selected edges as Phlatboyz Outside
-edges. This allows you to select individual edges in SketchUp and
-create Phlatboyz cut edges from them. No other change will be made to
-the edge. &nbsp; </td>
-                </tr>
-                <tr>
-                        <td class="command-image" valign=top>
-                                Erase Selected Phlat Edges
-                                &nbsp;
-                        </td>
-                        <td class="command-description">
-                                This command will clear all selected edges that are currently marked as Phlatboyz edges.
-                                <br><br>Note:  The original design edges will remain but the original Phlatboyz edges will be deleted.
-                                &nbsp;
+<table summary="edge context menu help table" id="edgecontext">
+   <tbody>
+   <tr>
+   <th colspan="3" class="command-title">
+      Phlatboyz Edge Context Menu
+   </th>
+   </tr>
+   <tr>
+      <th colspan="3" class="command-subtitle">
+      These menu items appear in the "Phlat Edge" sub menu when right clicking on any edge.
+      </th>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+      Inside Edge
+      &nbsp;
+      </td>
+      <td class="command-description">
+      Selecting this command will mark selected edges as Phlatboyz Inside
+      edge. No other change will be made to the edge. This allows you to
+      select individual edges in SketchUp and create Phlatboyz cut edges from
+      them. &nbsp; </td>
+      <td rowspan="4">
+         <img src="images/edgecontext.png">
+      </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+      Outside Edge
+      &nbsp;
+      </td>
+      <td class="command-description">
+      Selecting this command will mark selected edges as Phlatboyz Outside
+      edges. This allows you to select individual edges in SketchUp and
+      create Phlatboyz cut edges from them. No other change will be made to
+      the edge. &nbsp; </td>
+   </tr>
+   <tr>
+      <td class="command-image" valign=top>
+      Erase Selected Phlat Edges
+      &nbsp;
+      </td>
+      <td class="command-description">
+      This command will clear all selected edges that are currently marked as Phlatboyz edges.
+      <br><br>Note:  The original design edges will remain but the original Phlatboyz edges will be deleted.
+      &nbsp;
+      </td>
+   </tr>
 
+   <tr>
+      <td class="command-image" valign=top>
+      Phlatten Selected Edges
+      &nbsp;
+      </td>
+      <td class="command-description">
+      This command will set all selected parts to 0 on the Z plane. This is a
+      great tool for laying parts out in the safe cutting area before
+      assigning cuts to them. A great feature of this tool is that it ensures
+      that the part is perfectly flat and that the proper face (default blue)
+      is facing upward. &nbsp; 
+      </td>
+   </tr>
 
-                        </td>
-                </tr>
-
-
-
-                <tr>
-                        <td class="command-image" valign=top>
-                                Phlatten Selected Edges
-                                &nbsp;
-                        </td>
-                        <td class="command-description">
-This command will set all selected parts to 0 on the Z plane. This is a
-great tool for laying parts out in the safe cutting area before
-assigning cuts to them. A great feature of this tool is that it ensures
-that the part is perfectly flat and that the proper face (default blue)
-is facing upward. &nbsp; </td>
-                </tr>
-
-        </tbody></table>
+   </tbody>
+</table>
         
 <hr>
-<table summary="phlatboyz menu table">
+<table summary="phlatboyz menu table" id="tools">
    <tbody>
    <tr>
       <th colspan="3" class="command-title">
-      <a id="tools">Tools|Phlatboyz Menu</a>
+      Tools|Phlatboyz Menu
       </th>
    </tr>
    <tr>
@@ -677,14 +728,27 @@ is facing upward. &nbsp; </td>
          <img alt="" src="images/toolsmenu.png">
       </th>
    </tr>
+
+   <tr>
+      <td class="command-image" valign=top>
+      Options
+      </td>
+      <td class="command-description" valign=top>
+         The items on this menu allow you to set many default values that affect your machines operation.
+         Please see the help for the  <a href="howto_options.html">Options Menu</a>.
+         This menu item replaces the need for editing the Constants and MyConstants files.
+      </td>
+   </tr>
+   
+   
    <tr>
       <td class="command-image" valign=top>
       Options Summary
       </td>
       <td class="command-description" valign=top>
-         This will display your current settings for a number of global options settable in the <a href="howto_changeconstants.html">MyConstants.rb</a> file.
+         This will display your current settings for a number of global options settable in the <a href="howto_options.html">Options Menu</a>.
          Yes, we know it is misnamed 'Validity Check', that is a Sketchup default we cannot change :-)
-         Please see the <a href="howto_changeconstants.html">MyConstants.rb</a> help.
+         Please see the <a href="howto_options.html">Options Menu</a> help.
       </td>
    </tr>
    <tr>
@@ -692,7 +756,7 @@ is facing upward. &nbsp; </td>
       Display Profiles Folder
       </td>
       <td class="command-description" valign=top>
-         Tool Profiles are saved as simple text files.  The folder used is within the users APPDATA folder and is a 
+         Tool Profiles are saved as 'ini' format text files.  The folder used is within the users APPDATA folder and is a 
          little tricky to find, so we made it simple with this menu item.  Click it and a file explorer will open at the correct folder.
       </td>
    </tr>
