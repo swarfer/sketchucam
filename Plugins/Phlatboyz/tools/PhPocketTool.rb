@@ -38,14 +38,14 @@ module PhlatScript
       #puts "bit diameter #{@bit_diameter.to_mm}mm"
       @ip = nil
 
-      # set this to change zigzag setover, less for hard material, more for soft
-      @setover_percent = PhlatScript.stepover
-      #               puts "setover percent #{@setover_percent}%"
-      if (@setover_percent < 100)
-         @setOver = @setover_percent / 100
+      # set this to change zigzag stepover, less for hard material, more for soft
+      @stepover_percent = PhlatScript.stepover
+      #               puts "stepover percent #{@stepover_percent}%"
+      if (@stepover_percent < 100)
+         @stepOver = @stepover_percent / 100
       else
-         @setOver = 0.5
-         @setover_percent = 50
+         @stepOver = 0.5
+         @stepover_percent = 50
       end
       @keyflag = 0
 
@@ -59,7 +59,7 @@ module PhlatScript
       @menuItem   = PhlatScript.getString("Pocket")
       @menuText   = PhlatScript.getString("Pocket a face")
       #PhlatScript.getString("GCode")
-      #	 @statusmsg = "Pockettool: [shift] for only zigzag [ctrl] for only boundary, setover is #{@setover_percent}%"
+      #	 @statusmsg = "Pockettool: [shift] for only zigzag [ctrl] for only boundary, stepover is #{@stepover_percent}%"
       @statusmsgBase  = "Pockettool: [shift] for only Zigzag [ctrl] for only boundary : [END] to toggle zigzag direction : "
       @statusmsg = @statusmsgBase
    end
@@ -172,16 +172,16 @@ module PhlatScript
       super()
       @ip = Sketchup::InputPoint.new
       @bit_diameter = PhlatScript.bitDiameter
-      @setover_percent = PhlatScript.stepover
-      #puts "activate setover percent #{@setover_percent}%"
-      if @setover_percent <= 100
-         @setOver = @setover_percent.to_f / 100
+      @stepover_percent = PhlatScript.stepover
+      #puts "activate stepover percent #{@stepover_percent}%"
+      if @stepover_percent <= 100
+         @stepOver = @stepover_percent.to_f / 100
       else
-         @setover_percent = 50.to_f
-         @setOver = 0.5.to_f
+         @stepover_percent = 50.to_f
+         @stepOver = 0.5.to_f
       end
-      #puts "activate setOver = #{@setOver}  @setover_percent #{@setover_percent}"
-      @statusmsg = @statusmsgBase + "StepOver is #{@setover_percent}%"
+      #puts "activate stepOver = #{@stepOver}  @stepover_percent #{@stepover_percent}"
+      @statusmsg = @statusmsgBase + "StepOver is #{@stepover_percent}%"
       Sketchup::set_status_text(@statusmsg, SB_PROMPT)
       self.reset(nil)
    end
@@ -375,7 +375,7 @@ end
    end
 
    def get_zigzag_points_y(loop)
-      #puts "get zigzag points #{@setOver}"
+      #puts "get zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
       if @keyflag == 1
@@ -409,10 +409,10 @@ end
                dir = 1
             end
          end
-         #puts "@setover #{@setOver}  @setover_percent #{@setover_percent}"
-         y = y + @bit_diameter * @setOver
-         if (@setOver <= 0) # prevent infinite loop
-            puts "setOver <= 0, #{@setOver} #{@bit_diameter}"
+         #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
+         y = y + @bit_diameter * @stepOver
+         if (@stepOver <= 0) # prevent infinite loop
+            puts "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
             break;
             #code
          end
@@ -430,7 +430,7 @@ end
    end
 
 def get_zigzag_points_x(loop)
-      #puts "get zigzag points #{@setOver}"
+      #puts "get zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
       if @keyflag == 1
@@ -463,10 +463,10 @@ def get_zigzag_points_x(loop)
                dir = 1
             end
          end
-         #puts "@setover #{@setOver}  @setover_percent #{@setover_percent}"
-         x = x + @bit_diameter * @setOver
-         if (@setOver <= 0) # prevent infinite loop
-            puts "setOver <= 0, #{@setOver} #{@bit_diameter}"
+         #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
+         x = x + @bit_diameter * @stepOver
+         if (@stepOver <= 0) # prevent infinite loop
+            puts "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
             break;
             #code
          end
