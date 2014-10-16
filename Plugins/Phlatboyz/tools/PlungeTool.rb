@@ -60,7 +60,7 @@ module PhlatScript
     end
 
     def statusText
-      return "Select plunge point, [SHIFT] for large hole"
+      return "Select plunge point, [SHIFT] for large hole, set depth in VCB"
     end
 
     def enableVCB?
