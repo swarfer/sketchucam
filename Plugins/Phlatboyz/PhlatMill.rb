@@ -13,7 +13,8 @@ module PhlatScript
       @cy = 0.0
       @cs = 0.0
       @cc = ""
-      @debug = false    # if true then a LOT of stuff will appear in the ruby console
+      @debug = false   # if true then a LOT of stuff will appear in the ruby console
+      puts "debug true in PhlatMill.rb\n" if @debug
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -203,8 +204,8 @@ module PhlatScript
             cncPrint("(move z=", sprintf("%10.6f",zo), " GT max of ", @max_z, ")\n")
             zo = @max_z
          elsif (zo < @min_z)
-            #cncPrint "(move x=", sprintf("%8.3f",zo), " LT min of ", @min_z, ")\n"
-            #zo = @min_z
+            cncPrint "(move x=", sprintf("%8.3f",zo), " LT min of ", @min_z, ")\n"
+            zo = @min_z
          end
          command_out = ""
          command_out += cmd if (cmd != @cc)
@@ -252,6 +253,7 @@ module PhlatScript
             cncPrint("(RETRACT limiting Z to @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
+            cncPrint("(RETRACT limiting Z to @min_z)\n")
             zo = @min_z
          end
          command_out = ""
@@ -281,8 +283,10 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
+            cncPrint("(PLUNGE limiting Z to max_z @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
+            cncPrint("(PLUNGE limiting Z to min_z @min_z)\n")
             zo = @min_z
          end
          command_out = ""
@@ -378,6 +382,7 @@ module PhlatScript
       command_out = ""
 
       cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
+      puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
 #      ys = format_measure('Y', yo)
@@ -425,16 +430,62 @@ module PhlatScript
       yoff = (diam/2 - @bit_diameter/2)      # offset to start point for final cut
       if (diam > (@bit_diameter*2) )
          command_out += "  (MULTI spirals)\n"            if @debug
-         ystep = @bit_diameter / 2
+# if regular step         
+#         ystep = @bit_diameter / 2
+# else use stepover
+         ystep = PhlatScript.stepover * @bit_diameter / 100
+
+#########################
+# if fuzzy stepping, calc new ystep from optimized step count
+# find number of steps to complete hole
+         if ($phoptions.use_fuzzy_holes?)
+            rem = (diam / 2) - (@bit_diameter/2)  # still to be cut
+            temp = ((diam / 2) - (@bit_diameter/2)) / ystep   # number of steps to do it
+            puts " temp steps = #{temp}\n" if @debug
+            puts " ystep old #{ystep.to_mm}\n" if @debug
+
+            flag = false
+            if (PhlatScript.stepover < 50)               #round temp up to create more steps
+               temp = (temp + 0.5).round
+               flag = true
+            else
+               if (PhlatScript.stepover > 50)            #round temp down to create fewer steps
+                  temp = (temp - 0.5).round
+                  flag = true
+               end
+            end
+            if (flag)                                    # only adjust if we need to
+               temp = (temp < 1) ? 1 : temp
+               puts "   temp steps = #{temp}\n" if @debug
+            #   calc new ystep
+               ystep = rem / temp
+               if (ystep > @bit_diameter ) # limit to stepover
+                  ystep = PhlatScript.stepover * @bit_diameter / 100
+                  puts " ystep was > bit, limited to stepover\n"         if @debug
+               end
+               puts " ystep new #{ystep.to_mm}\n" if @debug
+            end
+         end
+#######################
+
+         puts "Ystep #{ystep.to_mm}\n" if @debug
+         
+         
+         
          nowyoffset = 0
-         while (nowyoffset < yoff)
+#         while (nowyoffset < yoff)
+         while ( (nowyoffset - yoff).abs > 0.001)         
             nowyoffset += ystep
             if (nowyoffset > yoff)
                nowyoffset = yoff;
-               command_out += "  (offset clamped)\n"       if @debug
+               command_out += "  (offset clamped)\n"                 if @debug
+               puts "   nowyoffset #{nowyoffset.to_mm} clamped\n"    if @debug
+            else
+               puts "   nowyoffset #{nowyoffset.to_mm}\n"            if @debug
             end
             command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
-            if (nowyoffset != yoff) # then retract to reduced safe
+#            if (nowyoffset != yoff) # then retract to reduced safe
+            if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
                command_out += "G0 " + format_measure("Z" , sh)
                command_out += "\n"
             end

@@ -64,6 +64,7 @@ module PhlatScript
          @profile_save_material_thickness =   (phoptions.profile_save_material_thickness? ? '1' : '0')
          @use_home_height        =   (phoptions.use_home_height? ? '1' : '0')
          @default_home_height    =   PhlatScript.conformat(phoptions.default_home_height)
+         @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
       end
    end
 
@@ -115,8 +116,9 @@ module PhlatScript
          @profile_save_material_thickness = Profile_save_material_thickness
          @use_home_height = Use_Home_Height
          @default_home_height = Default_Home_Height
+         @use_fuzzy_holes = true
 
-         # if MyConstats.ini exists then read it
+         # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
 
          filePath = File.join(path , 'MyOptions.ini')
@@ -231,6 +233,11 @@ module PhlatScript
             @use_home_height = value > 0 ? true :  false              if (value != -1)
 
             @default_home_height = getvalue(optin['default_home_height'])    if (optin.has_key?('default_home_height'))
+            
+         #use_fuzzy_holes
+            value = -1
+            value = getvalue(optin['use_fuzzy_holes'])                if (optin.has_key?('use_fuzzy_holes'))
+            @use_fuzzy_holes = value > 0 ? true :  false              if (value != -1)
 
          end
 
@@ -570,6 +577,14 @@ module PhlatScript
       def default_home_height=(newval)
          @default_home_height = newval
       end
+      
+      def use_fuzzy_holes?
+         @use_fuzzy_holes
+      end
+      def use_fuzzy_holes=(newval)
+         @use_fuzzy_holes = newval
+      end
+      
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    class OptionsFilesTool < PhlatTool
@@ -596,7 +611,7 @@ module PhlatScript
       # dropdown options can be added here
       #         list=["henry|bob|susan"] #should give list of existing?
 
-      input=UI.inputbox(prompts, defaults, 'Default File Options')
+      input=UI.inputbox(prompts, defaults, 'Default File Options (read the help!)')
       # input is nil if user cancelled
       if (input)
          @options.default_file_name = input[0].to_s
@@ -645,7 +660,7 @@ end # class
             ]
 
 
-         input=UI.inputbox(prompts, defaults, list, 'Miscallaneous Options')
+         input=UI.inputbox(prompts, defaults, list, 'Miscallaneous Options (read the help!)')
          # input is nil if user cancelled
          if (input)
             @options.default_comment_remark  = input[0].to_s
@@ -722,7 +737,7 @@ end # class
             ]
 
 
-         input=UI.inputbox(prompts, defaults, list, 'Tool Options')
+         input=UI.inputbox(prompts, defaults, list, 'Tool Options (read the help!)')
          # input is nil if user cancelled
          if (input)
             @options.default_spindle_speed      = input[0].to_i
@@ -767,9 +782,9 @@ end # class
             'Default_overhead_gantry ',
             'Default_multipass ',
             'Default_multipass_depth ',
-            'Default_stepover ',
-            'Min_z ',
-            'Max_z '
+            'Default_stepover % ',
+            'Min_z (- total Z travel) ',
+            'Max_z (+ total Z travel) '
             ];
          defaults=[
             Sketchup.format_length(@options.default_safe_origin_x),
@@ -797,7 +812,7 @@ end # class
             ];
 
 
-         input=UI.inputbox(prompts, defaults, list, 'Tool Options')
+         input=UI.inputbox(prompts, defaults, list, 'Machine Options (read the help!)')
          # input is nil if user cancelled
          if (input)
             @options.default_safe_origin_x   = Sketchup.parse_length(input[0]);
@@ -840,7 +855,8 @@ end # class
             'Use_vtab_speed_limit ',
             'Profile_save_material_thickness ',
             'Use_Home_Height ',
-            'Default_Home_Height '
+            'Default_Home_Height ',
+            'Use fuzzy hole stepover '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -852,7 +868,8 @@ end # class
             @options.use_vtab_speed_limit?.inspect(),
             @options.profile_save_material_thickness?.inspect(),
             @options.use_home_height?.inspect(),
-            Sketchup.format_length(@options.default_home_height)
+            Sketchup.format_length(@options.default_home_height),
+            @options.use_fuzzy_holes?.inspect()
             ];
          list=[
             'true|false',
@@ -864,10 +881,11 @@ end # class
             'true|false',
             'true|false',
             'true|false',
-            ''
+            '',
+            'true|false'
             ];
 
-         input=UI.inputbox(prompts, defaults, list, 'Feature Options')
+         input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
          # input is nil if user cancelled
          if (input)
             @options.use_exact_path          = (input[0] == 'true')
@@ -880,7 +898,7 @@ end # class
             @options.profile_save_material_thickness         = (input[7] == 'true')
             @options.use_home_height         = (input[8] == 'true')
             @options.default_home_height     = Sketchup.parse_length(input[9])
-
+            @options.use_fuzzy_holes         = (input[10] == 'true')
             @options.save
          end # if input
       end # def select

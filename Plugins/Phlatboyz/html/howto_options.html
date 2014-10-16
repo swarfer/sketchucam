@@ -106,7 +106,7 @@
 
 <br>
 <div class="intro-name">Phlatboyz PhlatScripT
-	<div><b>SketchUcam Version 1.2</b><br>July 2014</div>
+	<div><b>SketchUcam Version 1.2a</b><br>Oct 2014</div>
 </div>
 <hr width="100%">
 <div class="intro">
@@ -319,6 +319,13 @@ cuts = 3.3</pre>
       <dd>If Use_Home_Height is true, then a G00 Z movement will be issued at the end of the job, using this height for Z.<br>
       If you have material top as Z-zero, it will retract this high above the material.<br>
       If you have table top as Z-Zero, it will retract this high above the table.
+   <dt>Use fuzzy hole stepover 
+      <dd>false = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
+         This may create a very small depth of cut for the last cut.
+      <dd>true = the stepover will be adjusted to give a whole number of steps of equal size.<br>
+         If stepover% is less than 50% then the number of steps will be rounded UP to give a smaller stepover, for hard materials.<br>
+         If stepover% is greater than 50% then the nubmer of steps will be rounded DOWN, for soft materials.<br>
+         If stepover% is 50%, then no stepover rounding will be performed.
    </dl>
 </p>
    
