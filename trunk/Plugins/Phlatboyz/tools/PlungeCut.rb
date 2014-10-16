@@ -58,19 +58,40 @@ module PhlatScript
          rad = diam / 2
       end
       entities = Sketchup.active_model.entities
+      
+      group = entities.add_group   # the hole will be a group, usually without a name
+#      if (group)
+#         puts "#{group}\n"
+#      else
+#         puts "Failed to add hole group"
+#      end
+      
+#      group.name = "";
+      
       end_pt = Geom::Point3d.new(pt.x + rad, pt.y, 0)
-      newedges = entities.add_edges(pt, end_pt)
+      newedges = group.entities.add_edges(pt, end_pt)
       vectz = Geom::Vector3d.new(0,0,-1)
-      circleInner = entities.add_circle(pt, vectz, rad, 12)
-      entities.add_face(circleInner)
+      circleInner = group.entities.add_circle(pt, vectz, rad, 12)
+      #group.entities.add_face(circleInner)
+#      group.description = "Hole"
 
       newedges[0].set_attribute Dict_name, Dict_edge_type, Key_plunge_cut
       if diam > 0 # if exists set the attribute
         newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam)
+        if (PhlatScript.isMetric)  # add diam to group name
+           group.name = group.name + "_diam_#{diam.to_mm}mm"
+        else
+           group.name = group.name + "_diam_#{diam}"
+        end
       end
       if dfactor != PhlatScript.cutFactor # if different set the attribute and color
         newedges[0].set_attribute Dict_name, Dict_plunge_depth_factor, dfactor.to_s
         newedges[0].material = Color_plunge_cutd
+        if (PhlatScript.isMetric)      # add depth factor to group name
+           group.name = group.name + "_depth_#{dfactor}"
+        else
+           group.name = group.name + "_depth_#{dfactor}"           
+        end
       else
         newedges[0].material = Color_plunge_cut
       end
