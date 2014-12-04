@@ -251,134 +251,135 @@ class GCodeGen3D
   end
 
 
-        def generateVerticals
+  def generateVerticals
 
-                puts "Starting to generate Verticals"
-                Sketchup.status_text = "Starting to generate Verticals"
-                i = 0
-                prevpt = @modelgrid[0]
-                curpt = @modelgrid[0]
-                nextpt = @modelgrid[1]
+   puts "Starting to generate Verticals"
+   Sketchup.status_text = "Starting to generate Verticals"
+   i = 0
+   prevpt = @modelgrid[0]
+   curpt = @modelgrid[0]
+   nextpt = @modelgrid[1]
 
 
-                while i < @modelgrid.length
-                        if i == 0
-                                curpt = @modelgrid[i]
-                                nextpt = @modelgrid[i+1]
-                        elsif i == (@modelgrid.length) -1
-                                prevpt = @modelgrid[i-1]
-                                curpt = @modelgrid[i]
-                                nextpt = @modelgrid[i]
-                        else
-                                prevpt = @modelgrid[i-1]
-                                curpt = @modelgrid[i]
-                                nextpt = @modelgrid[i+1]
+   while i < @modelgrid.length
+      if i == 0
+         curpt = @modelgrid[i]
+         nextpt = @modelgrid[i+1]
+      elsif i == (@modelgrid.length) -1
+         prevpt = @modelgrid[i-1]
+         curpt = @modelgrid[i]
+         nextpt = @modelgrid[i]
+      else
+         prevpt = @modelgrid[i-1]
+         curpt = @modelgrid[i]
+         nextpt = @modelgrid[i+1]
+      end
+
+      if curpt != nil
+         if nextpt != nil
+            if curpt.x == nextpt.x
+
+            zdelta = nextpt.z - curpt.z
+
+            if zdelta.abs > @stepOver
+               #puts "Adding in a vertical at #{curpt}"
+
+               @verticalgrid += [curpt]
+
+               if zdelta > 0
+                  zpos = curpt.z
+                  while zpos <= nextpt.z
+                     testpt = Geom::Point3d.new(curpt.x, curpt.y , zpos)
+                     vector = Geom::Vector3d.new(0,1,0)
+                     if nextpt.y < curpt.y
+                        #puts "Increase Z with decrease y"
+                        vector = Geom::Vector3d.new(0,-1,0)
+                        #puts "#{testpt}, #{vector}"
+                     end
+                     newpt = findModelIntersection(testpt, vector)
+                     #puts "#{newpt}"
+                     if newpt != nil
+                        if (newpt.y - curpt.y).abs < @stepOver
+                           @verticalgrid += [newpt]
                         end
+                     end
+                     zpos += @stepOver
+                  end # while zpos
+                  testpt = Geom::Point3d.new(curpt.x, curpt.y , nextpt.z)
+                  vector = Geom::Vector3d.new(0,1,0)
+                  if nextpt.y < curpt.y
+                     #puts "Increase Z with decrease y"
+                     vector = Geom::Vector3d.new(0,-1,0)
+                     #puts "#{testpt}, #{vector}"
+                  end
+                  newpt = findModelIntersection(testpt, vector)
+                  #puts "#{newpt}"
+                  if newpt != nil
+                     if (newpt.y - curpt.y).abs < @stepOver
+                        @verticalgrid += [newpt]
+                     end
+                  end
+                  zpos += @stepOver
+               elsif zdelta < 0
+                  zpos = curpt.z
+                  while zpos >= nextpt.z
+                     testpt = Geom::Point3d.new(nextpt.x, nextpt.y , zpos)
+                     vector = Geom::Vector3d.new(0,-1,0)
+                     if nextpt.y < curpt.y
+                        vector = Geom::Vector3d.new(0,1,0)
+                     end
+                     newpt = findModelIntersection(testpt, vector)
 
-                        if curpt != nil
-                                if nextpt != nil
-                                        if curpt.x == nextpt.x
-
-                                                zdelta = nextpt.z - curpt.z
-
-                                                if zdelta.abs > @stepOver
-                                                        #puts "Adding in a vertical at #{curpt}"
-
-                                                        @verticalgrid += [curpt]
-
-                                                        if zdelta > 0
-                                                                zpos = curpt.z
-                                                                while zpos <= nextpt.z
-                                                                        testpt = Geom::Point3d.new(curpt.x, curpt.y , zpos)
-                                                                        vector = Geom::Vector3d.new(0,1,0)
-                                                                        if nextpt.y < curpt.y
-                                                                                #puts "Increase Z with decrease y"
-                                                                                vector = Geom::Vector3d.new(0,-1,0)
-                                                                                #puts "#{testpt}, #{vector}"
-                                                                        end
-                                                                        newpt = findModelIntersection(testpt, vector)
-                                                                        #puts "#{newpt}"
-                                                                        if newpt != nil
-                                                                                if (newpt.y - curpt.y).abs < @stepOver
-
-                                                                                        @verticalgrid += [newpt]
-                                                                                end
-                                                                        end
-                                                                        zpos += @stepOver
-                                                                end
-                                                                testpt = Geom::Point3d.new(curpt.x, curpt.y , nextpt.z)
-                                                                        vector = Geom::Vector3d.new(0,1,0)
-                                                                        if nextpt.y < curpt.y
-                                                                                #puts "Increase Z with decrease y"
-                                                                                vector = Geom::Vector3d.new(0,-1,0)
-                                                                                #puts "#{testpt}, #{vector}"
-                                                                        end
-                                                                        newpt = findModelIntersection(testpt, vector)
-                                                                        #puts "#{newpt}"
-                                                                        if newpt != nil
-                                                                                if (newpt.y - curpt.y).abs < @stepOver
-
-                                                                                @verticalgrid += [newpt]
-                                                                                end
-                                                                        end
-                                                                        zpos += @stepOver
-
-                                                        elsif zdelta < 0
-                                                                zpos = curpt.z
-                                                                while zpos >= nextpt.z
-                                                                        testpt = Geom::Point3d.new(nextpt.x, nextpt.y , zpos)
-                                                                        vector = Geom::Vector3d.new(0,-1,0)
-                                                                        if nextpt.y < curpt.y
-                                                                                vector = Geom::Vector3d.new(0,1,0)
-                                                                        end
-                                                                        newpt = findModelIntersection(testpt, vector)
-
-                                                                        if newpt != nil
-                                                                        if (newpt.y - curpt.y).abs < @stepOver
-                                                                                @verticalgrid += [newpt]
-                                                                                end
-                                                                        end
-                                                                        zpos -= @stepOver
-                                                                end
-                                                                testpt = Geom::Point3d.new(nextpt.x, nextpt.y , nextpt.z)
-                                                                        vector = Geom::Vector3d.new(0,-1,0)
-                                                                        if nextpt.y < curpt.y
-                                                                                vector = Geom::Vector3d.new(0,1,0)
-                                                                        end
-                                                                        newpt = findModelIntersection(testpt, vector)
-
-                                                                        if newpt != nil
-                                                                                if (newpt.y - curpt.y).abs < @stepOver
-                                                                                        @verticalgrid += [newpt]
-                                                                                end
-                                                                        end
-                                                        end
-
-                                                else
-                                                        @verticalgrid += [curpt]
-
-                                                end
-
-                                        else
-                                                @verticalgrid += [curpt]
-                                        end
-
-                                else
-                                        @verticalgrid += [curpt]
-                                end
+                     if newpt != nil
+                        if (newpt.y - curpt.y).abs < @stepOver
+                           @verticalgrid += [newpt]
                         end
+                     end
+                     zpos -= @stepOver
+                  end # while
+                  testpt = Geom::Point3d.new(nextpt.x, nextpt.y , nextpt.z)
+                  vector = Geom::Vector3d.new(0,-1,0)
+                  if nextpt.y < curpt.y
+                     vector = Geom::Vector3d.new(0,1,0)
+                  end
+                  newpt = findModelIntersection(testpt, vector)
 
-                        i+=1
+                  if newpt != nil
+                     if (newpt.y - curpt.y).abs < @stepOver
+                        @verticalgrid += [newpt]
+                     end
+                  end
+               else
+                  #zdelta == 0
+                  puts " zdelta #{zdelta}"
+               end  # zdelta < 0
 
-                end
-                puts "Finished generating Verticals"
-                Sketchup.status_text = "Finished generating Verticals"
+            else
+               @verticalgrid += [curpt]
+            end
 
-        end
+         else
+            @verticalgrid += [curpt]
+         end
+
+      else
+         @verticalgrid += [curpt]
+      end
+      end
+
+      i+=1
+
+   end  # while i
+   puts "Finished generating Verticals"
+   Sketchup.status_text = "Finished generating Verticals"
+
+   end
 
 #spit out the gcode header, used by both versions of the generator
    def putHeader(nf)
-      nf.puts "(A 3D Contour : #{PhlatScript.getString("PhlatboyzGcodeTrailer")}%#{$PhlatScriptExtension.version})\n"
+#      ver = "debug"
+      ver = "#{PhlatScript.getString('PhlatboyzGcodeTrailer')%$PhlatScriptExtension.version}"
+      nf.puts "(A 3D Contour : #{ver})\n"
       nf.puts "(Bit Diameter: #{Sketchup.format_length(@bitDiam)})"
       nf.puts "(StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%)"
       nf.puts "(Spindle speed: #{@spindle})"
@@ -392,6 +393,7 @@ class GCodeGen3D
       end
       #                nf.puts "(OverCut: #@overcutPercent)"
       nf.puts "(SafeHeight: #{Sketchup.format_length(@safeHeight)})"
+      nf.puts "(NOTE: Z zero is top of material)"
 
       exact = PhlatScript.useexactpath? ? "G61" : ""         # G61 - Exact Path Mode
       nf.puts "G90 #{@unit_cmd} G49 #{exact}"
@@ -426,18 +428,29 @@ class GCodeGen3D
       curz = 0.0 - @multiPassDepth
       zsafe = format_measure('Z',@phlat_SafeHeight)
       nf.puts "M3 S#@spindle"
+      
+#find the lowest Z value so we can stop when that level has been cut      
+      minz = 2000
+      for point in grid
+         zv = point.to_a[2]      
+         if zv < minz
+            minz = zv
+         end
+      end
+      puts "minz #{zv}  #{zv.to_mm}mm"
+      
       pass = 1
       stopnexttime = false
       startxs = format_measure('X',grid[0].to_a[0])
       startys = format_measure('Y',grid[0].to_a[1])
 
       while curz >= (-@matThick)
-         nf.puts "(Pass #{pass})"
+         nf.puts "(Pass #{pass} curz #{curz})"
          if pass == 1
             nf.puts "G0 #{zsafe}"
             xs = format_measure('X',grid[0].to_a[0])
             ys = format_measure('Y',grid[0].to_a[1])
-            nf.puts "#{xs} #{ys}"
+            nf.puts "  #{xs} #{ys}"
          end
 
 #                       xval = sprintf("%f",round_to(grid[0].to_a[0],5))
@@ -446,7 +459,7 @@ class GCodeGen3D
          zs = format_measure('Z',curz)
 #                       nf.puts "X#{xval} Y#{yval}"
          fs = format_feed(@feedRate)
-#         nf.puts "G1 #{zs} #{fs}"      dont do this, it will bite off too much
+         cmd = "G1 #{fs}"      # output this for the first point
 
          for point in grid
 #            xval = sprintf("%f",round_to(point.to_a[0], 5))
@@ -458,25 +471,36 @@ class GCodeGen3D
             zs = format_measure('Z',point.to_a[2])
 
 #                          if zval.to_f > curz
-            if zv > curz
+            if zv > curz   # remember curz is negative, so zv > curz  is zv above curz
                #zval = round_to(point.to_a[2], 5)
 #                             nf.puts "X#{xval} Y#{yval} Z#{zval}"
-               nf.puts "#{xs} #{ys} #{zs}"
+               nf.puts "#{cmd} #{xs} #{ys} #{zs}"
+               cmd = ""
             else
 #              scurz = sprintf("%f",round_to(curz,5))
 #              nf.puts "X#{xval} Y#{yval} Z#{scurz}"
                zs = format_measure('Z',curz)
-               nf.puts "#{xs} #{ys} #{zs}"
+               nf.puts "#{cmd} #{xs} #{ys} #{zs}"
+               cmd = ""
             end
          end  # for points
          nf.puts "G0 #{zsafe}"
-         nf.puts "   #{startxs} #{startys}"   # back to start position (not 0,0)
          if stopnexttime
 #            nf.puts "(stopnexttime true)"
             nf.puts "G0 X0.0 Y0.0"
             break
          end
          curz -= @multiPassDepth
+         # check for exceeding minz and stop early if we need to
+         if curz < (minz - @multiPassDepth)
+            puts "pass #{pass} curz #{curz} < minz #{minz}"
+            nf.puts "(minz exceeded, stopping early, nothing more to cut)"
+            nf.puts "G0 X0.0 Y0.0"
+            break
+         else
+            nf.puts "   #{startxs} #{startys}"   # back to start position (not 0,0)
+         end
+         
 #         puts "#{pass} #{curz} #{-@matThick} #{(curz - (-@matThick)).abs}"
          if ((curz - (-@matThick)).abs < 0.001) || (curz < -@matThick)                         #if lower than bottom of material, clamp to table top, and stop next time
 #            puts "clamped"
@@ -514,20 +538,15 @@ class GCodeGen3D
 	 ys = format_measure('Y',grid[0].to_a[1])
 	 zs = format_measure('Z',grid[0].to_a[2])
 #               nf.puts "X#{xval} Y#{yval}"
-	 nf.puts "#{xs} #{ys}"
-#               nf.puts "G1 Z#{zval} F#@feedRate"
-	 fs = format_feed(@feedRate)
-#               nf.puts "G1 #{zs} F#@feedRate"
+	 nf.puts "   #{xs} #{ys}"   # still part of G00 move
+	 
+    fs = format_feed(@feedRate)
 	 nf.puts "G1 #{zs} #{fs}"
 	 for point in grid
-#                       xval = sprintf("%f",round_to(point.to_a[0], 5))
-#                       yval = sprintf("%f",round_to(point.to_a[1], 5))
-#                       zval = sprintf("%f",round_to(point.to_a[2], 5))
 				xs = format_measure('X',point.to_a[0])
 				ys = format_measure('Y',point.to_a[1])
 				zs = format_measure('Z',point.to_a[2])
-#                       nf.puts "X#{xval} Y#{yval} Z#{zval}"
-				nf.puts "#{xs} #{ys} #{zs}"
+				nf.puts "   #{xs} #{ys} #{zs}"
 	 end
 	 nf.puts "M05"
 	 nf.puts "G0 #{zsafe}"
@@ -914,6 +933,7 @@ class GCodeGen3D
     currposy = @modelMinY
     ydir = 1
     Sketchup.status_text = "Starting Generate Model Grid"
+    puts "Starting Generate Model Grid"
     puts " BitOffset: #@bitOffset"
     puts " modelMaxX: #@modelMaxX"
     puts " modelMaxY: #@modelMaxY"
@@ -927,6 +947,7 @@ class GCodeGen3D
     @basefloor.entities.add_face [@modelMinX-5,@modelMinY-5,-planval], [@modelMaxX +5 , @modelMinY-5,-planval], [@modelMaxX+5, @modelMaxY+5,-planval], [@modelMinX-5, @modelMaxY+5,-planval]
 
     while currposx < @modelMaxX
+      #puts " currposx #{currposx}"
       #The y axis is done this way so the items in the array follow the tool path
       ystarted = true
       #puts "#{ydir}"
@@ -938,8 +959,8 @@ class GCodeGen3D
           @modelgrid += [modelpt[0]]
         end
         currposy += (ydir * @stepOver)
-        #puts "#{currposx} , #{currposy}"
-        if ydir ==1
+#        puts "#{currposx} , #{currposy}"
+        if ydir == 1
           if currposy > @modelMaxY
             ray = [Geom::Point3d.new(currposx, @modelMaxY, 10), Geom::Vector3d.new(0,0,-1)]
             modelpt = @mod.raytest ray
@@ -959,7 +980,7 @@ class GCodeGen3D
             ystarted = false
           end
         end
-      end
+      end # while
 
       currposx += @stepOver
       #currposy = @modelMinY
