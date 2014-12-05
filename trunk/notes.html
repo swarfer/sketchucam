@@ -238,6 +238,22 @@ List of things to fix/add for next release, in no particular order
 <dt>beta5 - added Z-Zero option to parameters dialog
 </dl>
 
+<h2>1.2a</h2>
+<dl>
+<dt>holes form groups to avoid intersecting existing geometry
+   <dd>will still be affected by horizontals that overlay the color line
+<dt>3D code
+      <dd>bug found in multipass that prevented G1 being written at start of each layer
+      <dd>multipass continues output after lowest feature has been cut, find minz to prevent this.
+         you will see a comment at the end of the Gcode if it was able to terminate early
+      <dd>to generate accurate code you must specify the material as thicker than it really is
+         for example, if using 20mm material, set it to 21 and set Z zero using a 1mm spacer on the material
+         This will ensure that the top is not marked by anomolies, but it does mean that the entire
+         top surface will be 'cut', which takes time.
+<dt>Gcode Joiner
+   <dd> tool to join several gcode files together into one file, stripping headers and footers as needed
+</dl>      
+
 
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
 </pre>
