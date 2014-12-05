@@ -400,6 +400,10 @@ module PhlatScript
     addToolItem(ProfilesLoadTool.new() )
     addToolItem(ProfilesDeleteTool.new() )
 
+    require 'Phlatboyz/tools/PhJoiner.rb'
+    addToolItem(JoinerTool.new())
+	
+	
     @@phlatboyz_tools_submenu.add_separator
     require 'PhlatBoyz/tools/PhOptions.rb'
     $phoptions = Options.new()

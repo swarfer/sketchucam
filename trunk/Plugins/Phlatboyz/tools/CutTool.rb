@@ -6,7 +6,7 @@ require 'Phlatboyz/PhlatOffset.rb'
 require 'Phlatboyz/tools/OffsetCut.rb'
 =begin
    swarfer: added .center back to phlatarc entities so that gcodeutil can output X Y I J format arcs
-   in the hope of solving the uissues around R format when arcs are very small, which happens when using the
+   in the hope of solving the issues around R format when arcs are very small, which happens when using the
    phlatbones tool
    $Id$
 =end
@@ -125,7 +125,7 @@ module PhlatScript
       last_pt = nil
       verts = face.outer_loop.vertices
 
-      lav = Offset.new
+      lav = Offset.new			# in PhlatOffset.rb
       lav.load(verts)
       lav.process(dist)
       lav.each { |node|

@@ -1,4 +1,4 @@
-#module to allow user to change deault options without needing to edit any file.
+#module to allow user to change default options without needing to edit any file.
 # this will read Constants.rb and use those values to populate the options class
 # then, if MyOptions.ini exists it will read that and override the settings in the options class
 # everywhere that the old Default globals are used must be changed to use the options class values
