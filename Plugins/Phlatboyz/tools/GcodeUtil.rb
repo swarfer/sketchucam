@@ -229,12 +229,23 @@ puts(" tabletop '#{@tabletop}'\n")
                aMill.cncPrint("(Outfeed)\n")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
-               # retracts the milling head and and then moves it home.
-               # This prevents accidental milling
-               # through your work piece when moving home.
-               aMill.home()
+               if PhlatScript.UseEndPosition?
+                  if ($phoptions.use_home_height?)
+                     height = $phoptions.default_home_height
+                  else
+                     height = @safeHeight
+                  end
+                  aMill.retract(@safeHeight) #forces cmd_rapid
+                  aMill.cncPrint("(EndPosition)\n")
+                  aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
+               else
+                  # retracts the milling head and and then moves it home.
+                  # This prevents accidental milling
+                  # through your work piece when moving home.
+                  aMill.home()
+               end
             end
-            if (PhlatScript.useOverheadGantry?)
+               if (PhlatScript.useOverheadGantry?)
 #              if ($phoptions.use_home_height? != nil)
                 if ($phoptions.use_home_height?)
                   aMill.retract($phoptions.default_home_height)

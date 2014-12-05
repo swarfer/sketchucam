@@ -21,7 +21,7 @@ module PhlatScript
 
       def select
       
-   # get multuiple file names
+   # get multiple file names
          directory_name = PhlatScript.cncFileDir
          filename = PhlatScript.cncFileName
          status = false
@@ -39,8 +39,8 @@ module PhlatScript
          end
          
          #get output file name
-         UI.messagebox("Now you will be promted for the output file name")
-         outputfile = UI.savepanel("Select output file name", directory_name, "joined#{$phoptions.default_file_ext}" )
+         UI.messagebox("Now you will be promted for the OUTPUT file name")
+         outputfile = UI.savepanel("Select OUTPUT file name", directory_name, "joined#{$phoptions.default_file_ext}" )
          if (outputfile == nil)
             UI.messagebox("No output file selected, exiting")
             return
@@ -48,29 +48,39 @@ module PhlatScript
          
          outf = File.new(outputfile, "w+")
          
+         outf.puts("%")
+         idx = 0
+         outf.puts("(joined files)")
+         while(idx < filenames.length)
+            outf.puts("(   #{File.basename(filenames[idx])})")
+            idx += 1
+         end
          idx = 0
          lastfile = filenames.length - 1  #last file
          while (idx < filenames.length)
             puts "output file #{idx}"
             inf = File.new(filenames[idx],"r")
+            ff = filenames[idx]
+            
             #output first file till 'G0 X0 Y0 (home)'
             #output file 2 to N-1 from 'G90 G21 G49 G61' till 'G0 X0 Y0 (home)'
             #output file N from 'G90 G21 G49 G61' till end
             if (idx > 0)  # then skip header
                line = inf.readline
                while (line.match('G90') == nil)
-                  if (line.match('\(File:|\(Bit') != nil)
+                  if (line.match('\(File|\(Bit') != nil)
                      outf.puts(line)
                   end
                   line = inf.readline
                end
                puts "header skipped #{idx}"
+               outf.puts("(Join   #{File.basename(filenames[idx])})")
                outf.puts(line)
-            end
+               end
             #output till footer
             line = inf.readline
-            while !inf.eof and (line.match('G0 X0 Y0|M30|\(Outfeed\)') == nil)
-               outf.puts(line)   if !line.match('\(Outfeed|M30')
+            while !inf.eof and (line.match('G0 X0 Y0|M30|\(Outfeed\)|\(EndPosition\)') == nil)
+               outf.puts(line)   if !line.match('\(Outfeed|\(EndPosition\)|M30|%')  #do not output leading %
                line = inf.readline
             end
             puts "output till footer done #{idx}  #{line}"
