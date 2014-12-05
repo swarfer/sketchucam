@@ -169,7 +169,7 @@ module PhlatScript
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
 #     cncPrint("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
-      if cmd != "G00"
+      if cmd != @cmd_rapid
          if @retract_depth == zo
             cmd=@cmd_rapid
             so=0

@@ -305,6 +305,15 @@ module PhlatScript
    def PhlatScript.UseOutfeed?
       $phoptions.use_outfeed?
    end
+   def PhlatScript.UseEndPosition?
+      $phoptions.use_end_position?
+   end
+   def PhlatScript.end_x
+      $phoptions.end_x
+   end
+   def PhlatScript.end_y
+      $phoptions.end_y
+   end
 
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?

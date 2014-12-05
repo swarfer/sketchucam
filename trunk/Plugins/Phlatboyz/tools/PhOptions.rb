@@ -64,6 +64,9 @@ module PhlatScript
          @profile_save_material_thickness =   (phoptions.profile_save_material_thickness? ? '1' : '0')
          @use_home_height        =   (phoptions.use_home_height? ? '1' : '0')
          @default_home_height    =   PhlatScript.conformat(phoptions.default_home_height)
+         @use_end_position       =   (phoptions.use_end_position? ? '1' : '0')
+         @end_x                  =   PhlatScript.conformat(phoptions.end_x)   
+         @end_y                  =   PhlatScript.conformat(phoptions.end_y)
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
       end
    end
@@ -116,6 +119,9 @@ module PhlatScript
          @profile_save_material_thickness = Profile_save_material_thickness
          @use_home_height = Use_Home_Height
          @default_home_height = Default_Home_Height
+         @use_end_position       =  false
+         @end_x                  =  0   
+         @end_y                  =  0
          @use_fuzzy_holes = true
 
          # if MyOptions.ini exists then read it
@@ -233,7 +239,14 @@ module PhlatScript
             @use_home_height = value > 0 ? true :  false              if (value != -1)
 
             @default_home_height = getvalue(optin['default_home_height'])    if (optin.has_key?('default_home_height'))
-            
+         #use_end_position
+
+            value = -1
+            value = getvalue(optin['use_end_position'])                if (optin.has_key?('use_end_position'))
+            @use_end_position = value > 0 ? true :  false             if (value != -1)
+
+            @end_x            =   getvalue(optin['end_x'])    if (optin.has_key?('end_x'))   
+            @end_y            =   getvalue(optin['end_y'])    if (optin.has_key?('end_y'))
          #use_fuzzy_holes
             value = -1
             value = getvalue(optin['use_fuzzy_holes'])                if (optin.has_key?('use_fuzzy_holes'))
@@ -578,6 +591,25 @@ module PhlatScript
          @default_home_height = newval
       end
       
+      def use_end_position?
+         @use_end_position
+      end
+      def use_end_position=(newuse)
+         @use_end_position = newuse
+      end
+      def end_x
+         @end_x
+      end
+      def end_y
+         @end_y
+      end
+      def end_x=(newval)
+         @end_x = newval
+      end
+      def end_y=(newval)
+         @end_y = newval
+      end
+      
       def use_fuzzy_holes?
          @use_fuzzy_holes
       end
@@ -856,6 +888,9 @@ end # class
             'Profile_save_material_thickness ',
             'Use_Home_Height ',
             'Default_Home_Height ',
+            'Use_End_Position ',
+            'End position X ',
+            'End position Y ',
             'Use fuzzy hole stepover '
             ];
          defaults=[
@@ -869,6 +904,9 @@ end # class
             @options.profile_save_material_thickness?.inspect(),
             @options.use_home_height?.inspect(),
             Sketchup.format_length(@options.default_home_height),
+            @options.use_end_position?.inspect(),
+            Sketchup.format_length(@options.end_x),
+            Sketchup.format_length(@options.end_y),
             @options.use_fuzzy_holes?.inspect()
             ];
          list=[
@@ -881,6 +919,9 @@ end # class
             'true|false',
             'true|false',
             'true|false',
+            '',
+            'true|false',
+            '',
             '',
             'true|false'
             ];
@@ -898,7 +939,16 @@ end # class
             @options.profile_save_material_thickness         = (input[7] == 'true')
             @options.use_home_height         = (input[8] == 'true')
             @options.default_home_height     = Sketchup.parse_length(input[9])
-            @options.use_fuzzy_holes         = (input[10] == 'true')
+
+            @options.use_end_position        = (input[10] == 'true')
+            if (@options.use_outfeed?)     # only one of them
+               @options.use_end_position = false
+            end
+            @options.end_x                   = Sketchup.parse_length(input[11])
+            @options.end_y                   = Sketchup.parse_length(input[12])
+
+            @options.use_fuzzy_holes         = (input[13] == 'true')
+            
             @options.save
          end # if input
       end # def select
