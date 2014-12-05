@@ -1,7 +1,7 @@
 
 require 'sketchup.rb'
 require 'Phlatboyz/Phlatscript.rb'
-
+# $Id$
 
 class GPlot
 
@@ -12,8 +12,10 @@ class GPlot
     end
   end
 
-  def plot
-    filename = PhlatScript.cncFileDir  + PhlatScript.cncFileName
+  def plot(filename=nil)   #swarfer: allow overriding filename
+    if (filename == nil)
+       filename = PhlatScript.cncFileDir  + PhlatScript.cncFileName
+    end
     if (filename) && (File.exist?(filename)) then
       Thread.new{system(@exe, filename)}
     else
