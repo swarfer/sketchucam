@@ -125,7 +125,7 @@
 <tr>
    <td>
       <div class="intro">
-         The PhlatScripT is a set of tools in the form of a plugin for Google
+         SketchUcam is a set of tools in the form of a plugin for Google
          SketchUp. It allows for assigning of CNC cut/fold/drill/mill, etc.
          functions to SketchUp designs as a full featured CAM solution. It was
          designed for use with the Phlatboyz easy to assemble and learn CNC
@@ -185,6 +185,22 @@
             Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
          </div>
       </div>
+      
+      <div class="intro">
+      <h4>New in V1.2a</h4>
+         <ul>
+         <li>Gcode Joiner - on the Phlatboyz menu, this tool allows you to join 2 or more Gcode files together to make a single file that 
+            does all of the cuts in the order specified.  This is handy for combining files generated from a drawing that needs seperate operations
+            carried out on the same part.
+         <li>Use_End_Position - on the Options|Features menu, setting this true allows you to select an ending position other than X0 Y0 for the gantry.
+            TIP: use in combination with the Use_Home_Height option.
+         <LI>Bug fixes in the 3D Gcode generator.
+         <li>3D code that uses multipass will now stop early once all features have been cut, ie it will not 
+            continue to full material depth if all features have been cut. 
+         </ul>
+      </div>
+ 
+      
       <div class="intro">
       <h4>New in V1.2</h4>
          <ul>
@@ -724,11 +740,38 @@ do unexpected things, be very careful! &nbsp; </td>
       These menu items appear on the Tools|Phlatboyz menu.  
       Most entries duplicate the toolbar entries so only those that are unique will be described here.
       </th>
-      <th rowspan=4>
+      <th rowspan=5 valign=top>
          <img alt="" src="images/toolsmenu.png">
       </th>
    </tr>
 
+   <tr>
+      <td class="command-image" valign=top>
+      Gcode Joiner
+      </td>
+      <td class="command-description" valign=top>
+         This tool allows you to join several Gcode files together to create a single output file.
+         It will keep the first files header and list all the file names as a comment at the top of the output.
+         Following files will have the header and footer stripped to prevent going to X0 Y0 between each file.
+         The line of code that specifies the units (G90 G20 or G90 G21) will be retained.
+         
+         Process:
+         <ul>
+         <li>After activating the tool you will be presented with a open file dialog  asking for a Gcode file.<br>
+         <li>Select the file you want, then click 'Open'.  You will be presented with this dialog untill you click 'cancel'.<br>
+         <li>An informational dialog will be shown indicating that the next file dialog will be asking for the output file name, which defaults to 'joined.nc'.<br>
+         <li>Once the output file is selected the files will be joined.   If you open the Ruby console you will see informational messages as the process happens.
+         <li>When the output has been written, you will be prompted with the question "Do you want to preview the code".  
+            Click YES to open the GPlot program with the recently joined output file.
+            Click NO to end the process without previewing the code.
+         </ul>
+         <b>NOTE:</b>
+         This tool will happily join files that have been created for different bit diameters.  The (Bit diameter ...) comment lines
+         from every file will be included in the joined output.  It is up to the user to check that all bit diameters are the same.
+      </td>
+   </tr>
+   
+   
    <tr>
       <td class="command-image" valign=top>
       Options

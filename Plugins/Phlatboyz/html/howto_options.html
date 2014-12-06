@@ -301,8 +301,8 @@ cuts = 3.3</pre>
       <dd>Outfeed: phlatprinters only!<br>
          Set this to true to enable outfeed.  At the end of the job it will feed the material out the front of the
          machine instead of stopping at X0 with the material out the back.<br>
-         It will feed to 75% of the material size as given by the safe area settings.
-            
+         It will feed to 75% of the material size as given by the safe area settings.<br>
+         <b>If this is true then Use_End_Position will be forced to false because they cannot be used at the same time.</b>            
    <dt>Use_vtab_speed_limit
       <dd>Set this to true if you have an older version of Mach that does not slow down
          to the Z maximum speed during helical linear interpolation (G2/3 with Z
@@ -315,16 +315,31 @@ cuts = 3.3</pre>
    <Dt>Use_Home_Height 
       <dd>Set this true and set the height and the Z will retract to this at the end of the job
          really only useful for overhead gantries
-   <dt>Default_Home_Height 
-      <dd>If Use_Home_Height is true, then a G00 Z movement will be issued at the end of the job, using this height for Z.<br>
+      <dl>
+      <dt>Default_Home_Height 
+      <dd>If <i>Use_Home_Height</i> is TRUE, then a G00 Z movement will be issued at the end of the job, using this height for Z.<br>
       If you have material top as Z-zero, it will retract this high above the material.<br>
       If you have table top as Z-Zero, it will retract this high above the table.
+      </dl>
+      
+   <dt>Use_End_Position
+      <dd>If this is set true then the values for X and Y below will be used for the final rapid move.<br>
+      You can use this to move the gantry out of the way at the end of a job for easy material removal.<br>
+      Set <i>Use_Home_Height</i> true as well to enable a Z height that is higher than the safe height used in the Gcode.<br>
+      NOTE: these values will be limited by your <i>Default_safe_width (X)</i> and <i>Default_safe_height (Y)</i> material size settings.
+      <dl>
+      <dt>End position X
+         <dd>Ending position for X axis.
+      <dt>End position Y
+         <dd>Ending position for Y axis.
+      </dl>   
+         
    <dt>Use fuzzy hole stepover 
-      <dd>false = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
+      <dd>FALSE = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
          This may create a very small depth of cut for the last cut.
-      <dd>true = the stepover will be adjusted to give a whole number of steps of equal size.<br>
+      <dd>TRUE = the stepover will be adjusted to give a whole number of steps of equal size.<br>
          If stepover% is less than 50% then the number of steps will be rounded UP to give a smaller stepover, for hard materials.<br>
-         If stepover% is greater than 50% then the nubmer of steps will be rounded DOWN, for soft materials.<br>
+         If stepover% is greater than 50% then the number of steps will be rounded DOWN, for soft materials.<br>
          If stepover% is 50%, then no stepover rounding will be performed.
    </dl>
 </p>
