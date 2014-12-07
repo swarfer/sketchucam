@@ -10,7 +10,12 @@ goto zipit
 
 :cdo
    c:
-   cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
+   if exist "C:\Program Files (x86)\Google\Google SketchUp 8" cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins"
+   if exist "C:\Program Files\Google\Google SketchUp 8\Plugins" cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
+   if exist Phlatboyz goto zipit
+      echo Phlatboyz not found
+      goto fail
+   
 :zipit
    "c:\program files\7-zip\7z" a  tp.zip *.* -x@..\make.ex -r
 
