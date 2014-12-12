@@ -6,7 +6,7 @@
 # Usage       :   install in plugins folder
 # Date        :   Feb 2014
 # Type        :   
-# Version     :   SketchUcam 1.1 
+# Version     :   SketchUcam 1.2 
 # $Id$
 #-----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ module PhlatScript
      def initialize
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
        self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating Phlatprinter g-code.' 
-       self.version = '1.2a'  #4 release
+       self.version = '1.2b1'   #a4
        self.creator = 'Phlatboyz' 
        self.copyright = '2014, Phlatboyz' 
      end

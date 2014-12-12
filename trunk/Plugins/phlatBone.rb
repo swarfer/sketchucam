@@ -177,6 +177,9 @@ def self.getSavePrefs(reading)
       # UI.messagebox("Can't find the prefs file for PhlatBone, I'm creating a new one.")
       # Write default to the new prefs
       puts "creating new file"
+      if !File::exists?(path)    # try to create it if it does not exist, for SK8?
+         Dir.mkdir(path)
+      end
       File.open(theFile, "w") {|f|
          f.puts( $PhlatBoner_toolDiameter )
          f.puts($PhlatBoner_units)

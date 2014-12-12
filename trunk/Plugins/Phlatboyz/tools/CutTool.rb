@@ -135,7 +135,7 @@ module PhlatScript
          phlatcuts = cut_class.cut([ne[0]])
 
          e_last = node.data.ea
-         if ((!e_last.nil?) && (!e_last.curve.nil?) && (e_last.curve.kind_of? Sketchup::ArcCurve))
+         if ((!e_last.nil?) && (!e_last.curve.nil?) && (!e_last.curve.is_polygon?) && (e_last.curve.kind_of? Sketchup::ArcCurve))
             c = e_last.curve
 
             pt1 = c.first_edge.vertices.first.position
