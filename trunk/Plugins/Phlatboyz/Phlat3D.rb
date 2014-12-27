@@ -14,6 +14,10 @@
 #						Fix multipass bug, plunges to fulldepth before each pass, should only plunge to pass depth
 
 require 'sketchup.rb'
+require 'Phlatboyz/PhlatProgress.rb'
+
+module PhlatScript
+
 
 class GCodeGen3D
 
@@ -162,8 +166,12 @@ class GCodeGen3D
     removedpt = false
     rise = 0
     run = 0
+   
+   prog = PhProgressBar.new( grid.length, "Starting to Optimize GCode")
+   prog.symbols("d","D")
 
     while i < (grid.length-1)
+      prog.update(i)
       if removedpt
       else
         prevpt = grid[i-1]
@@ -260,8 +268,11 @@ class GCodeGen3D
    curpt = @modelgrid[0]
    nextpt = @modelgrid[1]
 
+   prog = PhProgressBar.new( @modelgrid.length, "Starting to generate Verticals")
+   prog.symbols("b","B")
 
    while i < @modelgrid.length
+      prog.update(i)
       if i == 0
          curpt = @modelgrid[i]
          nextpt = @modelgrid[i+1]
@@ -443,8 +454,12 @@ class GCodeGen3D
       stopnexttime = false
       startxs = format_measure('X',grid[0].to_a[0])
       startys = format_measure('Y',grid[0].to_a[1])
+      
+      prog = PhProgressBar.new( (@matThick / @multiPassDepth).round, "Writing File #@sileToSave" )
+      prog.symbols("g","G")
 
       while curz >= (-@matThick)
+         porg.update(pass)
          nf.puts "(Pass #{pass} curz #{curz})"
          if pass == 1
             nf.puts "G0 #{zsafe}"
@@ -542,11 +557,18 @@ class GCodeGen3D
 	 
     fs = format_feed(@feedRate)
 	 nf.puts "G1 #{zs} #{fs}"
+	 
+    prog = PhProgressBar.new( grid.length, "Writing File #@sileToSave" )
+    prog.symbols("g","G")
+    progcnt = 0
+	 
 	 for point in grid
-				xs = format_measure('X',point.to_a[0])
-				ys = format_measure('Y',point.to_a[1])
-				zs = format_measure('Z',point.to_a[2])
-				nf.puts "   #{xs} #{ys} #{zs}"
+	    prog.update(progcnt)
+	    progcnt += 1
+   	xs = format_measure('X',point.to_a[0])
+   	ys = format_measure('Y',point.to_a[1])
+   	zs = format_measure('Z',point.to_a[2])
+   	nf.puts "   #{xs} #{ys} #{zs}"
 	 end
 	 nf.puts "M05"
 	 nf.puts "G0 #{zsafe}"
@@ -558,58 +580,62 @@ class GCodeGen3D
 	 Sketchup.status_text = "File finished writing"
   end
 
-			 def generateGCodeGrid
+def generateGCodeGrid
 
-			 #need to cycle through the modelgrid for each point
-			 puts "Started generating G Code"
-			 Sketchup.status_text = "Started generating G Code"
-			 #oldpoint = @verticalgrid[0]
-			 i = 0
-			 while i < @verticalgrid.length
-						if i == 0
-								  prevpt = nil
-								  curpt = @verticalgrid[i]
-								  nextpt = @verticalgrid[i+1]
-						elsif i == (@verticalgrid.length) -1
-								  prevpt = @verticalgrid[i-1]
-								  curpt = @verticalgrid[i]
-								  nextpt = nil
-						else
-								  prevpt = @verticalgrid[i-1]
-								  curpt = @verticalgrid[i]
-								  nextpt = @verticalgrid[i+1]
-						end
-			 #for point in @verticalgrid
-						#if oldpoint != point
-								  #hitarray = Array.new
-								  #alreadyAdjusted = Array.new
-								  #point = adjustpoint2(point, hitarray, alreadyAdjusted, false)
-
-								  #point = curpt
-								  #puts "#{curpt}"
-
-								  newpt = nil
-								  if prevpt != curpt and curpt != nextpt and prevpt != nextpt
-											 if prevpt != nil and curpt != nil and nextpt != nil
-											  #newpt = adjustpoint3(prevpt, curpt, nextpt)
-											  newpt = curpt
-											 end
-								  end
-
-
-								  if newpt != nil
-											 newpt.z -= @matThick
-											 @gCodegrid += [(Geom::Point3d.new [newpt.x, newpt.y, newpt.z])]
-								  end
-
-						#end
-						#oldpoint = point
-						i += 1
-			 end
-
-			 puts "Finished generating G Code"
-			 Sketchup.status_text = "Finished generating G Code"
-  end
+   #need to cycle through the modelgrid for each point
+   puts "Started generating G Code"
+   Sketchup.status_text = "Started generating G Code"
+   #oldpoint = @verticalgrid[0]
+   i = 0
+    
+   prog = PhProgressBar.new( @verticalgrid.length,"Started generating G Code"  )
+   prog.symbols("c","C")
+    
+   while i < @verticalgrid.length
+      prog.update(i)
+      if i == 0
+         prevpt = nil
+         curpt = @verticalgrid[i]
+         nextpt = @verticalgrid[i+1]
+      elsif i == (@verticalgrid.length) -1
+         prevpt = @verticalgrid[i-1]
+         curpt = @verticalgrid[i]
+         nextpt = nil
+      else
+         prevpt = @verticalgrid[i-1]
+         curpt = @verticalgrid[i]
+         nextpt = @verticalgrid[i+1]
+      end
+      #for point in @verticalgrid
+      #if oldpoint != point
+         #hitarray = Array.new
+         #alreadyAdjusted = Array.new
+         #point = adjustpoint2(point, hitarray, alreadyAdjusted, false)
+      
+        #point = curpt
+        #puts "#{curpt}"
+      
+      newpt = nil
+      if prevpt != curpt and curpt != nextpt and prevpt != nextpt
+         if prevpt != nil and curpt != nil and nextpt != nil
+            #newpt = adjustpoint3(prevpt, curpt, nextpt)
+            newpt = curpt
+         end
+      end
+      
+      if newpt != nil
+         newpt.z -= @matThick
+         @gCodegrid += [(Geom::Point3d.new [newpt.x, newpt.y, newpt.z])]
+      end
+      
+      #end
+      #oldpoint = point
+      i += 1
+   end # while
+   
+   puts "Finished generating G Code"
+   Sketchup.status_text = "Finished generating G Code"
+end #generateGcodeGrid
 
         def adjustpoint3(prevpt, curpt, nextpt)
 
@@ -945,8 +971,15 @@ class GCodeGen3D
 
     @basefloor = Sketchup.active_model.entities.add_group
     @basefloor.entities.add_face [@modelMinX-5,@modelMinY-5,-planval], [@modelMaxX +5 , @modelMinY-5,-planval], [@modelMaxX+5, @modelMaxY+5,-planval], [@modelMinX-5, @modelMaxY+5,-planval]
-
+#progress bar to indicate activity    
+    progcnt = ((@modelMaxX - @modelMinX) / @stepOver).round
+    
+    prog = PhProgressBar.new( progcnt,"Starting Generate Model Grid" )
+    prog.symbols("a","A")
+    progcnt = 0
     while currposx < @modelMaxX
+       prog.update(progcnt)
+       progcnt += 1
       #puts " currposx #{currposx}"
       #The y axis is done this way so the items in the array follow the tool path
       ystarted = true
@@ -1027,3 +1060,4 @@ if( not file_loaded?("Phlat3D.rb") )
 end
 #-----------------------------------------------------------------------------
 file_loaded("Phlat3D.rb")
+end #module
