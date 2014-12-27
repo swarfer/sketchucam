@@ -39,11 +39,16 @@ module PhlatScript
       @@background = "-" * 50    
       @@foreground = "*" * 50
 
-      def initialize(total)  
+      def initialize(total,msg = nil)  
          if (!total.integer? or total < 0)
             total = 100
          end 
          @total = total.to_i
+         if (msg == nil)
+            @msg = ""
+         else
+            @msg = msg
+         end
          self.update(1)
       end
       
@@ -55,7 +60,6 @@ module PhlatScript
       def update(progress) 
          if !progress.integer? 
             progress = progress.to_i  
-            return
          end  
          now = progress.abs
          if now > @total
@@ -65,7 +69,7 @@ module PhlatScript
          pct = 2 if (pct < 2) 
          pct_p = pct / 2 
          block = @@foreground[0,pct_p-1] + @@background[0,50-pct_p]
-         Sketchup.set_status_text(block)
+         Sketchup.set_status_text(@msg + " " + block)
       end
    end  
 
