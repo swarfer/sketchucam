@@ -32,6 +32,7 @@ module PhlatScript
       @no_move_count = 0
       @spindle_speed = PhlatScript.spindleSpeed
       @retract_depth = PhlatScript.safeTravel.to_f
+      @table_flag = false # true if tabletop is zZero
       @mill_depth  = -0.35
       @speed_curr  = PhlatScript.feedRate
       @speed_plung = PhlatScript.plungeRate
@@ -54,8 +55,9 @@ module PhlatScript
       @cw =  PhlatScript.usePlungeCW?           #swarfer: spiral cut direction
     end
 
-   def set_retract_depth(newdepth)
+   def set_retract_depth(newdepth, tableflag)
       @retract_depth = newdepth
+      @table_flag = tableflag
    end
 
     def set_bit_diam(diameter)
@@ -303,6 +305,60 @@ module PhlatScript
          @cc = cmd
       end
    end
+   
+   def ramp(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+           cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op,")\n")
+      if (zo == @cz)
+         @no_move_count += 1
+      else
+         # we are at a point @cx,@cy and need to ramp to op.x,op.y,zo/2 then back to @cx,@cy,zo
+         if (zo > @max_z)
+            cncPrint("(RAMP limiting Z to max_z @max_z)\n")
+            zo = @max_z
+         elsif (zo < @min_z)
+            cncPrint("(RAMP limiting Z to min_z @min_z)\n")
+            zo = @min_z
+         end
+         command_out = ""
+         # if above material, G0 to surface
+         if (@cz == @retract_depth)
+            if (@table_flag)
+               command_out += "G0 Z#{@material_thickness}\n"
+               @cz = @material_thickness
+            else
+               command_out += "G0 Z0\n"
+               @cz = 0
+            end
+            @cc = @cmd_rapid
+         end
+         
+         command_out += cmd if (cmd != @cc)
+         
+         # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
+         command_out += format_measure('x',op.x)
+         command_out += format_measure('y',op.y)
+         bz = (zo-@cz)/2 + @cz
+         command_out += format_measure('z',bz)
+         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n";
+         # cut to @cx,@cy,zo
+         command_out += format_measure('X',@cx)
+         command_out += format_measure('y',@cy)
+         command_out += format_measure('z',zo)
+         
+         
+#         so = @speed_plung  # force using plunge rate for vertical moves
+         #        sox = @is_metric ? so.to_mm : so.to_inch
+         #        cncPrint("(plunge rate #{sox})\n")
+#         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n"
+         cncPrint(command_out)
+         @cz = zo
+         @cs = so
+         @cc = cmd
+      end
+   end
+   
 
 # generate code for a spiral bore and return the command string
    def SpiralAt(xo,yo,zstart,zend,yoff)

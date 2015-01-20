@@ -115,6 +115,7 @@ module PhlatScript
       @optimize = true  #set to true to try find the closest point on the next group
       @current_bit_diameter = 0
       @tabletop = false
+      @must_ramp = false    # make this an option!
 
     def initialize
       @tooltype = 3
@@ -209,7 +210,7 @@ puts(" tabletop '#{@tabletop}'\n")
             aMill = PhlatMill.new(absolute_File_name, min_max_array)
 
             aMill.set_bit_diam(@current_bit_diameter)
-            aMill.set_retract_depth(@safeHeight) #tell amill the retract height, for table zero ops
+            aMill.set_retract_depth(@safeHeight,@tabletop) #tell amill the retract height, for table zero ops
 
 #   puts("starting aMill absolute_File_name="+absolute_File_name)
             if @tabletop
@@ -764,6 +765,13 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
+#               puts "#{phlatcut.edge.end}\n"
+               if (reverse)
+                  otherpoint = phlatcut.edge.start.position
+               else
+                  otherpoint = phlatcut.edge.end.position
+               end
+               otherpoint = (trans ? (otherpoint.transform(trans)) : otherpoint)
 
                # retract if this cut does not start where the last one ended
                if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
@@ -828,7 +836,11 @@ puts " new #{newedges[i-1]}\n"
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
                         else
-                           aMill.plung(cut_depth, PhlatScript.plungeRate)
+                           if (@must_ramp)
+                              aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                           else
+                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                           end
                         end # if plungecut
                      end # if else multipass
                   else #cut in progress
@@ -845,17 +857,16 @@ puts " new #{newedges[i-1]}\n"
 #puts "arc length #{phlatcut.edge.length}\n"
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
-                        else #problem with tab cuts so always use R format for now
-#swarfer: reversed this IJ code, the arc segments at the begining and end of truncated circles always have radius mismatch
-# reported by EMC - lets see how the extra digit of precision works out for R format
-#                           if ((center.x == 0) && (center.y == 0)) || ((phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?))               # old code will not have a center point so use radius format
-                              aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
-#                           else
-#                              aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y,  g3, cut_depth)
-#                           end
+                        else 
+                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                         end
                      else
+#                        if (@must_ramp && (point.x == save_point.x) && (point.y == save_point.y) && (cut_depth < save_point.z) )
+#                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+#                        else
+#      puts "point   #{point.x} #{point.y} #{cut_depth.to_mm} savepoint #{save_point.x} #{save_point.y} #{save_point.z}"
                         aMill.move(point.x, point.y, cut_depth)
+#                        end
                      end
                   end # if !cutstarted
                end # if point != savepoint
