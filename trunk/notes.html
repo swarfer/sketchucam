@@ -60,20 +60,46 @@ List of things to fix/add for next release, in no particular order
 <tr><td>&#10004;</td><td>Profiles save/load</td><td>tool for saving and loading sets of cut parameters</td><td>1.1c-beta</td></tr>
 <tr><td>&#10004;</td><td>centerline multipass fix?</td><td>Phlatboyz.rar into 1_1b</td><td>&nbsp;</td></tr>
 
-<tr><td>&nbsp;</td><td>Wire cutter</td><td>tick box for generating wire cutter code</td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>Option for plasma table code</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 <tr><td>&#10004;</td><td>Option for Z-0 on top of material, or on table top</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 
 <tr><td>&#10004;</td><td>POCKET: Pocket in X or Y direction</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-
-<tr><td>&nbsp;</td><td>POCKET: Concave Pocketing - mesh or Minimum Convex Decomposition</td><td><A href="http://www.anderswallin.net/cam/">http://www.anderswallin.net/cam/</a> <br><a href="http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0">http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0</a></td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>POCKET: Use inside cut tools offset routine instead</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&#10004;</td><td>MyConstants.rb editor menu</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr>
+   <td>&#10004;</td>
+   <td>Z zero on material OR on table</td>
+   <td><pre>Table zero: ZL = material thickness(MT)
+                     cut = ZL - (cutfactor * MT)
+                     safe = ZL+SH  {- safe height is safe margin above material
+       Mat Zero : ZL = 0
+                  cut = ZL - (cf * MT)
+                  safe = ZL + SH   {- safeheight is mt + some safety margin</pre>
+   </td>
+   
+</tr>   
+<tr>
+   <td>&#10004;</td>
+   <td>Advanced setup</td>
+   <td>Encapsulate MyConstants.rb setup into a menu<br>
+   <ol><li>read MyConstants.rb
+      <li>menu
+      <li>write - preserving comments
+      <li>reload
+      </ol>
+      May need to convert constants to globals to get the reload to work without error messages<br>
+      Help - needs button to display profiles folder 'file://%APPDATA%/Sketchup' to aid users in sharing profiles.
+   </td>
+</tr>
+</table>
+1.2a released
+<table border=1 cellspacing=0 cellpadding=2>
+<tr><td>&nbsp;</td><td>POCKET: </td><td>Concave Pocketing - mesh or Minimum Convex Decomposition</td><td><A href="http://www.anderswallin.net/cam/">http://www.anderswallin.net/cam/</a> <br><a href="http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0">http://www.phlatforum.com/viewtopic.php?f=100&t=3447&start=0</a></td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>POCKET: </td><td>Use inside cut tools offset routine instead</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 
 <tr><td>&nbsp;</td><td>Auto tab placement</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 <tr><td>&nbsp;</td><td>3D with bullnose bits, proper depthing stuff</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 
 <tr><td>&nbsp;</td><td>Auto tab width on bit size change</td><td>optional</td><td>&nbsp;</td></tr>
-<tr><td>&#10004;</td><td>MyConstants.rb editor menu</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>Wire cutter</td><td>tick box for generating wire cutter code</td><td>&nbsp;</td></tr>
 
 <tr><td>&nbsp;</td>
    <TD>USER REQUEST</td>
@@ -90,8 +116,6 @@ List of things to fix/add for next release, in no particular order
    <p>
    Thoughts: could provide for feed speed scaling between a 'speed at 100% depth' to 'speed at <100% depth' where
       speed at 100% will be less than speed at some <100% depth.
- 
- 
    </p>
    </td>
    </tr>
@@ -106,41 +130,34 @@ List of things to fix/add for next release, in no particular order
          no optimization, or only closest end<br>
          options for M codes before and after G01 sections</pre></td>
 </tr>         
-<tr>
-   <td>&#10004;</td>
-   <td>Z zero on material OR on table</td>
-   <td><pre>Table zero: ZL = material thickness(MT)
-                     cut = ZL - (cutfactor * MT)
-                     safe = ZL+SH  {- safe height is safe margin above material
-       Mat Zero : ZL = 0
-                  cut = ZL - (cf * MT)
-                  safe = ZL + SH   {- safeheight is mt + some safety margin</pre>
-   </td>
-   
-</tr>   
-<tr>
-   <td>&nbsp;</td>
-   <td>Advanced setup</td>
-   <td>Encapsulate MyConstants.rb setup into a menu<br>
-   <ol><li>read MyConstants.rb
-      <li>menu
-      <li>write - preserving comments
-      <li>reload
-      </ol>
-      May need to convert constants to globals to get the reload to work without error messages<br>
-      Help - needs button to display profiles folder 'file://%APPDATA%/Sketchup' to aid users in sharing profiles.
-   
-   
-   </td>
-</tr>
 
 <tr>
+   <td>&nbsp;</td>
    <td>4th axis awareness</td>
+   <td>allow user to set a 4th axis angle before outputting Gcode</td>
 </tr>
 <tr>
-   <td>
-   </td>
+   <td>&nbsp;   </td>
+   <td>Image to height map</td>
+   <td>&nbsp;   </td>
 </tr>      
+<tr>
+   <td>&nbsp;   </td>
+   <td>drag knife corners</td>
+   <td>&nbsp;   </td>
+</tr>      
+<tr>
+   <td>&nbsp;   </td>
+   <td>Tool change</td>
+   <td><dl>
+      <dd>GRBL will need to fake it, spindle stop, move to a position, pause, set tool offset, move back, start spindle, resume
+      <dd>LinuxCNC will obey M06 for manual or auto changes
+      <dd>Mach3 ?   probably happy with M06
+      </dl>
+      </td>
+      
+</tr>      
+
 </table>
 
 <h2>1_1_c-beta</h2>
@@ -205,7 +222,7 @@ List of things to fix/add for next release, in no particular order
 
    <li>Phlatbones
       <pre>
-      Tool diamter tool:
+      Tool diameter tool:
       Correctly detects inch/metric mode and uses appropriate units
       Adds 0.01" to bit diameter and rounds result to 3 digits
       </pre>
@@ -237,7 +254,7 @@ List of things to fix/add for next release, in no particular order
 </dl>
 <h2>1.1e May 2014</h2>
 <dl>
-<dd>profile file format was changed to ini format, extension .pri, as a way to test the iniparser library
+<dt>profile file format was changed to ini format, extension .pri, as a way to test the iniparser library
 <dt>fix for parameters tool on mac
 <dt>phlatBones preferences file moved to profiles folder, solves write permissions issue on Win7/8
 <dt>Pocketcut: improved undo so entire pocket cut will undo in one operation
@@ -246,22 +263,31 @@ List of things to fix/add for next release, in no particular order
 <dt>beta5 - added Z-Zero option to parameters dialog
 </dl>
 
-<h2>1.2a</h2>
+<h2>1.2a Dec 2014</h2>
 <dl>
 <dt>holes form groups to avoid intersecting existing geometry
    <dd>will still be affected by horizontals that overlay the color line
+   <dd>large and partial depth holes have names giving the sizes chosen
 <dt>3D code
       <dd>bug found in multipass that prevented G1 being written at start of each layer
       <dd>multipass continues output after lowest feature has been cut, find minz to prevent this.
          you will see a comment at the end of the Gcode if it was able to terminate early
       <dd>to generate accurate code you must specify the material as thicker than it really is
-         for example, if using 20mm material, set it to 21 and set Z zero using a 1mm spacer on the material
+         for example, if using 20mm material, set it to 21 and set Z zero using a 1mm spacer on the material.
          This will ensure that the top is not marked by anomolies, but it does mean that the entire
          top surface will be 'cut', which takes time.
+      <dd> always preview 3D code before cutting!
 <dt>Gcode Joiner
    <dd> tool to join several gcode files together into one file, stripping headers and footers as needed
+<dt>use_End_Position and end_x end_y - 
+   <dd>send the gantry to this position after the cuts.  Limited by material size.   
 </dl>      
 
+<h2> 1.2b unreleased</h2>
+<dl>
+   <dt>polygons were output as circle segments.
+   <dd>used to be output as circles unless exploded, now correctly detected and output as line segments.
 
+<hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
 </pre>
