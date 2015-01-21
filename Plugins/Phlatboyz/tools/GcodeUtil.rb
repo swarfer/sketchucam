@@ -115,7 +115,7 @@ module PhlatScript
       @optimize = true  #set to true to try find the closest point on the next group
       @current_bit_diameter = 0
       @tabletop = false
-      @must_ramp = false    # make this an option!
+      @must_ramp = true    # make this an option!
 
     def initialize
       @tooltype = 3
@@ -751,6 +751,7 @@ puts " new #{newedges[i-1]}\n"
                #safe = ZL+SH  {- safe height is safe margin above material
 
                #                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
+               prev_cut_depth = cut_depth
                cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                # store the max depth encountered to determine if another pass is needed
                max_depth = [max_depth, cut_depth].min
@@ -776,7 +777,7 @@ puts " new #{newedges[i-1]}\n"
                # retract if this cut does not start where the last one ended
                if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
                   if (!cut_started)
-                     if PhlatScript.useMultipass?  # multipass retract avoid by Yoram
+                     if PhlatScript.useMultipass?  # multipass retract avoid by Yoram and swarfer
                         # If it's peck drilling we want it to retract after each plunge to clear the tool
                         if (phlatcut.kind_of? PlungeCut)
                            if pass == 1
@@ -816,11 +817,19 @@ puts " new #{newedges[i-1]}\n"
                               else
                                  aMill.move(point.x, point.y)
                               end
-                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              if (@must_ramp)
+                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                              else
+                                 aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              end
                            else
                               # If it's not a peck drilling we don't need retract
                               aMill.move(point.x, point.y)
-                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              if (@must_ramp)
+                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                              else
+                                 aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              end #must ramp
                            end
                         end # if else plungcut
                      else #NOT multipass
@@ -836,7 +845,7 @@ puts " new #{newedges[i-1]}\n"
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
                         else
-                           if (@must_ramp)
+                           if (@must_ramp) 
                               aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                            else
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
@@ -861,12 +870,63 @@ puts " new #{newedges[i-1]}\n"
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                         end
                      else
-#                        if (@must_ramp && (point.x == save_point.x) && (point.y == save_point.y) && (cut_depth < save_point.z) )
+                        if (@must_ramp)
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
-#                        else
-#      puts "point   #{point.x} #{point.y} #{cut_depth.to_mm} savepoint #{save_point.x} #{save_point.y} #{save_point.z}"
-                        aMill.move(point.x, point.y, cut_depth)
-#                        end
+                        # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
+                           if (phlatcut.kind_of? PhlatScript::TabCut)
+                              puts "must ramp and tab"
+                              puts " p cut_depth #{prev_cut_depth.to_mm}"
+                              puts "   cut_depth #{cut_depth.to_mm}"
+                              puts "        point #{point.x}  #{point.y} #{point.z}"
+                              puts "  other point #{otherpoint.x}  #{otherpoint.y} #{otherpoint.z}"
+#must ramp and tab
+# p cut_depth -10.5
+#   cut_depth -5.0
+#        point 61.5mm  31.5mm 0.0mm
+#  other point 61.5mm  38.5mm 0.0mm
+# must do this move
+                             if  ( ((point.x != otherpoint.x) || (point.y != otherpoint.y)) && (prev_cut_depth < cut_depth))
+                                puts "RAMP moving up onto tab"
+                                aMill.move(point.x, point.y, cut_depth)
+                             end
+
+#must ramp and tab
+# p cut_depth -5.0
+#   cut_depth -5.0
+#        point 61.5mm  38.5mm 0.0mm
+#  other point 61.5mm  38.5mm 0.0mm
+#do this move
+                              if (  ((point.x == otherpoint.x) && (point.y == otherpoint.y)) && (prev_cut_depth == cut_depth) )
+                                puts "RAMP moving tab"
+                                aMill.move(point.x, point.y, cut_depth)
+                              end
+                              
+                              
+#must ramp and tab
+# p cut_depth -5.0
+#   cut_depth -10.5
+#        point 61.5mm  38.5mm 0.0mm
+#  other point 61.5mm  38.5mm 0.0mm                     
+#set ramp next move
+                              if ( (point.x == otherpoint.x) && (point.y == otherpoint.y) && (prev_cut_depth > cut_depth) )
+                                 puts "setting ramp_next true"
+                                 @ramp_next = true
+#                                 @ramp_depth = cut_depth  # where it starts
+                              end
+                           else  # not a tab cut
+                              if (@ramp_next)
+                                 puts "ramping ramp_next true"
+                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 aMill.move(point.x, point.y, cut_depth)
+                                 @ramp_next = false
+                              else
+                                 puts "plain move, not tab, not ramp_next"
+                                 aMill.move(point.x, point.y, cut_depth)
+                              end
+                           end
+                        else  # just move
+                           aMill.move(point.x, point.y, cut_depth)
+                        end # if must_ramp
                      end
                   end # if !cutstarted
                end # if point != savepoint

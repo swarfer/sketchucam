@@ -307,7 +307,7 @@ module PhlatScript
    end
    
    def ramp(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-           cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op,")\n")
+           cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n")
       if (zo == @cz)
          @no_move_count += 1
       else
