@@ -14,6 +14,7 @@ module PhlatScript
       @cs = 0.0
       @cc = ""
       @debug = false   # if true then a LOT of stuff will appear in the ruby console
+      @debugramp = false
       puts "debug true in PhlatMill.rb\n" if @debug
       @max_x = 48.0
       @min_x = -48.0
@@ -153,7 +154,6 @@ module PhlatScript
 
     def job_finish
       cncPrint("M05\n") # M05 - Spindle off
-#      cncPrint("G0 Z0\n") swarfer, don't need this really, just stop at safe height
       cncPrint("M30\n") # M30 - End of program/rewind tape
       cncPrint("%\n")
       if(@mill_out_file)
@@ -305,9 +305,147 @@ module PhlatScript
          @cc = cmd
       end
    end
+
+# convert degrees to radians   
+   def torad(deg)
+       deg * Math::PI / 180
+   end     
+
+   def todeg(rad)
+      rad * 180 / Math::PI 
+   end
    
-   def ramp(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-           cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n")
+   def ramp(limitangle, op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)   
+      if limitangle > 0
+         ramplimit(limitangle, op, zo, so, cmd)
+      else
+         rampnolimit(op, zo, so, cmd)
+      end
+   end
+
+## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+   def ramplimit(limitangle, op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+      cncPrint("(ramp limit #{limitangle}deg zo=", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n") if (@debugramp) 
+      if (zo == @cz)
+         @no_move_count += 1
+      else
+         # we are at a point @cx,@cy,@cz and need to ramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
+         if (zo > @max_z)
+            cncPrint("(RAMP limiting Z to max_z @max_z)\n")
+            zo = @max_z
+         elsif (zo < @min_z)
+            cncPrint("(RAMP limiting Z to min_z @min_z)\n")
+            zo = @min_z
+         end
+      
+         command_out = ""
+         # if above material, G0 to near surface to save time
+         if (@cz == @retract_depth)
+            if (@table_flag)
+               @cz = @material_thickness + 0.1.mm
+            else
+               @cz = 0.0 + 0.1.mm
+            end
+            command_out += "G0 " + format_measure('Z',@cz) +"\n"
+            @cc = @cmd_rapid
+         end
+         
+         command_out += cmd if (cmd != @cc)
+         # find halfway point
+         # is the angle exceeded?
+         point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
+         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
+         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
+         
+         if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
+            puts "distance=0 so just plunging"  if(@debugramp)
+            plung(zo, so, cmd)
+            cncPrint("(ramplimit end, translated to plunge)\n")
+            return
+         end
+         
+         bz = ((@cz-zo)/2).abs   #half distance from @cz to zo, not height to cut to
+         
+         anglerad = Math::atan(bz/distance)
+         angledeg = todeg(anglerad)
+         
+         if (angledeg > limitangle)  # then need to calculate a new bz value
+            puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
+            bz = distance * Math::tan( torad(limitangle) )
+            if (bz == 0)
+               puts "distance=#{distance} bz=#{bz}"
+               passes =4
+            else
+               passes = ((zo-@cz)/bz).abs
+            end   
+            puts "   new bz=#{bz.to_mm} passes #{passes}"                  if(@debugramp) # should always be even number of passes?
+            passes = passes.floor
+            if passes.modulo(2).zero?
+               passes += 2
+            else
+               passes += 1
+            end
+            bz = (zo-@cz).abs / passes
+            puts "   rounded new bz=#{bz.to_mm} passes #{passes}"          if(@debugramp) # now an even number
+         else
+            puts "bz is half distance" if(@debugramp)
+            #bz = (zo-@cz)/2 + @cz
+         end
+         puts "bz=#{bz.to_mm}" if(@debugramp)
+
+         so = @speed_plung  # force using plunge rate for ramp moves
+         
+         curdepth = @cz
+         cnt = 0
+         while ( (curdepth - zo).abs > 0.0001) do
+            cnt += 1
+            if cnt > 100
+               puts "high count break" 
+               command_out += "ramp loop high count break, do not cut this code\n"
+               break
+            end
+            puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
+            # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
+            command_out += format_measure('x',op.x)
+            command_out += format_measure('y',op.y)
+# for the last pass, make sure we do equal legs - this is mostyl circumvented by the passes adjustment
+            if (zo-curdepth).abs < (bz*2)
+               puts "last pass smaller bz"               if(@debugramp)
+               bz = (zo-curdepth).abs / 2
+            end
+            
+            curdepth -= bz
+            if (curdepth < zo)
+               curdepth = zo
+            end   
+            command_out += format_measure('z',curdepth)
+            command_out += (format_feed(so)) if (so != @cs)
+            @cs = so
+            command_out += "\n";
+
+            # cut to @cx,@cy, curdepth
+            curdepth -= bz
+            if (curdepth < zo)
+               curdepth = zo
+            end   
+            command_out += format_measure('X',@cx)
+            command_out += format_measure('y',@cy)
+            command_out += format_measure('z',curdepth)
+            command_out += "\n"
+         end  # while
+         
+         cncPrint(command_out)
+         cncPrint("(ramplimit end)\n")             if(@debugramp)
+         @cz = zo
+         @cs = so
+         @cc = cmd
+      end
+   end
+
+## this ramps down to half the depth at otherpoint, and back to cut_depth at start point
+## this may end up being quite a steep ramp if the distance is short
+   def rampnolimit(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+      cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n") if (@debugramp) 
       if (zo == @cz)
          @no_move_count += 1
       else
@@ -346,11 +484,6 @@ module PhlatScript
          command_out += format_measure('y',@cy)
          command_out += format_measure('z',zo)
          
-         
-#         so = @speed_plung  # force using plunge rate for vertical moves
-         #        sox = @is_metric ? so.to_mm : so.to_inch
-         #        cncPrint("(plunge rate #{sox})\n")
-#         command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          cncPrint(command_out)
          @cz = zo

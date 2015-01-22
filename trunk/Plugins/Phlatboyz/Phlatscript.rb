@@ -314,7 +314,16 @@ module PhlatScript
    def PhlatScript.end_y
       $phoptions.end_y
    end
+   
+   def PhlatScript.rampangle
+      $phoptions.ramp_angle
+   end
 
+   def PhlatScript.mustramp?
+      $phoptions.must_ramp?
+   end
+ 
+   
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?
     Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, $phoptions.default_show_gplot?)
