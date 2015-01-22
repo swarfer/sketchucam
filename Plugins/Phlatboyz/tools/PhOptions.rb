@@ -68,6 +68,8 @@ module PhlatScript
          @end_x                  =   PhlatScript.conformat(phoptions.end_x)   
          @end_y                  =   PhlatScript.conformat(phoptions.end_y)
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
+         @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
+         @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
       end
    end
 
@@ -123,6 +125,8 @@ module PhlatScript
          @end_x                  =  0   
          @end_y                  =  0
          @use_fuzzy_holes = true
+         @ramp_angle             =  0
+         @must_ramp              =  false
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -251,6 +255,11 @@ module PhlatScript
             value = -1
             value = getvalue(optin['use_fuzzy_holes'])                if (optin.has_key?('use_fuzzy_holes'))
             @use_fuzzy_holes = value > 0 ? true :  false              if (value != -1)
+         #ramping
+            @ramp_angle             =   getvalue(optin['ramp_angle'])    if (optin.has_key?('ramp_angle'))    
+            value = -1
+            value = getvalue(optin['must_ramp'])                if (optin.has_key?('must_ramp'))
+            @must_ramp = value > 0 ? true :  false              if (value != -1)
 
          end
 
@@ -617,6 +626,21 @@ module PhlatScript
          @use_fuzzy_holes = newval
       end
       
+      def ramp_angle
+         @ramp_angle
+      end
+      def ramp_angle=(newval)
+         @ramp_angle = newval % 45  # must be less than 45 degrees
+      end
+
+      def must_ramp? 
+         @must_ramp
+      end
+      def must_ramp=(newval)
+         @must_ramp = newval
+      end
+      
+      
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    class OptionsFilesTool < PhlatTool
@@ -891,7 +915,9 @@ end # class
             'Use_End_Position ',
             'End position X ',
             'End position Y ',
-            'Use fuzzy hole stepover '
+            'Use fuzzy hole stepover ',
+            'Limit ramping angle to (degrees) ',
+            'Use Ramping '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -907,7 +933,9 @@ end # class
             @options.use_end_position?.inspect(),
             Sketchup.format_length(@options.end_x),
             Sketchup.format_length(@options.end_y),
-            @options.use_fuzzy_holes?.inspect()
+            @options.use_fuzzy_holes?.inspect(),
+            @options.ramp_angle.to_f,
+            @options.must_ramp?.inspect()
             ];
          list=[
             'true|false',
@@ -922,6 +950,8 @@ end # class
             '',
             'true|false',
             '',
+            '',
+            'true|false',
             '',
             'true|false'
             ];
@@ -948,6 +978,10 @@ end # class
             @options.end_y                   = Sketchup.parse_length(input[12])
 
             @options.use_fuzzy_holes         = (input[13] == 'true')
+
+            @options.ramp_angle              = input[14].to_f
+            @options.must_ramp               = (input[15] == 'true')
+            puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save
          end # if input

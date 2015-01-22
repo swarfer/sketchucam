@@ -115,7 +115,9 @@ module PhlatScript
       @optimize = true  #set to true to try find the closest point on the next group
       @current_bit_diameter = 0
       @tabletop = false
-      @must_ramp = true    # make this an option!
+      @must_ramp = false    # make this an option!
+      @limitangle = 0      # if > 0 will limit to this ramp angle
+      @debug = false
 
     def initialize
       @tooltype = 3
@@ -176,11 +178,14 @@ module PhlatScript
          #              cut = ZL - (cf * MT)
          #              safe = ZL + SH   {- safeheight is mt + some safety margin
       end
+      @rampangle = PhlatScript.rampangle.to_f
+      @must_ramp = PhlatScript.mustramp?
 
 puts(" safeheight '#{@safeHeight.to_mm}'\n")
 puts(" materialTop '#{@materialTop.to_mm}'\n")
 puts(" ZL '#{@zL.to_mm}'\n")
 puts(" tabletop '#{@tabletop}'\n")
+puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 
       @g_save_point = Geom::Point3d.new(0, 0, 0)
       model = Sketchup.active_model
@@ -733,6 +738,7 @@ puts " new #{newedges[i-1]}\n"
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
+      skipcut = false
       begin # multipass
          pass += 1
          aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
@@ -745,6 +751,7 @@ puts " new #{newedges[i-1]}\n"
             point = nil
             cut_depth = @zL   #not always 0
             #              puts "cut_depth #{cut_depth}\n"
+            
             phlatcut.cut_points(reverse) { |cp, cut_factor|
                prev_pass_depth = pass_depth
                #cut = ZL - (cutfactor * MT)
@@ -773,6 +780,14 @@ puts " new #{newedges[i-1]}\n"
                   otherpoint = phlatcut.edge.end.position
                end
                otherpoint = (trans ? (otherpoint.transform(trans)) : otherpoint)
+               
+#               if (phlatcut.kind_of? CenterLineCut)
+#                  puts "   this #{phlatcut} start #{point} end  #{otherpoint}" 
+#                  if (point.x == otherpoint.x) && (point.y == otherpoint.y)
+#                     puts "continue"
+#                     next
+#                  end
+#               end
 
                # retract if this cut does not start where the last one ended
                if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
@@ -818,7 +833,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y)
                               end
                               if (@must_ramp)
-                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                               else
                                  aMill.plung(cut_depth, PhlatScript.plungeRate)
                               end
@@ -826,7 +841,7 @@ puts " new #{newedges[i-1]}\n"
                               # If it's not a peck drilling we don't need retract
                               aMill.move(point.x, point.y)
                               if (@must_ramp)
-                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                               else
                                  aMill.plung(cut_depth, PhlatScript.plungeRate)
                               end #must ramp
@@ -845,8 +860,8 @@ puts " new #{newedges[i-1]}\n"
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
                         else
-                           if (@must_ramp) 
-                              aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                           if (@must_ramp)   # will have to handle centerline cuts somehow, they have a point and line format, sometimes
+                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)  if (!skipcut)
                            else
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
@@ -874,11 +889,11 @@ puts " new #{newedges[i-1]}\n"
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                            if (phlatcut.kind_of? PhlatScript::TabCut)
-                              puts "must ramp and tab"
-                              puts " p cut_depth #{prev_cut_depth.to_mm}"
-                              puts "   cut_depth #{cut_depth.to_mm}"
-                              puts "        point #{point.x}  #{point.y} #{point.z}"
-                              puts "  other point #{otherpoint.x}  #{otherpoint.y} #{otherpoint.z}"
+                              puts "must ramp and tab"                                     if (@debug)
+                              puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
+                              puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
+                              puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
+                              puts "  other point #{otherpoint.x}  #{otherpoint.y} #{otherpoint.z}"    if (@debug)
 #must ramp and tab
 # p cut_depth -10.5
 #   cut_depth -5.0
@@ -886,10 +901,9 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 # must do this move
                              if  ( ((point.x != otherpoint.x) || (point.y != otherpoint.y)) && (prev_cut_depth < cut_depth))
-                                puts "RAMP moving up onto tab"
+                                puts "RAMP moving up onto tab"  if (@debug)
                                 aMill.move(point.x, point.y, cut_depth)
                              end
-
 #must ramp and tab
 # p cut_depth -5.0
 #   cut_depth -5.0
@@ -897,11 +911,9 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 #do this move
                               if (  ((point.x == otherpoint.x) && (point.y == otherpoint.y)) && (prev_cut_depth == cut_depth) )
-                                puts "RAMP moving tab"
+                                puts "RAMP moving tab"  if (@debug)
                                 aMill.move(point.x, point.y, cut_depth)
                               end
-                              
-                              
 #must ramp and tab
 # p cut_depth -5.0
 #   cut_depth -10.5
@@ -909,18 +921,18 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm                     
 #set ramp next move
                               if ( (point.x == otherpoint.x) && (point.y == otherpoint.y) && (prev_cut_depth > cut_depth) )
-                                 puts "setting ramp_next true"
+                                 puts "setting ramp_next true"  if (@debug)
                                  @ramp_next = true
 #                                 @ramp_depth = cut_depth  # where it starts
                               end
                            else  # not a tab cut
                               if (@ramp_next)
-                                 puts "ramping ramp_next true"
-                                 aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 puts "ramping ramp_next true"  if (@debug)
+                                 aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
                               else
-                                 puts "plain move, not tab, not ramp_next"
+                                 puts "plain move, not tab, not ramp_next" if (@debug)
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
@@ -930,13 +942,18 @@ puts " new #{newedges[i-1]}\n"
                      end
                   end # if !cutstarted
                end # if point != savepoint
-               cut_started = true
-               save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
+               if (!skipcut)
+                  cut_started = true 
+                  save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
+               else
+                  skipcut = false
+               end
+               
             }
          } # edges.each
          if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
             aMill.cncPrint("(BREAK pass #{pass})\n")
-            puts "BREAK large pass #{pass}\n"
+            puts "BREAK large pass #{pass}\n"  
             break
          end
          # new condition, detect 'close enough' to max_depth instead of equality,
