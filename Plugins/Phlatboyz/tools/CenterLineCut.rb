@@ -57,13 +57,19 @@ module PhlatScript
 
     def cut_points(reverse=false)
       cf = self.cut_factor
+#      puts "cut_points reverse #{reverse} cut_reversed#{@cut_reversed}"
       if @cut_reversed
+#      if reverse  #cut_reversed and reverse don't always match for centerline cuts, messes up ramping
         yield(@edge.end.position, cf)
         yield(@edge.start.position, cf)
       else
         yield(@edge.start.position, cf)
         yield(@edge.end.position, cf)
       end
+    end
+    
+    def cut_reversed?
+       @cut_reversed
     end
 
     # returns whether the first entity has been marked as milled in gcodeutil.rb
