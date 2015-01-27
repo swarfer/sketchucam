@@ -63,6 +63,7 @@ module PhlatScript
 
     def set_bit_diam(diameter)
       #@curr_bit.diam = diameter
+      @bit_diameter = diameter
     end
 
     def cncPrint(*args)
@@ -105,7 +106,10 @@ module PhlatScript
       @bit_diameter = PhlatScript.bitDiameter
 
       cncPrint("%\n")
-      cncPrint("(#{PhlatScript.getString("PhlatboyzGcodeTrailer")%$PhlatScriptExtension.version})\n")
+      vs1 = PhlatScript.getString("PhlatboyzGcodeTrailer")
+      vs2 = $PhlatScriptExtension.version
+      verstr = "#{vs1%vs1})\n"
+      cncPrint(verstr)
       cncPrint("(File: #{PhlatScript.sketchup_file})\n") if PhlatScript.sketchup_file
       cncPrint("(Bit diameter: #{Sketchup.format_length(@bit_diameter)})\n")
       cncPrint("(Feed rate: #{Sketchup.format_length(@speed_curr)}/min)\n")

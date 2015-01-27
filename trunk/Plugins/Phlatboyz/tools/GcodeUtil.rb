@@ -270,6 +270,128 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       end
     end
 
+##PLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMAPLASMA    
+## generate gcode for a plasma cutter
+## no Z movement
+## allow for user specified codes prior to G0 and G1 moves, whenever it changes from G0 to G1 and back
+   def GcodeUtil.generate_gcode_plasma
+      if PSUpgrader.upgrade
+        UI.messagebox("GCode generation has been aborted due to the upgrade")
+        return
+      end
+
+      #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
+      # by doing this we can have Z0 on the table surface, or at top of material
+      @tabletop = PhlatScript.tabletop?
+
+      if (@tabletop)
+         @safeHeight =  PhlatScript.materialThickness + PhlatScript.safeTravel.to_f
+         @materialTop = PhlatScript.materialThickness
+         #ZL = material thickness(MT)
+         #               cut = ZL - (cutfactor * MT)
+         #               safe = ZL+SH  {- safe height is safe margin above material
+         @zL = PhlatScript.materialThickness
+      else
+         @safeHeight = PhlatScript.safeTravel.to_f
+         @materialTop = 0
+         @zL = 0
+         #Mat Zero : ZL = 0
+         #              cut = ZL - (cf * MT)
+         #              safe = ZL + SH   {- safeheight is mt + some safety margin
+      end
+      @rampangle = PhlatScript.rampangle.to_f
+      @must_ramp = PhlatScript.mustramp?
+
+puts(" safeheight '#{@safeHeight.to_mm}'\n")
+puts(" materialTop '#{@materialTop.to_mm}'\n")
+puts(" ZL '#{@zL.to_mm}'\n")
+puts(" tabletop '#{@tabletop}'\n")
+puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
+
+      @g_save_point = Geom::Point3d.new(0, 0, 0)
+      model = Sketchup.active_model
+      if(enter_file_dialog(model))
+        # first get the material thickness from the model dictionary
+        material_thickness = PhlatScript.materialThickness
+        if(material_thickness)
+
+          begin
+            output_directory_name = model.get_attribute Dict_name, Dict_output_directory_name, $phoptions.default_directory_name
+            output_file_name = model.get_attribute Dict_name, Dict_output_file_name, $phoptions.default_file_name
+#            @current_bit_diameter = model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
+            @current_bit_diameter = PhlatScript.bitDiameter
+
+            # TODO check for existing / on the end of output_directory_name
+            absolute_File_name = output_directory_name + output_file_name
+
+            safe_array = P.get_safe_array()
+            min_x = 0.0
+            min_y = 0.0
+            max_x = safe_array[2]
+            max_y = safe_array[3]
+            safe_area_points = P.get_safe_area_point3d_array()
+
+            min_max_array = [min_x, max_x, min_y, max_y, $phoptions.min_z, $phoptions.max_z]
+            #aMill = CNCMill.new(nil, nil, absolute_File_name, min_max_array)
+            aMill = PhlatMill.new(absolute_File_name, min_max_array)
+
+            aMill.set_bit_diam(@current_bit_diameter)
+            aMill.set_retract_depth(@safeHeight,@tabletop) #tell amill the retract height, for table zero ops
+
+#   puts("starting aMill absolute_File_name="+absolute_File_name)
+            if @tabletop
+               ext = "Z ZERO IS TABLETOP"
+            else
+               ext = "-"
+            end
+            aMill.job_start(@optimize,ext)
+#   puts "amill jobstart done"
+            loop_root = LoopNodeFromEntities(Sketchup.active_model.active_entities, aMill, material_thickness)
+            loop_root.sort
+            millLoopNode(aMill, loop_root, material_thickness)
+
+            #puts("done milling")
+            if PhlatScript.UseOutfeed?
+               aMill.retract(@safeHeight)
+               aMill.cncPrint("(Outfeed)\n")
+               aMill.move(PhlatScript.safeWidth * 0.75,0)
+            else
+               if PhlatScript.UseEndPosition?
+                  if ($phoptions.use_home_height?)
+                     height = $phoptions.default_home_height
+                  else
+                     height = @safeHeight
+                  end
+                  aMill.retract(@safeHeight) #forces cmd_rapid
+                  aMill.cncPrint("(EndPosition)\n")
+                  aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
+               else
+                  # retracts the milling head and and then moves it home.
+                  # This prevents accidental milling
+                  # through your work piece when moving home.
+                  aMill.home()
+               end
+            end
+               if (PhlatScript.useOverheadGantry?)
+#              if ($phoptions.use_home_height? != nil)
+                if ($phoptions.use_home_height?)
+                  aMill.retract($phoptions.default_home_height)
+                end
+#              end
+            end
+
+            #puts("finishing up")
+            aMill.job_finish() # output housekeeping code
+          rescue
+            UI.messagebox "GcodeUtil.generate_gcode failed; Error:"+$!
+          end
+        else
+          UI.messagebox(PhlatScript.getString("You must define the material thickness."))
+        end
+      end
+   end
+    
+    
     private
 
     def GcodeUtil.LoopNodeFromEntities(entities, aMill, material_thickness)
