@@ -981,7 +981,7 @@ end # class
 
             @options.ramp_angle              = input[14].to_f
             @options.must_ramp               = (input[15] == 'true')
-            puts "saving must_ramp = #{@options.must_ramp?}"
+            #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save
          end # if input
