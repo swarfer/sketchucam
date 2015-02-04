@@ -131,6 +131,8 @@ Dict_stepover = "stepover"
 Dict_construction_mark = "construction_mark"
 Dict_show_gplot = "show_gplot"
 Dict_tabletop = "table_top"
+Dict_rampangle = "ramp_angle"
+Dict_mustramp = "must_ramp"
 
 # - - - - - - - - - - - - - - - - - do not edit this
 #           Cut Keys

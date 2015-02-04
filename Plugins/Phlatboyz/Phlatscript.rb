@@ -316,14 +316,28 @@ module PhlatScript
    end
    
    def PhlatScript.rampangle
-      $phoptions.ramp_angle
-   end
+#      $phoptions.ramp_angle
+      Sketchup.active_model.get_attribute(Dict_name, Dict_rampangle, $phoptions.ramp_angle)
+      end
 
    def PhlatScript.mustramp?
-      $phoptions.must_ramp?
-   end
+#      $phoptions.must_ramp?
+      Sketchup.active_model.get_attribute(Dict_name, Dict_mustramp, $phoptions.must_ramp?)
+      end
  
-   
+#Dict_rampangle = "ramp_angle"
+#Dict_mustramp = "must_ramp"
+   def PhlatScript.mustramp=(state)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_mustramp, state)
+#      $phoptions.must_ramp = state
+   end
+   def PhlatScript.rampangle=(state)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_rampangle, state)
+ #     $phoptions.ramp_angle = state
+   end
+  
+
+  
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?
     Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, $phoptions.default_show_gplot?)
