@@ -47,8 +47,8 @@ module PhlatScript
       @extr = "-"
       @cmd_linear = "G1" # Linear interpolation
       @cmd_rapid = "G0" # Rapid positioning
-      @cmd_arc = "G17 G2" # coordinated helical motion about Z axis
-      @cmd_arc_rev = "G17 G3" # counterclockwise helical motion about Z axis
+      @cmd_arc = "G02" # coordinated helical motion about Z axis
+      @cmd_arc_rev = "G03" # counterclockwise helical motion about Z axis
       @output_file_name = output_file_name
       @mill_out_file = nil
 
@@ -80,7 +80,7 @@ module PhlatScript
       m2 = @is_metric ? measure.to_mm : measure.to_inch
       #UI.messagebox(sprintf("  #{axis}%-10.*f", @precision, m2))
       #UI.messagebox("out mm: #{measure.to_mm} inch: #{measure.to_inch}")
-      sprintf("   #{axis}%-10.*f", @precision, m2)
+      sprintf(" #{axis}%-5.*f", @precision, m2)
     end
 
     def format_feed(f)
@@ -106,9 +106,10 @@ module PhlatScript
       @bit_diameter = PhlatScript.bitDiameter
 
       cncPrint("%\n")
+#do a little jig to prevent the code highlighter getting confused by the bracket constructs      
       vs1 = PhlatScript.getString("PhlatboyzGcodeTrailer")
       vs2 = $PhlatScriptExtension.version
-      verstr = "#{vs1%vs1})\n"
+      verstr = "(#{vs1%vs2})\n"
       cncPrint(verstr)
       cncPrint("(File: #{PhlatScript.sketchup_file})\n") if PhlatScript.sketchup_file
       cncPrint("(Bit diameter: #{Sketchup.format_length(@bit_diameter)})\n")
@@ -120,12 +121,19 @@ module PhlatScript
       cncPrint("(Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)})\n")
       cncPrint("(Overhead Gantry: #{PhlatScript.useOverheadGantry?})\n")
       if (@Limit_up_feed)
-        cncPrint("(Retract feed limited to plunge feed rate)\n")
-      else
-        cncPrint("(Retract feed rate NOT limited to plunge feed rate)\n")
+        cncPrint("(Retract feed LIMITED to plunge feed rate)\n")
+#      else   this line is too long for GRBL, maybe?
+#        cncPrint("(Retract feed rate NOT limited to plunge feed rate)\n")
       end
       if (PhlatScript.useMultipass?)
         cncPrint("(Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)})\n")
+      end
+      if (PhlatScript.mustramp?)
+         if (PhlatScript.rampangle == 0)
+            cncPrint("(RAMPING with no angle limit)\n")
+         else
+            cncPrint("(RAMPING at #{PhlatScript.rampangle} degrees)\n")
+         end
       end
 
       if (optim)    # swarfer - display optimize status as part of header
@@ -150,7 +158,7 @@ module PhlatScript
         end
 
       stop_code = $phoptions.use_exact_path? ? "G61" : "" # G61 - Exact Path Mode
-      cncPrint("G90 #{unit_cmd} G49 #{stop_code}\n") # G90 - Absolute programming (type B and C systems)
+      cncPrint("G90 #{unit_cmd} G49 #{stop_code} G17\n") # G90 - Absolute programming (type B and C systems)
       #cncPrint("G20\n") # G20 - Programming in inches
       #cncPrint("G49\n") # G49 - Tool offset compensation cancel
       cncPrint("M3 S", @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
