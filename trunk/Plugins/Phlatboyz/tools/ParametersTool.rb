@@ -170,6 +170,8 @@ module PhlatScript
          prompts.push(PhlatScript.getString("StepOver Percentage"))
          prompts.push(PhlatScript.getString("Show Gcode"))
          prompts.push("Table top is Z Zero")
+         prompts.push("Ramp in Z")
+         prompts.push("Ramp angle Limit");
          prompts.push("Comment Remarks")
 
         # default values
@@ -196,13 +198,15 @@ module PhlatScript
          defaults.push(PhlatScript.stepover)
          defaults.push(PhlatScript.showGplot?.inspect())
          defaults.push(PhlatScript.tabletop?.inspect())
+         defaults.push(PhlatScript.mustramp?.inspect())
+         defaults.push(PhlatScript.rampangle.to_s)
          defaults.push(encoded_comment_text)
 
          # dropdown options can be added here
          if PhlatScript.multipassEnabled?
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true","false|true",""]
+            list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true","false|true","false|true","",""]
          else
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true",""]
+            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true","false|true","",""]
          end
 
          input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
@@ -228,13 +232,17 @@ module PhlatScript
                PhlatScript.stepover = input[15].to_f
                PhlatScript.showGplot = (input[16] == 'true')
                PhlatScript.tabletop = (input[17] == 'true')
-               PhlatScript.commentText = input[18].to_s
+               PhlatScript.mustramp = (input[18] == 'true')
+               PhlatScript.rampangle = input[19].to_f
+               PhlatScript.commentText = input[20].to_s
             else
                PhlatScript.gen3D = (input[12] == 'true')
                PhlatScript.stepover = input[13].to_f
                PhlatScript.showGplot = (input[14] == 'true')
                PhlatScript.tabletop = (input[15] == 'true')
-               PhlatScript.commentText = input[16].to_s
+               PhlatScript.mustramp = (input[16] == 'true')
+               PhlatScript.rampangle = input[17].to_f
+               PhlatScript.commentText = input[18].to_s
             end
          end # if input
       else #---------------------------webdialog--------------------------------------------
