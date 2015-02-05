@@ -48,6 +48,12 @@ module PhlatScript
 
       wd.setCaption('tabletop_id', PhlatScript.getString("Table top is Z-Zero"))
       wd.execute_script("setCheckbox('tabletop','"+PhlatScript.tabletop?.inspect()+"')")
+      #ramping
+      wd.setCaption('mustramp_id', PhlatScript.getString("Ramp in Z"))
+      wd.execute_script("setCheckbox('mustramp','"+PhlatScript.mustramp?.inspect()+"')")
+      wd.setCaption('rampangle_id', PhlatScript.getString("Ramp angle limit"))
+      wd.setValue('rampangle', PhlatScript.rampangle)
+      
 
       wd.setCaption('cutfactor_id', PhlatScript.getString("In/Outside Overcut Percentage"))
       wd.setValue('cutfactor', PhlatScript.cutFactor)
@@ -126,8 +132,11 @@ module PhlatScript
 
       wd.execute_script("isChecked('tabletop')")
       PhlatScript.tabletop = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-
-
+#ramping
+      wd.execute_script("isChecked('mustramp')")
+      PhlatScript.mustramp = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
+      PhlatScript.rampangle = wd.get_element_value("rampangle")
+      
       comment_text = wd.get_element_value("commenttext").delete("'\"")
       encoded_comment_text = ""
       comment_text.each_line { |line| encoded_comment_text += line.chomp()+"$/"}

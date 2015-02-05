@@ -314,27 +314,19 @@ module PhlatScript
    def PhlatScript.end_y
       $phoptions.end_y
    end
-   
+#ramping   
    def PhlatScript.rampangle
-#      $phoptions.ramp_angle
       Sketchup.active_model.get_attribute(Dict_name, Dict_rampangle, $phoptions.ramp_angle)
       end
-
-   def PhlatScript.mustramp?
-#      $phoptions.must_ramp?
-      Sketchup.active_model.get_attribute(Dict_name, Dict_mustramp, $phoptions.must_ramp?)
-      end
- 
-#Dict_rampangle = "ramp_angle"
-#Dict_mustramp = "must_ramp"
-   def PhlatScript.mustramp=(state)
-      Sketchup.active_model.set_attribute(Dict_name, Dict_mustramp, state)
-#      $phoptions.must_ramp = state
-   end
    def PhlatScript.rampangle=(state)
       Sketchup.active_model.set_attribute(Dict_name, Dict_rampangle, state)
- #     $phoptions.ramp_angle = state
-   end
+      end
+   def PhlatScript.mustramp?
+      Sketchup.active_model.get_attribute(Dict_name, Dict_mustramp, $phoptions.must_ramp?)
+      end
+   def PhlatScript.mustramp=(state)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_mustramp, state)
+      end
   
 
   
