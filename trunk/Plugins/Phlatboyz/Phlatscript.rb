@@ -426,6 +426,9 @@ module PhlatScript
 
     require 'Phlatboyz/tools/PhJoiner.rb'
     addToolItem(JoinerTool.new())
+
+    require 'Phlatboyz/tools/RampTabTool.rb'
+    addToolItem(RampTabTool.new())
 	
 	
     @@phlatboyz_tools_submenu.add_separator
