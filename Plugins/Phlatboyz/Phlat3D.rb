@@ -113,7 +113,7 @@ class GCodeGen3D
       puts "(Safe Width: #@safeWidth)"
       puts "(Multipass: #@multiPass)"
       puts "(Multipass Depth: #@multiPassDepth)"
-#      puts "(OverCut: #@overcutPercent)"
+      puts "(OverCut: #@overcutPercent)" if (@overcutPercent > 100)
       puts "(SafeHeight: #@safeHeight)"
       puts "(BitOffset: #@bitOffset)"
 
@@ -134,7 +134,7 @@ class GCodeGen3D
         #Now Get the model values at the grid points
         generateModelGrid
 
-        #Do Vertical anaylysis and manip
+        #Do Vertical analysis and manip
         generateVerticals
 
         #now determine any interference with the model and adjust grid with appropriate offset
@@ -459,7 +459,7 @@ class GCodeGen3D
       prog.symbols("g","G")
 
       while curz >= (-@matThick)
-         porg.update(pass)
+         prog.update(pass)
          nf.puts "(Pass #{pass} curz #{curz})"
          if pass == 1
             nf.puts "G0 #{zsafe}"

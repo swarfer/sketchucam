@@ -46,7 +46,7 @@ module PhlatScript
       @comment = PhlatScript.commentText
       @extr = "-"
       @cmd_linear = "G1" # Linear interpolation
-      @cmd_rapid = "G0" # Rapid positioning
+      @cmd_rapid = "G0" # Rapid positioning - do not change this to G00 as G00 is used elsewhere for forcing mode change
       @cmd_arc = "G02" # coordinated helical motion about Z axis
       @cmd_arc_rev = "G03" # counterclockwise helical motion about Z axis
       @output_file_name = output_file_name

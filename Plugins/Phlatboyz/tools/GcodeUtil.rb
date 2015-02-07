@@ -849,23 +849,6 @@ puts " new #{newedges[i-1]}\n"
       end
    end #millEdges
    
-   #return true if the 2 edges given share an end point
-=begin   
-   def GcodeUtil.sharepoint(fe,se)
-      fes = fe.start.position
-      fee = fe.end.position
-      ses = se.start.position
-      see = se.end.position
-      if ( ((fes.x - ses.x).abs < 0.0001) && ((fes.y - ses.y).abs < 0.0001) ) ||
-         ( ((fes.x - see.x).abs < 0.0001) && ((fes.y - see.y).abs < 0.0001) ) ||
-         ( ((fee.x - ses.x).abs < 0.0001) && ((fee.y - ses.y).abs < 0.0001) ) ||
-         ( ((fee.x - see.x).abs < 0.0001) && ((fee.y - see.y).abs < 0.0001) )  
-         return true
-      else
-         return false
-      end
-   end
-=end   
    
    def GcodeUtil.millEdgesRamp(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
@@ -1036,7 +1019,8 @@ puts " new #{newedges[i-1]}\n"
                         if (@must_ramp)
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
-                           if (phlatcut.kind_of? PhlatScript::TabCut)
+                        # do not ramp for vtabs, they are their own ramp!
+                           if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
                               puts "must ramp and tab"                                     if (@debug)
                               puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                               puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
@@ -1070,7 +1054,7 @@ puts " new #{newedges[i-1]}\n"
 #set ramp next move
                               if ( (point.x == otherpoint.x) && (point.y == otherpoint.y) && (prev_cut_depth > cut_depth) )
                                  puts "setting ramp_next true"  if (@debug)
-                                 @ramp_next = true
+                                 @ramp_next = true  && !phlatcut.vtab?
 #                                 @ramp_depth = cut_depth  # where it starts
                               end
                            else  # not a tab cut
@@ -1080,7 +1064,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
                               else
-                                 puts "plain move, not tab, not ramp_next" if (@debug)
+                                # puts "plain move, not tab, not ramp_next" if (@debug)
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
@@ -1321,3 +1305,21 @@ puts " new #{newedges[i-1]}\n"
 
 end
 # $Id$
+
+      #return true if the 2 edges given share an end point
+=begin   
+   def GcodeUtil.sharepoint(fe,se)
+      fes = fe.start.position
+      fee = fe.end.position
+      ses = se.start.position
+      see = se.end.position
+      if ( ((fes.x - ses.x).abs < 0.0001) && ((fes.y - ses.y).abs < 0.0001) ) ||
+         ( ((fes.x - see.x).abs < 0.0001) && ((fes.y - see.y).abs < 0.0001) ) ||
+         ( ((fee.x - ses.x).abs < 0.0001) && ((fee.y - ses.y).abs < 0.0001) ) ||
+         ( ((fee.x - see.x).abs < 0.0001) && ((fee.y - see.y).abs < 0.0001) )  
+         return true
+      else
+         return false
+      end
+   end
+=end   
