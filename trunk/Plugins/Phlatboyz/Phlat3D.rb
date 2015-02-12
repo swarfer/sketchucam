@@ -389,22 +389,24 @@ class GCodeGen3D
 #spit out the gcode header, used by both versions of the generator
    def putHeader(nf)
 #      ver = "debug"
-      ver = "#{PhlatScript.getString('PhlatboyzGcodeTrailer')%$PhlatScriptExtension.version}"
-      nf.puts "(A 3D Contour : #{ver})\n"
-      nf.puts "(Bit Diameter: #{Sketchup.format_length(@bitDiam)})"
-      nf.puts "(StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%)"
-      nf.puts "(Spindle speed: #{@spindle})"
-      nf.puts "(FeedRate: #{Sketchup.format_length(@feedRate)})"
-      nf.puts "(Material Thickness: #{Sketchup.format_length(@matThick)})"
-      nf.puts "(Safe Length: #{Sketchup.format_length(@safeLength)})"
-      nf.puts "(Safe Width: #{Sketchup.format_length(@safeWidth)})"
+      vs1 = PhlatScript.getString('PhlatboyzGcodeTrailer')
+      vs2 = $PhlatScriptExtension.version
+      ver = "#{vs1%vs2}"
+      nf.puts PhlatScript.gcomment("A 3D Contour : #{ver}")
+      nf.puts PhlatScript.gcomment("Bit Diameter: #{Sketchup.format_length(@bitDiam)}")
+      nf.puts PhlatScript.gcomment("StepOver: #{Sketchup.format_length(@stepOver)}  #{PhlatScript.stepover.to_f}%")
+      nf.puts PhlatScript.gcomment("Spindle speed: #{@spindle}")
+      nf.puts PhlatScript.gcomment("FeedRate: #{Sketchup.format_length(@feedRate)}")
+      nf.puts PhlatScript.gcomment("Material Thickness: #{Sketchup.format_length(@matThick)}")
+      nf.puts PhlatScript.gcomment("Safe Length: #{Sketchup.format_length(@safeLength)}")
+      nf.puts PhlatScript.gcomment("Safe Width: #{Sketchup.format_length(@safeWidth)}")
       if (@multiPass)
-         nf.puts "(Multipass: #@multiPass)"
-         nf.puts "(Multipass Depth: #{Sketchup.format_length(@multiPassDepth)})"
+         nf.puts PhlatScript.gcomment("Multipass: #@multiPass")
+         nf.puts PhlatScript.gcomment("Multipass Depth: #{Sketchup.format_length(@multiPassDepth)}")
       end
       #                nf.puts "(OverCut: #@overcutPercent)"
-      nf.puts "(SafeHeight: #{Sketchup.format_length(@safeHeight)})"
-      nf.puts "(NOTE: Z zero is top of material)"
+      nf.puts PhlatScript.gcomment("SafeHeight: #{Sketchup.format_length(@safeHeight)}")
+      nf.puts PhlatScript.gcomment("NOTE: Z zero is top of material")
 
       exact = PhlatScript.useexactpath? ? "G61" : ""         # G61 - Exact Path Mode
       nf.puts "G90 #{@unit_cmd} G49 #{exact}"
@@ -460,7 +462,7 @@ class GCodeGen3D
 
       while curz >= (-@matThick)
          prog.update(pass)
-         nf.puts "(Pass #{pass} curz #{curz})"
+         nf.puts PhlatScript.gcomment("Pass #{pass} curz #{curz}")
          if pass == 1
             nf.puts "G0 #{zsafe}"
             xs = format_measure('X',grid[0].to_a[0])
@@ -509,7 +511,7 @@ class GCodeGen3D
          # check for exceeding minz and stop early if we need to
          if curz < (minz - @multiPassDepth)
             puts "pass #{pass} curz #{curz} < minz #{minz}"
-            nf.puts "(minz exceeded, stopping early, nothing more to cut)"
+            nf.puts PhlatScript.gcomment("minz exceeded, stopping early, nothing more to cut")
             nf.puts "G0 X0.0 Y0.0"
             break
          else
@@ -524,7 +526,7 @@ class GCodeGen3D
          end
          pass += 1
          if pass > 100
-            nf.puts "(multipass too great, limiting to 100)"
+            nf.puts PhlatScript.gcomment("multipass too great, limiting to 100")
             break
          end
       end # while

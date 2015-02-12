@@ -53,6 +53,8 @@ class ProfileSettings < Hashable
       @prof_multipassdepth = PhlatScript.conformat(PhlatScript.multipassDepth)
       @prof_gen3d       = (PhlatScript.gen3D ? '1' : '0')
       @prof_stepover    = PhlatScript.stepover.to_i.to_s
+      @prof_mustramp    = (PhlatScript.mustramp?  ? '1' : '0')
+      @prof_rampangle   = PhlatScript.rampangle.to_f.to_s
    end
 end
 #-----------------------------------------------------------------------------
@@ -282,6 +284,14 @@ class ProfilesLoadTool < ProfilesTool
             PhlatScript.gen3D = value > 0 ? true : false                         if (value != -1)
 
             PhlatScript.stepover = getvalue(profile['prof_stepover'])            if (profile.has_key?('prof_stepover'))
+            
+            @prof_mustramp    = (PhlatScript.mustramp?  ? '1' : '0')
+            @prof_rampangle   = PhlatScript.rampangle.to_f.to_s
+
+            value = -1
+            value = getvalue(profile['prof_mustramp'])                           if (profile.has_key?('prof_mustramp'))
+            PhlatScript.mustramp = value > 0 ? true : false                         if (value != -1)
+            PhlatScript.rampangle = getvalue(profile['prof_rampangle'])          if (profile.has_key?('prof_rampangle'))
 
             PhlatScript.commentText = "Loaded profile #{input[0]}"
             puts "Loaded profile '#{input[0]}' from ini"

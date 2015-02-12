@@ -74,6 +74,14 @@ module PhlatScript
         #print arg
       end
     end
+    
+    #print a commment using current comment options
+    def cncPrintC(string)
+       string = string.gsub("\n","")
+       string = string.gsub(/\(|\)/,"")
+       string = PhlatScript.gcomment(string)
+       cncPrint(string + "\n")
+    end
 
     def format_measure(axis, measure)
       #UI.messagebox("in #{measure}")
@@ -109,45 +117,45 @@ module PhlatScript
 #do a little jig to prevent the code highlighter getting confused by the bracket constructs      
       vs1 = PhlatScript.getString("PhlatboyzGcodeTrailer")
       vs2 = $PhlatScriptExtension.version
-      verstr = "(#{vs1%vs2})\n"
+      verstr = PhlatScript.gcomment("#{vs1%vs2}")+"\n"
       cncPrint(verstr)
-      cncPrint("(File: #{PhlatScript.sketchup_file})\n") if PhlatScript.sketchup_file
-      cncPrint("(Bit diameter: #{Sketchup.format_length(@bit_diameter)})\n")
-      cncPrint("(Feed rate: #{Sketchup.format_length(@speed_curr)}/min)\n")
+      cncPrint(PhlatScript.gcomment("File: #{PhlatScript.sketchup_file}")+"\n") if PhlatScript.sketchup_file
+      cncPrint(PhlatScript.gcomment("Bit diameter: #{Sketchup.format_length(@bit_diameter)}")+"\n")
+      cncPrint(PhlatScript.gcomment("Feed rate: #{Sketchup.format_length(@speed_curr)}/min")+"\n")
       if (@speed_curr != @speed_plung)
-         cncPrint("(Plunge Feed rate: #{Sketchup.format_length(@speed_plung)}/min)\n")
+         cncPrint(PhlatScript.gcomment("Plunge Feed rate: #{Sketchup.format_length(@speed_plung)}/min")+"\n")
       end
-      cncPrint("(Material Thickness: #{Sketchup.format_length(@material_thickness)})\n")
-      cncPrint("(Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)})\n")
-      cncPrint("(Overhead Gantry: #{PhlatScript.useOverheadGantry?})\n")
+      cncPrint(PhlatScript.gcomment("Material Thickness: #{Sketchup.format_length(@material_thickness)}")+"\n")
+      cncPrint(PhlatScript.gcomment("Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)}")+"\n")
+      cncPrint(PhlatScript.gcomment("Overhead Gantry: #{PhlatScript.useOverheadGantry?}")+"\n")
       if (@Limit_up_feed)
-        cncPrint("(Retract feed LIMITED to plunge feed rate)\n")
+        cncPrint(PhlatScript.gcomment("Retract feed LIMITED to plunge feed rate")+"\n")
 #      else   this line is too long for GRBL, maybe?
-#        cncPrint("(Retract feed rate NOT limited to plunge feed rate)\n")
+#        cncPrintC("(Retract feed rate NOT limited to plunge feed rate)\n")
       end
       if (PhlatScript.useMultipass?)
-        cncPrint("(Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)})\n")
+        cncPrint(PhlatScript.gcomment("Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)}")+"\n")
       end
       if (PhlatScript.mustramp?)
          if (PhlatScript.rampangle == 0)
-            cncPrint("(RAMPING with no angle limit)\n")
+            cncPrint(PhlatScript.gcomment("RAMPING with no angle limit")+"\n")
          else
-            cncPrint("(RAMPING at #{PhlatScript.rampangle} degrees)\n")
+            cncPrint(PhlatScript.gcomment("RAMPING at #{PhlatScript.rampangle} degrees")+"\n")
          end
       end
 
       if (optim)    # swarfer - display optimize status as part of header
-        cncPrint("(Optimization is ON)\n")
+        cncPrint(PhlatScript.gcomment("Optimization is ON")+"\n")
       else
-        cncPrint("(Optimization is OFF)\n")
+        cncPrint(PhlatScript.gcomment("Optimization is OFF")+"\n")
       end
       if (extra != "-")
-         cncPrint("(#{extra})\n")
+         cncPrint(PhlatScript.gcomment("#{extra}")+"\n")
       end
 
-      cncPrint("(www.PhlatBoyz.com)\n")
+      cncPrint(PhlatScript.gcomment("www.PhlatBoyz.com")+"\n")
       PhlatScript.checkParens(@comment, "Comment")
-      @comment.split("$/").each{|line| cncPrint("(",line,")\n")} if !@comment.empty?
+      @comment.split("$/").each{|line| cncPrint(PhlatScript.gcomment(line)+"\n")} if !@comment.empty?
 
       #adapted from swarfer's metric code
       #metric by SWARFER - this does the basic setting up from the drawing units
@@ -182,7 +190,7 @@ module PhlatScript
     end
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
-#     cncPrint("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
+#     cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
       if cmd != @cmd_rapid
          if @retract_depth == zo
             cmd=@cmd_rapid
@@ -199,26 +207,26 @@ module PhlatScript
          @no_move_count += 1
       else
          if (xo > @max_x)
-            cncPrint("(move x=", sprintf("%10.6f",xo), " GT max of ", @max_x, ")\n")
+            cncPrintC("(move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x + ")\n")
             xo = @max_x
          elsif (xo < @min_x)
-            cncPrint("(move x=", sprintf("%10.6f",xo), " LT min of ", @min_x, ")\n")
+            cncPrintC("(move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x+ ")\n")
             xo = @min_x
          end
 
          if (yo > @max_y)
-            cncPrint "(move y=", sprintf("%10.6f",yo), " GT max of ", @max_y, ")\n"
+            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y+ ")\n")
             yo = @max_y
          elsif (yo < @min_y)
-            cncPrint("(move y=", sprintf("%10.6f",yo), " LT min of ", @min_y, ")\n")
+            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y+ ")\n")
             yo = @min_y
          end
 
          if (zo > @max_z)
-            cncPrint("(move z=", sprintf("%10.6f",zo), " GT max of ", @max_z, ")\n")
+            cncPrintC("(move z="+ sprintf("%10.6f",zo)+ " GT max of "+ @max_z+ ")\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrint "(move x=", sprintf("%8.3f",zo), " LT min of ", @min_z, ")\n"
+            cncPrintC("(move x="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z+ ")\n")
             zo = @min_z
          end
          command_out = ""
@@ -240,10 +248,10 @@ module PhlatScript
          if (!hasx && !hasy && hasz) # if only have a Z motion
             if (zo < @cz) || (@Limit_up_feed)  # if going down, or if overridden
                so = PhlatScript.plungeRate
-            #            cncPrint("(move only Z, force plungerate)\n")
+            #            cncPrintC("(move only Z, force plungerate)\n")
             end
          end
-         #          cncPrint("(   #{hasx} #{hasy} #{hasz})\n")
+         #          cncPrintC("(   #{hasx} #{hasy} #{hasz})\n")
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          cncPrint(command_out)
@@ -256,7 +264,7 @@ module PhlatScript
    end
 
    def retract(zo=@retract_depth, cmd=@cmd_rapid)
-      #      cncPrint("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
+      #      cncPrintC("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
       #      if (zo == nil)
       #        zo = @retract_depth
       #      end
@@ -264,15 +272,15 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
-            cncPrint("(RETRACT limiting Z to @max_z)\n")
+            cncPrintC("(RETRACT limiting Z to @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrint("(RETRACT limiting Z to @min_z)\n")
+            cncPrintC("(RETRACT limiting Z to @min_z)\n")
             zo = @min_z
          end
          command_out = ""
          if (@Limit_up_feed) && (cmd="G0") && (zo > 0) && (@cz < 0)
-            cncPrint("(RETRACT G1 to material thickness at plunge rate)\n")
+            cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
             command_out += (format_measure(' G1 Z', 0))
             command_out += (format_feed(@speed_plung))
             command_out += "\n"
@@ -280,7 +288,7 @@ module PhlatScript
             #          G0 to zo
             command_out += "G0" + (format_measure('Z', zo))
          else
-            #          cncPrint("(RETRACT normal #{@cz} to #{zo} )\n")
+            #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
             command_out += cmd    if (cmd != @cc)
             command_out += (format_measure('Z', zo))
          end
@@ -292,15 +300,15 @@ module PhlatScript
    end
 
    def plung(zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-      #      cncPrint("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
+      #      cncPrintC("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
       if (zo == @cz)
          @no_move_count += 1
       else
          if (zo > @max_z)
-            cncPrint("(PLUNGE limiting Z to max_z @max_z)\n")
+            cncPrintC("(PLUNGE limiting Z to max_z @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrint("(PLUNGE limiting Z to min_z @min_z)\n")
+            cncPrintC("(PLUNGE limiting Z to min_z @min_z)\n")
             zo = @min_z
          end
          command_out = ""
@@ -308,7 +316,7 @@ module PhlatScript
          command_out += (format_measure('Z', zo))
          so = @speed_plung  # force using plunge rate for vertical moves
          #        sox = @is_metric ? so.to_mm : so.to_inch
-         #        cncPrint("(plunge rate #{sox})\n")
+         #        cncPrintC("(plunge rate #{sox})\n")
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          cncPrint(command_out)
@@ -337,16 +345,16 @@ module PhlatScript
 
 ## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
    def ramplimit(limitangle, op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-      cncPrint("(ramp limit #{limitangle}deg zo=", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n") if (@debugramp) 
+      cncPrintC("(ramp limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (zo == @cz)
          @no_move_count += 1
       else
          # we are at a point @cx,@cy,@cz and need to ramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
          if (zo > @max_z)
-            cncPrint("(RAMP limiting Z to max_z @max_z)\n")
+            cncPrintC("(RAMP limiting Z to max_z @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrint("(RAMP limiting Z to min_z @min_z)\n")
+            cncPrintC("(RAMP limiting Z to min_z @min_z)\n")
             zo = @min_z
          end
       
@@ -372,7 +380,7 @@ module PhlatScript
          if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
             puts "distance=0 so just plunging"  if(@debugramp)
             plung(zo, so, cmd)
-            cncPrint("(ramplimit end, translated to plunge)\n")
+            cncPrintC("(ramplimit end, translated to plunge)\n")
             return
          end
          
@@ -447,7 +455,7 @@ module PhlatScript
          end  # while
          
          cncPrint(command_out)
-         cncPrint("(ramplimit end)\n")             if(@debugramp)
+         cncPrintC("(ramplimit end)\n")             if(@debugramp)
          @cz = zo
          @cs = so
          @cc = cmd
@@ -457,16 +465,16 @@ module PhlatScript
 ## this ramps down to half the depth at otherpoint, and back to cut_depth at start point
 ## this may end up being quite a steep ramp if the distance is short
    def rampnolimit(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
-      cncPrint("(ramp ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,"  op=",op.to_s.delete('()'),")\n") if (@debugramp) 
+      cncPrintC("(ramp "+ sprintf("%10.6f",zo)+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (zo == @cz)
          @no_move_count += 1
       else
          # we are at a point @cx,@cy and need to ramp to op.x,op.y,zo/2 then back to @cx,@cy,zo
          if (zo > @max_z)
-            cncPrint("(RAMP limiting Z to max_z @max_z)\n")
+            cncPrintC("(RAMP limiting Z to max_z @max_z)\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrint("(RAMP limiting Z to min_z @min_z)\n")
+            cncPrintC("(RAMP limiting Z to min_z @min_z)\n")
             zo = @min_z
          end
          command_out = ""
@@ -574,7 +582,7 @@ module PhlatScript
     def plungebore(xo,yo,zStart,zo,diam)
       zos = format_measure("depth=",zStart-zo)
       ds = format_measure(" diam=", diam)
-      cncPrint("(plungebore ", zos, ds,")\n")
+      cncPrintC("(plungebore #{zos} #{ds})\n")
       if (zo > @max_z)
         zo = @max_z
       elsif (zo < @min_z)
@@ -582,7 +590,7 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrint " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
+      cncPrintC(" HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
       puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
@@ -706,9 +714,11 @@ module PhlatScript
 #      command_out += "\n";
       command_out += "G00" + format_measure("Y",yo)      # back to circle center
       command_out += format_measure(" Z",@retract_depth) # retract to real safe height
-      command_out += "\n(plungebore end)\n"
-
+      command_out += "\n"
       cncPrint(command_out)
+      
+      cncPrintC("plungebore end")
+
       @cx = xo
       @cy = yo
       @cz = @retract_depth
@@ -773,7 +783,7 @@ module PhlatScript
         @no_move_count += 1
       else
         retract(@retract_depth)
-        cncPrint("G0 X0 Y0 (home)\n")
+        cncPrint("G0 X0 Y0 " , PhlatScript.gcomment("home") , "\n")
         @cx = 0
         @cy = 0
         @cz = @retract_depth

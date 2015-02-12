@@ -112,7 +112,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.2a</b><br>Dec 2014</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.2b</b><br>Mar 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -184,6 +184,15 @@
             <a href="http://www.phlatboyz.com/">
             Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
          </div>
+      </div>
+      
+      <div class="intro">
+      <h4>New in V1.2b</h4>
+      <ul>
+      <li>Ramping: instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
+      <li>Set Ramp VTabs on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs, <a href="toolsmenu.html">read the help</a>
+      <li>Commenting options, switch between using () and ; so you can use whatever your controller prefers
+      </ul>
       </div>
       
       <div class="intro">
@@ -290,16 +299,18 @@
             <li>cutfactor
             <li>bitdiameter
             <li>tabwidth
+            <li>tabdepth
             </ul>
          </td>
          <td>
             <ul>
-            <li>tabdepth
             <li>safetravel
             <li>usemultipass
             <li>multipassdepth
             <li>gen3d
             <li>stepover
+            <li>Ramping on/off
+            <li>Ramp Angle
             </ul>
          </td>
          </tr></table>
@@ -338,19 +349,40 @@
             into your spoil board then set this value to 100% and zero your toolbit end accurately.
            <dt>Plunge rate:</dt>
            <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
+           
+           <dt>Table top is Z-Zero</dt>
+           <dd>If this is checked then Z zero level is on the table top, if unchecked, Z-Zero is on the top of the material (the default).</dd>
+           
+           <dt>Ramp in Z</dt>
+           <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment
+           of the cut.   Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.
+           The Plunge Feed Rate will be used for ramp moves.<br>
+           Note that ramping will not affect plunge holes, the center hole will still be plunged for holes larger than 2x bit diameter
+           so if your milling bit cannot plunge DO NOT use it for holes, do a seperate drilling program with a drill bit.
+           </dd>
+           <dt>Ramp angle limit</dt>
+           <dd>If this is 0 then there is no limit on the ramp angle.  This mean that short segments will be ramped almost vertically.
+           If set to an angle from 1 to 45 the ramp angle will be limited to this value, ie it might be less for a long segments, but will never be more.
+           Multiple ramp moves will be generated to achieve this angle, while the total number of ramp moves will be rounded to always be an even 
+           number, ensuring that the limiting angle is not exceeded.
+           
            <dt>Step Over %</dt>
            <dd>This percentage is used by the 3D code generator and by the <b>Pocket Tool</b> to determine how much of the bit diameter to overlap each cut pass.
                Tool manufacturers recommend using 1-30% or 70 to 100%, but not 30-70% as this range increases tool wear.
-           <br><b>Only select 'Generate 3D Code' for an actual 3D model.  IF selected for a plain flat drawing, Sketchup Will Stop Responding</b></dd>
+           <br><b>Only select 'Generate 3D Code' for an actual 3D model.  If selected for a plain flat drawing, Sketchup Will Stop Responding</b></dd>
             <dt>Tab width
             <dd>Half the bit diameter will be removed from each end of the tab.  Thus a tab width equal or less than the
             bit diameter will not leave a useful tab at all.
            
            <dt>Tab Depth %
            <dd>The percentage of the material thickness to cut away when doing tabs.  Thus 75% will cut away 75% of the material leaving 25% behind.
+           Note that the bit will remove a little extra material at the top of the V, the bigger the bit the more will be removed.  This means
+           that the remaining material will be a bit thinner than expected.
            
            <dt><br>Show Gcode after output</dt>
-           <dd>Ticking this will cause Gplot to display the Gcode directly after generating it. The Gplot program will open after you click 'Ok' to confirm the file save.</dd>
+           <dd>Ticking this will cause Gplot to display the Gcode directly after generating it. The Gplot program will open after you click 'Ok' to confirm the file save.
+           Note that Sketchup 2013 onward requires you to click on the drawing, or select a new tool, before the Gcode program will be displayed.
+           </dd>
          </dl>
          Tooltips will displayed for each edit box with simplified help.  
       </td>
