@@ -327,9 +327,12 @@ module PhlatScript
    def PhlatScript.mustramp=(state)
       Sketchup.active_model.set_attribute(Dict_name, Dict_mustramp, state)
       end
-  
 
-  
+#gcode comment style - just a default option, not a dict item
+   def PhlatScript.usecommentbracket?      
+      $phoptions.bracket?
+   end
+   
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?
     Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, $phoptions.default_show_gplot?)

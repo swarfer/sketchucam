@@ -232,7 +232,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             #puts("done milling")
             if PhlatScript.UseOutfeed?
                aMill.retract(@safeHeight)
-               aMill.cncPrint("(Outfeed)\n")
+               aMill.cncPrint(PhlatScript.gcomment("Outfeed") + "\n")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
                if PhlatScript.UseEndPosition?
@@ -242,7 +242,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      height = @safeHeight
                   end
                   aMill.retract(@safeHeight) #forces cmd_rapid
-                  aMill.cncPrint("(EndPosition)\n")
+                  aMill.cncPrint(PhlatScript.gcomment("EndPosition")+"\n")
                   aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
                else
                   # retracts the milling head and and then moves it home.
@@ -353,7 +353,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             #puts("done milling")
             if PhlatScript.UseOutfeed?
                aMill.retract(@safeHeight)
-               aMill.cncPrint("(Outfeed)\n")
+               aMill.cncPrint(PhlatScript.gcomment("Outfeed")+"\n")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
                if PhlatScript.UseEndPosition?
@@ -363,7 +363,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      height = @safeHeight
                   end
                   aMill.retract(@safeHeight) #forces cmd_rapid
-                  aMill.cncPrint("(EndPosition)\n")
+                  aMill.cncPrint(PhlatScript.gcomment("EndPosition")+"\n")
                   aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
                else
                   # retracts the milling head and and then moves it home.
@@ -434,8 +434,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # the group.local_bounds.corner(0) in the future
          group_name = e.name
          if (!group_name.empty?) # the safe area labels are groups with names containing 'safearea', dont print them
-            aMill.cncPrint("(Group: #{group_name})\n")    if !group_name.include?("safearea")
-            puts "(Group: #{group_name})"                 if !group_name.include?("safearea")
+            aMill.cncPrint(PhlatScript.gcomment("Group: #{group_name}")+"\n")    if !group_name.include?("safearea")
+            puts PhlatScript.gcomment("Group: #{group_name}")                 if !group_name.include?("safearea")
          end
          model.start_operation "Exploding Group", true
          es = e.explode
@@ -446,8 +446,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # abort the group explode
          model.abort_operation
          if (!group_name.empty?)
-            aMill.cncPrint("(Group complete: #{group_name})\n")    if !group_name.include?("safearea")
-            puts "(Group end: #{group_name})"                      if !group_name.include?("safearea")
+            aMill.cncPrint(PhlatScript.gcomment("Group complete: #{group_name}") +"\n")    if !group_name.include?("safearea")
+            puts PhlatScript.gcomment("Group end: #{group_name}")                      if !group_name.include?("safearea")
          end
       }
       loops.flatten!
@@ -882,7 +882,7 @@ puts " new #{newedges[i-1]}\n"
       
       begin # multipass
          pass += 1
-         aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
+         aMill.cncPrint(PhlatScript.gcomment("Pass: #{pass.to_s}")+"\n") if (PhlatScript.useMultipass? && printPass)
          ecnt = 0
          edges.each { | phlatcut |
 
@@ -1084,7 +1084,7 @@ puts " new #{newedges[i-1]}\n"
             }
          } # edges.each
          if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
-            aMill.cncPrint("(BREAK pass #{pass})\n")
+            aMill.cncPrint(PhlatScript.gcomment("BREAK pass #{pass}") +"\n")
             puts "BREAK large pass #{pass}\n"  
             break
          end
@@ -1134,7 +1134,7 @@ puts " new #{newedges[i-1]}\n"
       skipcut = false
       begin # multipass
          pass += 1
-         aMill.cncPrint("(Pass: #{pass.to_s})\n") if (PhlatScript.useMultipass? && printPass)
+         aMill.cncPrint(PhlatScript.gcomment("Pass: #{pass.to_s}")+"\n") if (PhlatScript.useMultipass? && printPass)
          ecnt = 0
          edges.each { | phlatcut |
 
@@ -1261,7 +1261,7 @@ puts " new #{newedges[i-1]}\n"
             }
          } # edges.each
          if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
-            aMill.cncPrint("(BREAK pass #{pass})\n")
+            aMill.cncPrint(PhlatScript.gcomment("BREAK pass #{pass}")+"\n")
             puts "BREAK large pass #{pass}\n"  
             break
          end

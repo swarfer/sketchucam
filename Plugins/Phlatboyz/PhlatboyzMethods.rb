@@ -190,6 +190,15 @@ def PhlatScript.set_safe_array(x, y, w, h, model=Sketchup.active_model)
   draw_safe_area(model)
 end
 
+#format a string with Gcode comments, either '(comment)' or '; comment'
+def PhlatScript.gcomment(comment)
+   if PhlatScript.usecommentbracket?
+      return "(" + comment + ")"
+   else
+      return "; " + comment
+   end
+end
+
 #SWARFER : need this is many places, so centralize the resource.
 def PhlatScript.isMetric()
   case Sketchup.active_model.options['UnitsOptions']['LengthUnit']
