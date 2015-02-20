@@ -994,25 +994,36 @@ puts " new #{newedges[i-1]}\n"
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
                         else
-                           # will have to handle centerline cuts somehow, they have a point and line format, sometimes
                            aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)  if (!skipcut)
                         end # if plungecut
                      end # if else multipass
                   else #cut in progress
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
+                        if (phlatcut.kind_of?(PhlatScript::TabCut)) 
+                           puts "ARC tabcut with ramp "                                     if (@debug)
+                           puts "VTAB"                   if (phlatcut.vtab? && @debug)
+                           puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
+                           puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
+                           puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
+                           puts "  other point #{otherpoint.x}  #{otherpoint.y} #{otherpoint.z}"    if (@debug)
+                        end
 
-#puts "reverse #{reverse} .g3 #{phlatcut.g3?}"
-#something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
-#                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                        if (@ramp_next)
+                           puts "RAMP_NEXT true for arc, ramping then arcing" if (@debug)
+                           aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                           @ramp_next = false
+                        end
+                        
                         g3 =  reverse  # the fix might be this simple....
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
-                        center = phlatcut.center
-                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
-#puts "arc length #{phlatcut.edge.length}\n"
+#                        center = phlatcut.center
+#                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else 
+                           puts "ARC to #{point.x}  #{point.y} #{cut_depth.to_mm}" if (@debug)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                         end
                      else
@@ -1021,7 +1032,8 @@ puts " new #{newedges[i-1]}\n"
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                         # do not ramp for vtabs, they are their own ramp!
                            if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
-                              puts "must ramp and tab"                                     if (@debug)
+                              puts "Must ramp and tab"                                     if (@debug)
+                              puts "VTAB"                               if (phlatcut.vtab? &&  @debug)
                               puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                               puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
                               puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
@@ -1033,7 +1045,7 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 # must do this move
                              if  ( ((point.x != otherpoint.x) || (point.y != otherpoint.y)) && (prev_cut_depth < cut_depth))
-                                puts "RAMP moving up onto tab"  if (@debug)
+                                puts "RAMP moving up onto tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
                                 aMill.move(point.x, point.y, cut_depth)
                              end
 #must ramp and tab
@@ -1043,7 +1055,7 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 #do this move
                               if (  ((point.x == otherpoint.x) && (point.y == otherpoint.y)) && (prev_cut_depth == cut_depth) )
-                                puts "RAMP moving tab"  if (@debug)
+                                puts "RAMP moving tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
                                 aMill.move(point.x, point.y, cut_depth)
                               end
 #must ramp and tab
@@ -1059,16 +1071,17 @@ puts " new #{newedges[i-1]}\n"
                               end
                            else  # not a tab cut
                               if (@ramp_next)
-                                 puts "ramping ramp_next true"  if (@debug)
+                                 puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
                               else
-                                # puts "plain move, not tab, not ramp_next" if (@debug)
+                                 puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
                         else  # just move
+                           puts "just move" if (@debug)
                            aMill.move(point.x, point.y, cut_depth)
                         end # if must_ramp
                      end
