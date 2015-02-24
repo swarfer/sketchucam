@@ -152,8 +152,8 @@ Key_reg_cut_arr = [Key_inside_cut, Key_outside_cut, Key_tab_cut]
 #         misc  parameters
 # - - - - - - - - - - - - - - - - -
 Construction_font_height = 0.6.inch
-Min_z = -1.4
-Max_z = 1.4
+Min_z = -1.4.inch
+Max_z = 1.4.inch
 
 Fold_shorten_width = 0.0625.inch
 Fold_depth_factor_array = [25, 50, 75, 100]
