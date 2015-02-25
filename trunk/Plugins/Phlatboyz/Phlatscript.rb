@@ -316,7 +316,7 @@ module PhlatScript
    end
 #ramping   
    def PhlatScript.rampangle
-      Sketchup.active_model.get_attribute(Dict_name, Dict_rampangle, $phoptions.ramp_angle)
+      Sketchup.active_model.get_attribute(Dict_name, Dict_rampangle, $phoptions.ramp_angle).to_f
       end
    def PhlatScript.rampangle=(state)
       Sketchup.active_model.set_attribute(Dict_name, Dict_rampangle, state)
