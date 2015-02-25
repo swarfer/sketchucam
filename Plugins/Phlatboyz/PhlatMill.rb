@@ -14,8 +14,8 @@ module PhlatScript
       @cs = 0.0
       @cc = ""
       @debug = false   # if true then a LOT of stuff will appear in the ruby console
-      @debugramp = false
-      puts "debug true in PhlatMill.rb\n" if @debug
+      @debugramp = true
+      puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -519,23 +519,44 @@ module PhlatScript
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
-      command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debug
+      command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
       command_out += "G00" + format_measure("Y",yo-yoff)
       command_out += "\n"
       command_out += "G01"
       command_out += format_measure(" Z",zstart)
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
-      @cs = @speed_curr
+      #if ramping with limit use plunge feed rate
+      @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
 
       #// now output spiral cut
       #//G02 X10 Y18.5 Z-3 I0 J1.5 F100
-
-      if PhlatScript.useMultipass?
-         step = -PhlatScript.multipassDepth
+      if (PhlatScript.mustramp? && (PhlatScript.rampangle > 0))
+         #calculate step for this diameter
+         #calculate lead for this angle spiral
+         circ = Math::PI * yoff.abs * 2   # yoff is radius
+         step = -Math::tan(torad(PhlatScript.rampangle)) * circ
+         puts "(SpiralAt z step = #{step.to_mm} for ramp circ #{circ.to_mm}"         if (@debugramp)
+         # now limit it to multipass depth or half bitdiam
+         if PhlatScript.useMultipass?
+            if step.abs > PhlatScript.multipassDepth
+               step = -PhlatScript.multipassDepth
+               puts " step #{step.to_mm} limited to multipass"       if (@debugramp)
+            end
+         else
+            if step.abs > (@bit_diameter/2)
+               s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+               step = -(zstart-zend) / s
+               puts " step #{step.to_mm} limited to fuzzybitdiam/2"       if (@debugramp)
+            end
+         end
       else
-         s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-         step = -(zstart-zend) / s
+         if PhlatScript.useMultipass?
+            step = -PhlatScript.multipassDepth
+         else
+            s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+            step = -(zstart-zend) / s     # ensures every step down is the same size
+         end
       end
       d = zstart-zend
       puts("Spiralat: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
@@ -544,7 +565,7 @@ module PhlatScript
       while now > zend do
          now += step;
          if (now < zend)
-            now = zend;
+            now = zend
          else
             if ( (zend - now).abs < (@bit_diameter / 8) )
                df = zend - now;
@@ -625,7 +646,8 @@ module PhlatScript
             command_out += "\n"
          end #while
       else
-         if (diam > (@bit_diameter*2)) #more optimizing, only bore the center if the hole is big, assuming soft material anyway
+#todo - if ramping, then do not plunge this, rather do a spiralat with yoff = bit/2      
+         if (diam > (@bit_diameter*2))  #more optimizing, only bore the center if the hole is big, assuming soft material anyway
             command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
             command_out += (format_feed(so)) if (so != @cs)
             command_out += "\n"
@@ -686,7 +708,7 @@ module PhlatScript
          while ( (nowyoffset - yoff).abs > 0.001)         
             nowyoffset += ystep
             if (nowyoffset > yoff)
-               nowyoffset = yoff;
+               nowyoffset = yoff
                command_out += "  (offset clamped)\n"                 if @debug
                puts "   nowyoffset #{nowyoffset.to_mm} clamped\n"    if @debug
             else

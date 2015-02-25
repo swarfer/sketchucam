@@ -108,6 +108,7 @@ class GCodeGen3D
       puts "(Spindle speed: #@spindle)"
       puts "(FeedRate: #@feedRate)"
       puts "(Bit Diameter: #@bitDiam)"
+      puts "(BitOffset: #@bitOffset)"
       puts "(Material Thickness: #@matThick)"
       puts "(Safe Length: #@safeLength)"
       puts "(Safe Width: #@safeWidth)"
@@ -115,7 +116,6 @@ class GCodeGen3D
       puts "(Multipass Depth: #@multiPassDepth)"
       puts "(OverCut: #@overcutPercent)" if (@overcutPercent > 100)
       puts "(SafeHeight: #@safeHeight)"
-      puts "(BitOffset: #@bitOffset)"
 
       for ent in @ents
         if (@safeXOffset < ent.bounds.min.x) and (@safeYOffset < ent.bounds.min.y) and (@safeXOffset+@safeLength > ent.bounds.max.x) and (@safeYOffset + @safeWidth > ent.bounds.max.y)
@@ -640,7 +640,7 @@ def generateGCodeGrid
 end #generateGcodeGrid
 
         def adjustpoint3(prevpt, curpt, nextpt)
-
+puts "#{@bitOffset.to_mm}"
                 #there are 13 possible point conditions (H - High, M - Middle, L - Low, N-Not existing)
 
                 #                       Direction of travel
@@ -808,152 +808,148 @@ end #generateGcodeGrid
         end
 
 
-        def adjustpoint2(point, hitarray, alreadyAdjusted, retest)
-
-                if point != nil
-                        if point.z < @matThick
-                                acollision = false
-                                hitarray.clear
-                                north = determineBitCollision point, Geom::Vector3d.new(0,1,0)
-                                south = determineBitCollision point, Geom::Vector3d.new(0,-1,0)
-                                east = determineBitCollision point, Geom::Vector3d.new(1,0,0)
-                                west = determineBitCollision point, Geom::Vector3d.new(-1,0,0)
-                                #fill out array with hit points then get the unique ones
-                                if north[0]
-                                        hitarray += ["North"]
-                                        acollision = true
-                                end
-                                if south[0]
-                                        hitarray += ["South"]
-                                        acollision = true
-                                end
-                                if east[0]
-                                        hitarray += ["East"]
-                                        acollision = true
-                                end
-                                if west[0]
-                                        hitarray += ["West"]
-                                        acollision = true
-                                end
-
-                                if acollision
-
-                                        hitarray = hitarray.uniq
-                                        operatedOn = false
-                                        #puts "#{hitarray}"
-
-                                        #Now move point based on collisoins in the hit array
-                                        if hitarray.include?("North") and hitarray.include?("South")
-                                                #puts "prior #{hitarray}"
-                                                point.z += @stepOver
-                                                hitarray.clear
-                                                alreadyAdjusted.clear
-                                                #puts "post #{hitarray}"
-                                                operatedOn = false
-                                                adjustpoint2(point, hitarray,alreadyAdjusted, true)
-
-                                        elsif hitarray.include?("North")
-                                                if not alreadyAdjusted.include?("North")
-                                                        point.y -= (@bitOffset - north[1].abs)
-                                                        alreadyAdjusted += ["North"]
-                                                        operatedOn = true
-                                                        adjustpoint2(point, hitarray,alreadyAdjusted, true)
-
-                                                end
-                                        elsif hitarray.include?("South")
-                                                #puts "#{point} #{south}"
-                                                if not alreadyAdjusted.include?("South")
-                                                        point.y += (@bitOffset - south[1].abs)
-                                                        alreadyAdjusted += ["South"]
-                                                        operatedOn = true
-                                                        adjustpoint2(point, hitarray,alreadyAdjusted, true)
-                                                end
-                                        end
-
-
-                                        if hitarray.include?("West") and hitarray.include?("East")
-                                                point.z += @stepOver
-                                                hitarray.clear
-                                                alreadyAdjusted.clear
-                                                operatedOn = false
-                                                adjustpoint2(point, hitarray,alreadyAdjusted, true)
-                                        elsif hitarray.include?("East")
-                                                if not alreadyAdjusted.include?("East")
-                                                        point.x -= (@bitOffset - east[1].abs)
-                                                        alreadyAdjusted += ["East"]
-                                                        operatedOn = true
-                                                        adjustpoint2(point, hitarray,alreadyAdjusted, true)
-                                                end
-                                        elsif hitarray.include?("West")
-                                                if not alreadyAdjusted.include?("West")
-                                                        point.x += (@bitOffset - west[1].abs)
-                                                        alreadyAdjusted += ["West"]
-                                                        operatedOn = true
-                                                        adjustpoint2(point, hitarray,alreadyAdjusted, true)
-                                                end
-                                        end
-
-                                        #colpt = findModelIntersection(point, Geom::Vector3d.new(0,0,1))
-                                        #if colpt != nil
-                                        #       point.z = colpt.z
-                                        #end
-                                        if not operatedOn
-                                                return point
-                                        end
-
-                                else
-                                        #puts "No Collision Found"
-                                        return point
-                                end
-                        else
-                                puts "point higher than thickness"
-                                return point
-
-                        end
-                else
-                        puts "Nil encounered"
-                end
+   def adjustpoint2(point, hitarray, alreadyAdjusted, retest)
+    if point != nil
+      if point.z < @matThick
+        acollision = false
+        hitarray.clear
+        north = determineBitCollision point, Geom::Vector3d.new(0,1,0)
+        south = determineBitCollision point, Geom::Vector3d.new(0,-1,0)
+        east = determineBitCollision point, Geom::Vector3d.new(1,0,0)
+        west = determineBitCollision point, Geom::Vector3d.new(-1,0,0)
+        #fill out array with hit points then get the unique ones
+        if north[0]
+          hitarray += ["North"]
+          acollision = true
+        end
+        if south[0]
+          hitarray += ["South"]
+          acollision = true
+        end
+        if east[0]
+          hitarray += ["East"]
+          acollision = true
+        end
+        if west[0]
+          hitarray += ["West"]
+          acollision = true
         end
 
-  def determineBitCollisionFull (point, vector)
-                #determines if the bit used will eat out a chunk of the physical model. Done by a ray test and then returning if a collision occures
-                #ray = [point, vector]
-                colpt = findModelIntersection(point, vector)
-                if colpt == nil
-                        return [false,0]
-                else
-                        distance = colpt.distance point
-                        if distance > (@bitOffset*2) #The reduction in bit offset is needed so that we don't always return nil after a retest
-                                return [false,distance]
-                        else
-                                #if distance < 0.001
-                                        #return [false,distance]
-                                #else
-                                        return [true, distance]
-                                #end
-                        end
-                end
-        end
+        if acollision
 
-        def determineBitCollision (point, vector)
-                #determines if the bit used will eat out a chunk of the physical model. Done by a ray test and then returning if a collision occures
-                #ray = [point, vector]
-                colpt = findModelIntersection(point, vector)
-                if colpt == nil
-                        return [false,0]
-                else
-                        distance = colpt.distance point
-                        if distance > (@bitOffset - 0.001) #The reduction in bit offset is needed so that we don't always return nil after a retest
-                                return [false,distance]
-                        else
-                                #if distance < 0.001
-                                        #return [false,distance]
-                                #else
-                                        return [true, distance]
-                                #end
-                        end
-                end
+          hitarray = hitarray.uniq
+          operatedOn = false
+          #puts "#{hitarray}"
+
+          #Now move point based on collisoins in the hit array
+          if hitarray.include?("North") and hitarray.include?("South")
+            #puts "prior #{hitarray}"
+            point.z += @stepOver
+            hitarray.clear
+            alreadyAdjusted.clear
+            #puts "post #{hitarray}"
+            operatedOn = false
+            adjustpoint2(point, hitarray,alreadyAdjusted, true)
+
+          elsif hitarray.include?("North")
+            if not alreadyAdjusted.include?("North")
+              point.y -= (@bitOffset - north[1].abs)
+              alreadyAdjusted += ["North"]
+              operatedOn = true
+              adjustpoint2(point, hitarray,alreadyAdjusted, true)
+            end
+          elsif hitarray.include?("South")
+            #puts "#{point} #{south}"
+            if not alreadyAdjusted.include?("South")
+              point.y += (@bitOffset - south[1].abs)
+              alreadyAdjusted += ["South"]
+              operatedOn = true
+              adjustpoint2(point, hitarray,alreadyAdjusted, true)
+            end
+          end
+
+
+          if hitarray.include?("West") and hitarray.include?("East")
+            point.z += @stepOver
+            hitarray.clear
+            alreadyAdjusted.clear
+            operatedOn = false
+            adjustpoint2(point, hitarray,alreadyAdjusted, true)
+          elsif hitarray.include?("East")
+            if not alreadyAdjusted.include?("East")
+              point.x -= (@bitOffset - east[1].abs)
+              alreadyAdjusted += ["East"]
+              operatedOn = true
+              adjustpoint2(point, hitarray,alreadyAdjusted, true)
+            end
+          elsif hitarray.include?("West")
+            if not alreadyAdjusted.include?("West")
+              point.x += (@bitOffset - west[1].abs)
+              alreadyAdjusted += ["West"]
+              operatedOn = true
+              adjustpoint2(point, hitarray,alreadyAdjusted, true)
+            end
+          end
+
+          #colpt = findModelIntersection(point, Geom::Vector3d.new(0,0,1))
+          #if colpt != nil
+          #       point.z = colpt.z
+          #end
+          if not operatedOn
+             return point
+          end
+        else
+          #puts "No Collision Found"
+          return point
         end
+      else
+        puts "point higher than thickness"
+        return point
+      end
+    else
+            puts "Nil encounered"
+    end
+   end
+
+   def determineBitCollisionFull (point, vector)
+      #determines if the bit used will eat out a chunk of the physical model. Done by a ray test and then returning if a collision occures
+      #ray = [point, vector]
+      colpt = findModelIntersection(point, vector)
+      if colpt == nil
+         return [false,0]
+      else
+         distance = colpt.distance point
+         if distance > (@bitOffset*2) #The reduction in bit offset is needed so that we don't always return nil after a retest
+            return [false,distance]
+         else
+            #if distance < 0.001
+            #return [false,distance]
+            #else
+            return [true, distance]
+            #end
+         end
+      end
+   end
+
+   def determineBitCollision (point, vector)
+      #determines if the bit used will eat out a chunk of the physical model. Done by a ray test and then returning if a collision occures
+      #ray = [point, vector]
+      colpt = findModelIntersection(point, vector)
+      if colpt == nil
+         return [false,0]
+      else
+         distance = colpt.distance point
+         if distance > (@bitOffset - 0.001) #The reduction in bit offset is needed so that we don't always return nil after a retest
+            return [false,distance]
+         else
+            #if distance < 0.001
+            #return [false,distance]
+            #else
+            return [true, distance]
+            #end
+         end
+      end
+   end
 
 
   def generateModelGrid
