@@ -511,6 +511,146 @@ module PhlatScript
          @cc = cmd
       end
    end
+
+## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+   def ramplimitArc(limitangle, op, rad, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+      cncPrintC("(ramp arc limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramparc) 
+      if (zo == @cz)
+         @no_move_count += 1
+      else
+         # we are at a point @cx,@cy,@cz and need to arcramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
+         # cmd will be the initial direction, need to reverse for the backtrack
+         if (zo > @max_z)
+            cncPrintC("(RAMParc limiting Z to max_z @max_z)\n")
+            zo = @max_z
+         elsif (zo < @min_z)
+            cncPrintC("(RAMParc limiting Z to min_z @min_z)\n")
+            zo = @min_z
+         end
+      
+         command_out = ""
+         # if above material, G0 to near surface to save time
+         if (@cz == @retract_depth)
+            if (@table_flag)
+               @cz = @material_thickness + 0.1.mm
+            else
+               @cz = 0.0 + 0.1.mm
+            end
+            command_out += "G0 " + format_measure('Z',@cz) +"\n"
+            @cc = @cmd_rapid
+         end
+         
+	
+
+#If you mean the angle that P1 is the vertex of then this should work:
+#    arcos((P12^2 + P13^2 - P23^2) / (2 * P12 * P13))
+#where P12 is the length of the segment from P1 to P2, calculated by
+#    sqrt((P1x - P2x)^2 + (P1y - P2y)^2)
+
+
+# p1 is the center point; result is in radians
+#def angle_between_points( p0, p1, p2 )
+#  a = (p1[0]-p0[0])**2 + (p1[1]-p0[1])**2
+#  b = (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
+#  c = (p2[0]-p0[0])**2 + (p2[1]-p0[1])**2
+#  Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
+#end
+
+         
+#with the angle we can find the arc length
+#angle*radius   (radians)
+         
+         command_out += cmd if (cmd != @cc)
+         # find halfway point
+         # is the angle exceeded?
+         point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
+         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
+         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
+         
+         if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
+            puts "distance=0 so just plunging"  if(@debugramp)
+            plung(zo, so, cmd)
+            cncPrintC("(ramplimit end, translated to plunge)\n")
+            return
+         end
+         
+         bz = ((@cz-zo)/2).abs   #half distance from @cz to zo, not height to cut to
+         
+         anglerad = Math::atan(bz/distance)
+         angledeg = todeg(anglerad)
+         
+         if (angledeg > limitangle)  # then need to calculate a new bz value
+            puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
+            bz = distance * Math::tan( torad(limitangle) )
+            if (bz == 0)
+               puts "distance=#{distance} bz=#{bz}"
+               passes =4
+            else
+               passes = ((zo-@cz)/bz).abs
+            end   
+            puts "   new bz=#{bz.to_mm} passes #{passes}"                  if(@debugramp) # should always be even number of passes?
+            passes = passes.floor
+            if passes.modulo(2).zero?
+               passes += 2
+            else
+               passes += 1
+            end
+            bz = (zo-@cz).abs / passes
+            puts "   rounded new bz=#{bz.to_mm} passes #{passes}"          if(@debugramp) # now an even number
+         else
+            puts "bz is half distance" if(@debugramp)
+            #bz = (zo-@cz)/2 + @cz
+         end
+         puts "bz=#{bz.to_mm}" if(@debugramp)
+
+         so = @speed_plung  # force using plunge rate for ramp moves
+         
+         curdepth = @cz
+         cnt = 0
+         while ( (curdepth - zo).abs > 0.0001) do
+            cnt += 1
+            if cnt > 100
+               puts "high count break" 
+               command_out += "ramp loop high count break, do not cut this code\n"
+               break
+            end
+            puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
+            # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
+            command_out += format_measure('x',op.x)
+            command_out += format_measure('y',op.y)
+# for the last pass, make sure we do equal legs - this is mostyl circumvented by the passes adjustment
+            if (zo-curdepth).abs < (bz*2)
+               puts "last pass smaller bz"               if(@debugramp)
+               bz = (zo-curdepth).abs / 2
+            end
+            
+            curdepth -= bz
+            if (curdepth < zo)
+               curdepth = zo
+            end   
+            command_out += format_measure('z',curdepth)
+            command_out += (format_feed(so)) if (so != @cs)
+            @cs = so
+            command_out += "\n";
+
+            # cut to @cx,@cy, curdepth
+            curdepth -= bz
+            if (curdepth < zo)
+               curdepth = zo
+            end   
+            command_out += format_measure('X',@cx)
+            command_out += format_measure('y',@cy)
+            command_out += format_measure('z',curdepth)
+            command_out += "\n"
+         end  # while
+         
+         cncPrint(command_out)
+         cncPrintC("(ramplimit end)\n")             if(@debugramp)
+         @cz = zo
+         @cs = so
+         @cc = cmd
+      end
+   end
    
 
 # generate code for a spiral bore and return the command string
@@ -537,7 +677,7 @@ module PhlatScript
          circ = Math::PI * yoff.abs * 2   # yoff is radius
          step = -Math::tan(torad(PhlatScript.rampangle)) * circ
          puts "(SpiralAt z step = #{step.to_mm} for ramp circ #{circ.to_mm}"         if (@debugramp)
-         # now limit it to multipass depth or half bitdiam
+         # now limit it to multipass depth or half bitdiam because it can get pretty steep for small diameters
          if PhlatScript.useMultipass?
             if step.abs > PhlatScript.multipassDepth
                step = -PhlatScript.multipassDepth
@@ -632,28 +772,40 @@ module PhlatScript
 
       so = @speed_plung                     # force using plunge rate for vertical moves
       if PhlatScript.useMultipass?
-         zonow = PhlatScript.tabletop? ? @material_thickness : 0
-         while (zonow - zo).abs > 0.0001 do
-            zonow -= PhlatScript.multipassDepth
-            if zonow < zo
-               zonow = zo
-            end
-            command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
-            command_out += (format_feed(so)) if (so != @cs)
+         if ( (PhlatScript.mustramp?) && (diam > (@bit_diameter*2)) )
+            command_out += SpiralAt(xo,yo,zStart,zo,@bit_diameter/2 )
+            command_out += "G0 " + format_measure("Z" , sh)
             command_out += "\n"
-            @cs = so
-            command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
-            command_out += "\n"
-         end #while
+         else
+            zonow = PhlatScript.tabletop? ? @material_thickness : 0
+            while (zonow - zo).abs > 0.0001 do
+               zonow -= PhlatScript.multipassDepth
+               if zonow < zo
+                  zonow = zo
+               end
+               command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
+               command_out += (format_feed(so)) if (so != @cs)
+               command_out += "\n"
+               @cs = so
+               command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
+               command_out += "\n"
+            end #while
+         end
       else
 #todo - if ramping, then do not plunge this, rather do a spiralat with yoff = bit/2      
          if (diam > (@bit_diameter*2))  #more optimizing, only bore the center if the hole is big, assuming soft material anyway
-            command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-            command_out += (format_feed(so)) if (so != @cs)
-            command_out += "\n"
-            @cs = so
-            command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
-            command_out += "\n"
+            if (PhlatScript.mustramp?)
+               command_out += SpiralAt(xo,yo,zStart,zo,@bit_diameter/2 )
+               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "\n"
+            else
+               command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
+               command_out += (format_feed(so)) if (so != @cs)
+               command_out += "\n"
+               @cs = so
+               command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
+               command_out += "\n"
+            end
          end
       end
 
@@ -703,7 +855,7 @@ module PhlatScript
          
          
          
-         nowyoffset = 0
+         nowyoffset = (PhlatScript.mustramp?) ? @bit_diameter/2 :  0
 #         while (nowyoffset < yoff)
          while ( (nowyoffset - yoff).abs > 0.001)         
             nowyoffset += ystep
