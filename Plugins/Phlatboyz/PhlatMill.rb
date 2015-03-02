@@ -190,7 +190,8 @@ module PhlatScript
     end
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
-#     cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
+     #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
+     #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
       if cmd != @cmd_rapid
          if @retract_depth == zo
             cmd=@cmd_rapid
@@ -207,26 +208,30 @@ module PhlatScript
          @no_move_count += 1
       else
          if (xo > @max_x)
-            cncPrintC("(move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x + ")\n")
+            #puts "xo big"
+            cncPrintC("(move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x.to_s + ")\n")
             xo = @max_x
          elsif (xo < @min_x)
-            cncPrintC("(move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x+ ")\n")
+            #puts "xo small"
+            cncPrintC("(move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x.to_s+ ")\n")
             xo = @min_x
          end
 
          if (yo > @max_y)
-            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y+ ")\n")
+            #puts "yo big"
+            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y.to_s+ ")\n")
             yo = @max_y
          elsif (yo < @min_y)
-            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y+ ")\n")
+            #puts "yo small"
+            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y.to_s+ ")\n")
             yo = @min_y
          end
 
          if (zo > @max_z)
-            cncPrintC("(move z="+ sprintf("%10.6f",zo)+ " GT max of "+ @max_z+ ")\n")
+            cncPrintC("(move z="+ sprintf("%10.6f",zo)+ " GT max of "+ @max_z.to_s+ ")\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(move x="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z+ ")\n")
+            cncPrintC("(move ="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z.to_s+ ")\n")
             zo = @min_z
          end
          command_out = ""
@@ -772,8 +777,13 @@ module PhlatScript
 
       so = @speed_plung                     # force using plunge rate for vertical moves
       if PhlatScript.useMultipass?
-         if ( (PhlatScript.mustramp?) && (diam > (@bit_diameter*2)) )
-            command_out += SpiralAt(xo,yo,zStart,zo,@bit_diameter/2 )
+         if ( (PhlatScript.mustramp?) && (diam > @bit_diameter) )
+            if (diam > (@bit_diameter*2))
+               yoff = @bit_diameter / 2
+            else
+               yoff = (diam/2 - @bit_diameter/2) * 0.75
+            end
+            command_out += SpiralAt(xo,yo,zStart,zo, yoff )
             command_out += "G0 " + format_measure("Z" , sh)
             command_out += "\n"
          else
@@ -793,19 +803,24 @@ module PhlatScript
          end
       else
 #todo - if ramping, then do not plunge this, rather do a spiralat with yoff = bit/2      
-         if (diam > (@bit_diameter*2))  #more optimizing, only bore the center if the hole is big, assuming soft material anyway
-            if (PhlatScript.mustramp?)
-               command_out += SpiralAt(xo,yo,zStart,zo,@bit_diameter/2 )
-               command_out += "G0 " + format_measure("Z" , sh)
-               command_out += "\n"
+#more optimizing, only bore the center if the hole is big, assuming soft material anyway
+         if ((diam > @bit_diameter) && (PhlatScript.mustramp?))
+            if (diam > (@bit_diameter*2))
+               yoff = @bit_diameter / 2
             else
-               command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-               command_out += (format_feed(so)) if (so != @cs)
-               command_out += "\n"
-               @cs = so
-               command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
-               command_out += "\n"
+               yoff = (diam/2 - @bit_diameter/2) * 0.75
             end
+            cncPrintC("!multi && ramp yoff #{yoff.to_mm}")
+            command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+            command_out += "G0 " + format_measure("Z" , sh)
+            command_out += "\n"
+         else
+            command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
+            command_out += (format_feed(so)) if (so != @cs)
+            command_out += "\n"
+            @cs = so
+            command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
+            command_out += "\n"
          end
       end
 
