@@ -309,10 +309,10 @@ module PhlatScript
       $phoptions.use_end_position?
    end
    def PhlatScript.end_x
-      $phoptions.end_x
+      $phoptions.end_x.to_f
    end
    def PhlatScript.end_y
-      $phoptions.end_y
+      $phoptions.end_y.to_f
    end
 #ramping   
    def PhlatScript.rampangle

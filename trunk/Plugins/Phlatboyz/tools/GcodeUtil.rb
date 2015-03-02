@@ -243,7 +243,11 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                   end
                   aMill.retract(@safeHeight) #forces cmd_rapid
                   aMill.cncPrint(PhlatScript.gcomment("EndPosition")+"\n")
-                  aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
+                  #puts PhlatScript.end_x
+                  #puts PhlatScript.end_y
+                  #puts height
+                  #puts PhlatScript.feedRate
+                  aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, PhlatScript.feedRate, 'G0')
                else
                   # retracts the milling head and and then moves it home.
                   # This prevents accidental milling
@@ -262,7 +266,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             #puts("finishing up")
             aMill.job_finish() # output housekeeping code
           rescue
-            UI.messagebox "GcodeUtil.generate_gcode failed; Error:"+$!
+            puts $!
+            UI.messagebox "GcodeUtil.generate_gcode failed; Error:"+$!.to_s
           end
         else
           UI.messagebox(PhlatScript.getString("You must define the material thickness."))
