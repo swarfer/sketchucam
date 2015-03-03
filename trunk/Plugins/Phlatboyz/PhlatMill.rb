@@ -14,7 +14,7 @@ module PhlatScript
       @cs = 0.0
       @cc = ""
       @debug = false   # if true then a LOT of stuff will appear in the ruby console
-      @debugramp = true
+      @debugramp = false
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
       @max_x = 48.0
       @min_x = -48.0
@@ -517,8 +517,29 @@ module PhlatScript
       end
    end
 
+#If you mean the angle that P1 is the vertex of then this should work:
+#    arcos((P12^2 + P13^2 - P23^2) / (2 * P12 * P13))
+#where P12 is the length of the segment from P1 to P2, calculated by
+#    sqrt((P1x - P2x)^2 + (P1y - P2y)^2)
+
+# cunning bit of code found online, find the angle between 3 points, in radians
+#just give it the three points as arrays
+# p1 is the center point; result is in radians
+   def angle_between_points( p0, p1, p2 )
+     a = (p1[0]-p0[0])**2 + (p1[1]-p0[1])**2
+     b = (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
+     c = (p2[0]-p0[0])**2 + (p2[1]-p0[1])**2
+     Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
+   end
+   
 ## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
-   def ramplimitArc(limitangle, op, rad, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+## not going to write an unlimited version, always limited to at least 45 degrees
+## though some of these arguments are defaulted, they must always all be given by the caller
+   def ramplimitArc(limitangle, op, rad, cent, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+      if (limitangle == 0)
+         limitangle = 45   # always limit to something
+      end
+      cncPrintC("ramplimitArc")  if (@debugramparc)
       cncPrintC("(ramp arc limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramparc) 
       if (zo == @cz)
          @no_move_count += 1
@@ -542,38 +563,30 @@ module PhlatScript
                @cz = 0.0 + 0.1.mm
             end
             command_out += "G0 " + format_measure('Z',@cz) +"\n"
+            cncPrint(command_out)
             @cc = @cmd_rapid
          end
          
 	
-
-#If you mean the angle that P1 is the vertex of then this should work:
-#    arcos((P12^2 + P13^2 - P23^2) / (2 * P12 * P13))
-#where P12 is the length of the segment from P1 to P2, calculated by
-#    sqrt((P1x - P2x)^2 + (P1y - P2y)^2)
-
-
-# p1 is the center point; result is in radians
-#def angle_between_points( p0, p1, p2 )
-#  a = (p1[0]-p0[0])**2 + (p1[1]-p0[1])**2
-#  b = (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
-#  c = (p2[0]-p0[0])**2 + (p2[1]-p0[1])**2
-#  Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
-#end
-
-         
+         angle = angle_between_points([@cx,@cy], [cent.x,cent.y] , [op.x,op.y])
+         arclength = angle * rad
+         puts "angle #{angle} arclength #{arclength.to_mm}"    if (@debugramp)
 #with the angle we can find the arc length
 #angle*radius   (radians)
          
-         command_out += cmd if (cmd != @cc)
+         if (cmd.include?('3'))  # find the 'other' command for the return stroke
+            ocmd = 'G2'
+         else
+            ocmd = 'G3'
+         end
          # find halfway point
          # is the angle exceeded?
-         point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
-         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
-         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
-         
+#         point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
+#         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
+#         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
+         distance =  arclength
          if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
-            puts "distance=0 so just plunging"  if(@debugramp)
+            puts "arcramp distance=0 so just plunging"  if(@debugramp)
             plung(zo, so, cmd)
             cncPrintC("(ramplimit end, translated to plunge)\n")
             return
@@ -585,11 +598,11 @@ module PhlatScript
          angledeg = todeg(anglerad)
          
          if (angledeg > limitangle)  # then need to calculate a new bz value
-            puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
+            puts "arcramp limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
             bz = distance * Math::tan( torad(limitangle) )
             if (bz == 0)
-               puts "distance=#{distance} bz=#{bz}"
-               passes =4
+               puts "distance=#{distance} bz=#{bz}"                        if (@debugramp)
+               passes = 4
             else
                passes = ((zo-@cz)/bz).abs
             end   
@@ -603,7 +616,7 @@ module PhlatScript
             bz = (zo-@cz).abs / passes
             puts "   rounded new bz=#{bz.to_mm} passes #{passes}"          if(@debugramp) # now an even number
          else
-            puts "bz is half distance" if(@debugramp)
+            puts "bz is half distance"          if(@debugramp)
             #bz = (zo-@cz)/2 + @cz
          end
          puts "bz=#{bz.to_mm}" if(@debugramp)
@@ -612,20 +625,22 @@ module PhlatScript
          
          curdepth = @cz
          cnt = 0
+         command_out = ''
          while ( (curdepth - zo).abs > 0.0001) do
+            command_out += cmd
             cnt += 1
             if cnt > 100
                puts "high count break" 
-               command_out += "ramp loop high count break, do not cut this code\n"
+               command_out += "ramp arc loop high count break, do not cut this code\n"
                break
             end
-            puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
+            puts "   curdepth #{curdepth.to_mm}"            if(@debugramp)
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
             command_out += format_measure('x',op.x)
             command_out += format_measure('y',op.y)
-# for the last pass, make sure we do equal legs - this is mostyl circumvented by the passes adjustment
+# for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
             if (zo-curdepth).abs < (bz*2)
-               puts "last pass smaller bz"               if(@debugramp)
+               puts "   last pass smaller bz"               if(@debugramp)
                bz = (zo-curdepth).abs / 2
             end
             
@@ -634,6 +649,7 @@ module PhlatScript
                curdepth = zo
             end   
             command_out += format_measure('z',curdepth)
+            command_out += format_measure('r',rad)
             command_out += (format_feed(so)) if (so != @cs)
             @cs = so
             command_out += "\n";
@@ -643,14 +659,16 @@ module PhlatScript
             if (curdepth < zo)
                curdepth = zo
             end   
+            command_out += ocmd
             command_out += format_measure('X',@cx)
-            command_out += format_measure('y',@cy)
-            command_out += format_measure('z',curdepth)
+            command_out += format_measure('Y',@cy)
+            command_out += format_measure('Z',curdepth)
+            command_out += format_measure('R',rad)
             command_out += "\n"
          end  # while
          
          cncPrint(command_out)
-         cncPrintC("(ramplimit end)\n")             if(@debugramp)
+         cncPrintC("(ramplimitarc end)\n")             if(@debugramp)
          @cz = zo
          @cs = so
          @cc = cmd
