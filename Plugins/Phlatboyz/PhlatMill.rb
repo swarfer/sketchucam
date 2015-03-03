@@ -382,10 +382,10 @@ module PhlatScript
          point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
          distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
          
-         if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
+         if (distance < 0.02)  # dont need to ramp really since not going anywhere far, just plunge
             puts "distance=0 so just plunging"  if(@debugramp)
             plung(zo, so, cmd)
-            cncPrintC("(ramplimit end, translated to plunge)\n")
+            cncPrintC("(ramplimit end, translated to plunge, distance very short)\n")
             return
          end
          
@@ -410,12 +410,17 @@ module PhlatScript
             else
                passes += 1
             end
+            if (passes > 100)
+               cncprintC("clamping ramp passes to 100, segment very short")
+               puts "clamping ramp passes to 100"
+               passes = 100
+            end
             bz = (zo-@cz).abs / passes
-            puts "   rounded new bz=#{bz.to_mm} passes #{passes}"          if(@debugramp) # now an even number
+            puts "   rounded new bz=#{bz.to_mm} passes #{passes}"        if(@debugramp)  # now an even number
          else
-            puts "bz is half distance" if(@debugramp)
+            puts "bz is half distance"    if(@debugramp)
             #bz = (zo-@cz)/2 + @cz
-         end
+         end  
          puts "bz=#{bz.to_mm}" if(@debugramp)
 
          so = @speed_plung  # force using plunge rate for ramp moves
@@ -425,7 +430,7 @@ module PhlatScript
          while ( (curdepth - zo).abs > 0.0001) do
             cnt += 1
             if cnt > 100
-               puts "high count break" 
+               puts "high count break #{curdepth.to_mm}  #{zo.to_mm}" 
                command_out += "ramp loop high count break, do not cut this code\n"
                break
             end

@@ -291,7 +291,7 @@ module NorthSouthEastWest
    end
 
    def makeArc3
-      @entities.add_arc @centre, @vector2, @normal, @toolRadius, Math::PI/4, (Math::PI/4)*3, 6
+      @entities.add_arc @centre, @vector2, @normal, @toolRadius, Math::PI/4, (Math::PI/4)*3, 4
    end
 
    def previewArc(angle1, angle2)          # draw arc for preview  (start angle, end angle in degrees)
@@ -370,9 +370,9 @@ class BoneMulti
       @boneDirection = boneDirection                      # true = inside bone
       @tBoneTop = false                                   # Default T-Bone direction false=horiz
       if $PhlatBoner_units=="mm"
-	 @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
+	      @toolDiameter = $PhlatBoner_toolDiameter/25.4 # Convert to internal inches
       else
-	 @toolDiameter = $PhlatBoner_toolDiameter
+	      @toolDiameter = $PhlatBoner_toolDiameter
       end
       @toolRadius = @toolDiameter/2
       @model = Sketchup.active_model
@@ -384,28 +384,28 @@ class BoneMulti
       # Cursor data
       cursor_path = Sketchup.find_support_file("cursor_radbone.png", "Plugins/phlatBone/")
       if cursor_path
-	 @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
+	      @radboneCursor = UI.create_cursor(cursor_path, 2, 15)
       end
 
       cursor_path = Sketchup.find_support_file("cursor_tbone.png", "Plugins/phlatBone/")
       if cursor_path
-	 @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
+	      @tboneCursor = UI.create_cursor(cursor_path, 2, 15)
       end
 
       cursor_path = Sketchup.find_support_file("cursor_radbone_multi.png", "Plugins/phlatBone/")
       if cursor_path
-	 @radboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
+	      @radboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
       end
 
       cursor_path = Sketchup.find_support_file("cursor_tbone_multi.png", "Plugins/phlatBone/")
       if cursor_path
-	 @tboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
+	      @tboneMultiCursor = UI.create_cursor(cursor_path, 2, 15)
       end
 
       if @boneType==1
-	 UI.set_cursor(@radboneMultiCursor)
+	      UI.set_cursor(@radboneMultiCursor)
       else
-	 UI.set_cursor(@tboneMultiCursor)
+	      UI.set_cursor(@tboneMultiCursor)
       end
    end
 
@@ -466,7 +466,7 @@ class BoneMulti
    # Shift Key
    def onKeyDown(key, repeat, flags, view)
       if( key == CONSTRAIN_MODIFIER_KEY )
-	 @tBoneTop=true
+         @tBoneTop=true
          view.invalidate
       end
    end
@@ -474,8 +474,8 @@ class BoneMulti
 # Shift Key Up
    def onKeyUp(key, repeat, flags, view)
       if( key == CONSTRAIN_MODIFIER_KEY )
-	 @tBoneTop=false
-	 view.invalidate
+         @tBoneTop=false
+         view.invalidate
       end
    end
 
@@ -489,8 +489,8 @@ class BoneMulti
       @ip1.clear
 
       if( view )
-	 view.tooltip = nil
-	 view.invalidate if @drawn
+         view.tooltip = nil
+         view.invalidate if @drawn
       end
       @drawn = false
    end
@@ -511,7 +511,7 @@ def resume(view)
       view.line_width = 2
       v = @ip1.vertex
       if v
-	  create_bones(true)
+         create_bones(true)
       end
    end
 
