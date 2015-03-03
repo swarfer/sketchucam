@@ -983,7 +983,19 @@ puts " new #{newedges[i-1]}\n"
                            else
                               # If it's not a peck drilling we don't need retract
                               aMill.move(point.x, point.y)
-                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                              if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) )
+                                 center = phlatcut.center
+                                 tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                                 puts "arc ramping in tcenter #{tcenter}" if (@debug)
+                                 if (reverse)
+                                    cmnd = 'G3'
+                                 else
+                                    cmnd = 'G2'
+                                 end   
+                                 aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
+                              else
+                                 aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                              end
                            end
                         end # if else plungcut
                      else #NOT multipass
@@ -999,14 +1011,29 @@ puts " new #{newedges[i-1]}\n"
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            end
                         else
-                           aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)  if (!skipcut)
+                           
+                           if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) )
+                              center = phlatcut.center
+                              tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                              puts "arc ramping in tcenter #{tcenter}" if (@debug)
+                              if (reverse)
+                                 cmnd = 'G3'
+                              else
+                                 cmnd = 'G2'
+                              end   
+                              aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
+                           else
+                              puts "straight ramp to #{cut_depth}"            if (@debug)
+                              
+                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)  if (!skipcut)
+                           end
                         end # if plungecut
                      end # if else multipass
                   else #cut in progress
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
                         if (phlatcut.kind_of?(PhlatScript::TabCut)) 
                            puts "ARC tabcut with ramp "                                     if (@debug)
-                           puts "VTAB"                   if (phlatcut.vtab? && @debug)
+                           puts "VTAB"                                  if (phlatcut.vtab? && @debug)
                            puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                            puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
                            puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
@@ -1015,15 +1042,24 @@ puts " new #{newedges[i-1]}\n"
 
                         if (@ramp_next)
                            puts "RAMP_NEXT true for arc, ramping then arcing" if (@debug)
-                           aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                           center = phlatcut.center
+                           tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                           puts "arc ramping in tcenter #{tcenter}" if (@debug)
+                           if (reverse)
+                              cmnd = 'G3'
+                           else
+                              cmnd = 'G2'
+                           end   
+                           aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
                            @ramp_next = false
                         end
                         
                         g3 =  reverse  # the fix might be this simple....
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
-#                        center = phlatcut.center
-#                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                        center = phlatcut.center
+                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                        puts "tcenter #{tcenter}" if (@debug)
 
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
