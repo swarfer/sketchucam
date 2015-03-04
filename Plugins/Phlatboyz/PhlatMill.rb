@@ -74,14 +74,27 @@ module PhlatScript
         #print arg
       end
     end
+   
+   #returns array of strings of length size 
+   def chunk(string, size)
+      string.scan(/.{1,#{size}}/)
+   end 
     
     #print a commment using current comment options
-    def cncPrintC(string)
-       string = string.gsub("\n","")
-       string = string.gsub(/\(|\)/,"")
-       string = PhlatScript.gcomment(string)
-       cncPrint(string + "\n")
-    end
+   def cncPrintC(string)
+      string = string.gsub("\n","")
+      string = string.gsub(/\(|\)/,"")
+      if (string.length > 48)
+         chunks = chunk(string,45)
+         chunks.each { |bit|
+            bb = PhlatScript.gcomment(bit)
+            cncPrint(bb + "\n")
+            }
+      else
+         string = PhlatScript.gcomment(string)
+         cncPrint(string + "\n")
+      end
+   end
 
     def format_measure(axis, measure)
       #UI.messagebox("in #{measure}")
@@ -117,45 +130,43 @@ module PhlatScript
 #do a little jig to prevent the code highlighter getting confused by the bracket constructs      
       vs1 = PhlatScript.getString("PhlatboyzGcodeTrailer")
       vs2 = $PhlatScriptExtension.version
-      verstr = PhlatScript.gcomment("#{vs1%vs2}")+"\n"
-      cncPrint(verstr)
-      cncPrint(PhlatScript.gcomment("File: #{PhlatScript.sketchup_file}")+"\n") if PhlatScript.sketchup_file
-      cncPrint(PhlatScript.gcomment("Bit diameter: #{Sketchup.format_length(@bit_diameter)}")+"\n")
-      cncPrint(PhlatScript.gcomment("Feed rate: #{Sketchup.format_length(@speed_curr)}/min")+"\n")
+      verstr = "#{vs1%vs2}" + "\n"
+      cncPrintC(verstr)
+      cncPrintC("File: #{PhlatScript.sketchup_file}") if PhlatScript.sketchup_file
+      cncPrintC("Bit diameter: #{Sketchup.format_length(@bit_diameter)}")
+      cncPrintC("Feed rate: #{Sketchup.format_length(@speed_curr)}/min")
       if (@speed_curr != @speed_plung)
-         cncPrint(PhlatScript.gcomment("Plunge Feed rate: #{Sketchup.format_length(@speed_plung)}/min")+"\n")
+         cncPrintC("Plunge Feed rate: #{Sketchup.format_length(@speed_plung)}/min")
       end
-      cncPrint(PhlatScript.gcomment("Material Thickness: #{Sketchup.format_length(@material_thickness)}")+"\n")
-      cncPrint(PhlatScript.gcomment("Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)}")+"\n")
-      cncPrint(PhlatScript.gcomment("Overhead Gantry: #{PhlatScript.useOverheadGantry?}")+"\n")
+      cncPrintC("Material Thickness: #{Sketchup.format_length(@material_thickness)}")
+      cncPrintC("Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)}")
+      cncPrintC("Overhead Gantry: #{PhlatScript.useOverheadGantry?}")
       if (@Limit_up_feed)
-        cncPrint(PhlatScript.gcomment("Retract feed LIMITED to plunge feed rate")+"\n")
-#      else   this line is too long for GRBL, maybe?
-#        cncPrintC("(Retract feed rate NOT limited to plunge feed rate)\n")
+        cncPrintC("Retract feed LIMITED to plunge feed rate")
       end
       if (PhlatScript.useMultipass?)
-        cncPrint(PhlatScript.gcomment("Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)}")+"\n")
+        cncPrintC("Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)}")
       end
       if (PhlatScript.mustramp?)
          if (PhlatScript.rampangle == 0)
-            cncPrint(PhlatScript.gcomment("RAMPING with no angle limit")+"\n")
+            cncPrintC("RAMPING with no angle limit")
          else
-            cncPrint(PhlatScript.gcomment("RAMPING at #{PhlatScript.rampangle} degrees")+"\n")
+            cncPrintC("RAMPING at #{PhlatScript.rampangle} degrees")
          end
       end
 
       if (optim)    # swarfer - display optimize status as part of header
-        cncPrint(PhlatScript.gcomment("Optimization is ON")+"\n")
+        cncPrintC("Optimization is ON")
       else
-        cncPrint(PhlatScript.gcomment("Optimization is OFF")+"\n")
+        cncPrintC("Optimization is OFF")
       end
       if (extra != "-")
-         cncPrint(PhlatScript.gcomment("#{extra}")+"\n")
+         cncPrintC("#{extra}")
       end
 
-      cncPrint(PhlatScript.gcomment("www.PhlatBoyz.com")+"\n")
+      cncPrintC("www.PhlatBoyz.com")
       PhlatScript.checkParens(@comment, "Comment")
-      @comment.split("$/").each{|line| cncPrint(PhlatScript.gcomment(line)+"\n")} if !@comment.empty?
+      @comment.split("$/").each{|line| cncPrintC(line)} if !@comment.empty?
 
       #adapted from swarfer's metric code
       #metric by SWARFER - this does the basic setting up from the drawing units
@@ -209,21 +220,21 @@ module PhlatScript
       else
          if (xo > @max_x)
             #puts "xo big"
-            cncPrintC("(move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x.to_s + ")\n")
+            cncPrintC("move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x.to_s + "\n")
             xo = @max_x
          elsif (xo < @min_x)
             #puts "xo small"
-            cncPrintC("(move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x.to_s+ ")\n")
+            cncPrintC("move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x.to_s+ "\n")
             xo = @min_x
          end
 
          if (yo > @max_y)
             #puts "yo big"
-            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y.to_s+ ")\n")
+            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y.to_s+ "\n")
             yo = @max_y
          elsif (yo < @min_y)
             #puts "yo small"
-            cncPrintC("(move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y.to_s+ ")\n")
+            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y.to_s+ "\n")
             yo = @min_y
          end
 
@@ -383,7 +394,7 @@ module PhlatScript
          distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
          
          if (distance < 0.02)  # dont need to ramp really since not going anywhere far, just plunge
-            puts "distance=0 so just plunging"  if(@debugramp)
+            puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, cmd)
             cncPrintC("(ramplimit end, translated to plunge, distance very short)\n")
             return
@@ -411,7 +422,7 @@ module PhlatScript
                passes += 1
             end
             if (passes > 100)
-               cncprintC("clamping ramp passes to 100, segment very short")
+               cncPrintC("clamping ramp passes to 100, segment very short")
                puts "clamping ramp passes to 100"
                passes = 100
             end
@@ -590,10 +601,10 @@ module PhlatScript
 #         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
 #         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
          distance =  arclength
-         if (distance == 0)  # dont need to ramp really since not going anywhere, just plunge
-            puts "arcramp distance=0 so just plunging"  if(@debugramp)
+         if (distance < 0.02)  # dont need to ramp really since not going anywhere, just plunge
+            puts "arcramp distance=#{distance.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, cmd)
-            cncPrintC("(ramplimit end, translated to plunge)\n")
+            cncPrintC("(ramplimitarc end, translated to plunge)\n")
             return
          end
          
@@ -779,7 +790,7 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrintC(" HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      cncPrintC("HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
       puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
@@ -917,7 +928,7 @@ module PhlatScript
             command_out += SpiralAt(xo,yo,zStart,zo,yoff);
          end
          if (diam < @bit_diameter)
-            command_out += "(NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter})\n"
+            cncPrintC("NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter}")
          end
       end # if diam >
 

@@ -232,7 +232,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             #puts("done milling")
             if PhlatScript.UseOutfeed?
                aMill.retract(@safeHeight)
-               aMill.cncPrint(PhlatScript.gcomment("Outfeed") + "\n")
+               aMill.cncPrintC("Outfeed")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
                if PhlatScript.UseEndPosition?
@@ -242,7 +242,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      height = @safeHeight
                   end
                   aMill.retract(@safeHeight) #forces cmd_rapid
-                  aMill.cncPrint(PhlatScript.gcomment("EndPosition")+"\n")
+                  aMill.cncPrintC("EndPosition")
                   #puts PhlatScript.end_x
                   #puts PhlatScript.end_y
                   #puts height
@@ -358,7 +358,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             #puts("done milling")
             if PhlatScript.UseOutfeed?
                aMill.retract(@safeHeight)
-               aMill.cncPrint(PhlatScript.gcomment("Outfeed")+"\n")
+               aMill.cncPrintC("Outfeed")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
             else
                if PhlatScript.UseEndPosition?
@@ -368,7 +368,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      height = @safeHeight
                   end
                   aMill.retract(@safeHeight) #forces cmd_rapid
-                  aMill.cncPrint(PhlatScript.gcomment("EndPosition")+"\n")
+                  aMill.cncPrintC("EndPosition")
                   aMill.move(PhlatScript.end_x,PhlatScript.end_y, height, 100, 'G0')
                else
                   # retracts the milling head and and then moves it home.
@@ -439,7 +439,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # the group.local_bounds.corner(0) in the future
          group_name = e.name
          if (!group_name.empty?) # the safe area labels are groups with names containing 'safearea', dont print them
-            aMill.cncPrint(PhlatScript.gcomment("Group: #{group_name}")+"\n")    if !group_name.include?("safearea")
+            aMill.cncPrintC("Group: #{group_name}")    if !group_name.include?("safearea")
             puts PhlatScript.gcomment("Group: #{group_name}")                 if !group_name.include?("safearea")
          end
          model.start_operation "Exploding Group", true
@@ -451,7 +451,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # abort the group explode
          model.abort_operation
          if (!group_name.empty?)
-            aMill.cncPrint(PhlatScript.gcomment("Group complete: #{group_name}") +"\n")    if !group_name.include?("safearea")
+            aMill.cncPrintC("Group complete: #{group_name}")          if !group_name.include?("safearea")
             puts PhlatScript.gcomment("Group end: #{group_name}")                      if !group_name.include?("safearea")
          end
       }
@@ -887,7 +887,7 @@ puts " new #{newedges[i-1]}\n"
       
       begin # multipass
          pass += 1
-         aMill.cncPrint(PhlatScript.gcomment("Pass: #{pass.to_s}")+"\n") if (PhlatScript.useMultipass? && printPass)
+         aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
          ecnt = 0
          edges.each { | phlatcut |
 
@@ -908,11 +908,12 @@ puts " new #{newedges[i-1]}\n"
                cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                # store the max depth encountered to determine if another pass is needed
                max_depth = [max_depth, cut_depth].min
+               #puts "max_depth #{max_depth.to_mm}"   if (pass == 1)
 
                if PhlatScript.useMultipass?
                   #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
                   cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
-                  #                     puts " cut_depth #{cut_depth.to_mm}\n"
+                  #puts " cut_depth #{cut_depth.to_mm}  #{pass}\n"   if (pass >= 14)
                   pass_depth = [pass_depth, cut_depth].min
                   #                     puts " pass_depth #{pass_depth.to_mm}\n"
                end
@@ -1117,7 +1118,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
                               else
-                                 puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
+                                 #puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
@@ -1137,13 +1138,17 @@ puts " new #{newedges[i-1]}\n"
                
             }
          } # edges.each
-         if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
-            aMill.cncPrint(PhlatScript.gcomment("BREAK pass #{pass}") +"\n")
-            puts "BREAK large pass #{pass}\n"  
+         if pass > ((material_thickness / PhlatScript.multipassDepth) + 2) # just in case it runs away, mainly debugging
+            rem =  (pass_depth-max_depth).abs
+            puts "breaking at #{rem} remaining"
+            aMill.cncPrintC("BREAK pass #{pass}") 
+            puts "BREAK large pass #{pass}  too many passes for mat thickness\n"  
             break
          end
          # new condition, detect 'close enough' to max_depth instead of equality,
          # for some multipass settings this would result in an extra pass with the same depth
+         rem =  (pass_depth-max_depth).abs
+         #puts "remaining #{rem}"
       end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
       if save_point != nil
          @g_save_point = save_point   # for optimizer
@@ -1154,6 +1159,7 @@ puts " new #{newedges[i-1]}\n"
       end # if edges
    end  # millEdgesRamp
  #---------------------------------------------------------------------------------------------  
+ 
    ## the original milledges, no ramp handling
    def GcodeUtil.millEdgesPlain(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
@@ -1188,7 +1194,7 @@ puts " new #{newedges[i-1]}\n"
       skipcut = false
       begin # multipass
          pass += 1
-         aMill.cncPrint(PhlatScript.gcomment("Pass: #{pass.to_s}")+"\n") if (PhlatScript.useMultipass? && printPass)
+         aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
          ecnt = 0
          edges.each { | phlatcut |
 
@@ -1314,8 +1320,8 @@ puts " new #{newedges[i-1]}\n"
                save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
             }
          } # edges.each
-         if pass > ((material_thickness / PhlatScript.multipassDepth) + 1) # just in case it runs away, mainly debugging
-            aMill.cncPrint(PhlatScript.gcomment("BREAK pass #{pass}")+"\n")
+         if pass > ((material_thickness / PhlatScript.multipassDepth) + 2) # just in case it runs away, mainly debugging
+            aMill.cncPrintC("BREAK pass #{pass}")
             puts "BREAK large pass #{pass}\n"  
             break
          end
