@@ -395,8 +395,8 @@ module PhlatScript
          
          if (distance < 0.02)  # dont need to ramp really since not going anywhere far, just plunge
             puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
-            plung(zo, so, cmd)
-            cncPrintC("(ramplimit end, translated to plunge, distance very short)\n")
+            plung(zo, so, @cmd_linear)
+            cncPrintC("ramplimit end, translated to plunge\n")
             return
          end
          
@@ -548,7 +548,7 @@ module PhlatScript
      Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
    end
    
-## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+## this arc ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
 ## not going to write an unlimited version, always limited to at least 45 degrees
 ## though some of these arguments are defaulted, they must always all be given by the caller
    def ramplimitArc(limitangle, op, rad, cent, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
@@ -603,8 +603,8 @@ module PhlatScript
          distance =  arclength
          if (distance < 0.02)  # dont need to ramp really since not going anywhere, just plunge
             puts "arcramp distance=#{distance.to_mm} so just plunging"  if(@debugramp)
-            plung(zo, so, cmd)
-            cncPrintC("(ramplimitarc end, translated to plunge)\n")
+            plung(zo, so, @cmd_linear)
+            cncPrintC("ramplimitarc end, translated to plunge\n")
             return
          end
          
@@ -642,10 +642,11 @@ module PhlatScript
          curdepth = @cz
          cnt = 0
          command_out = ''
+         @precision += 1
          while ( (curdepth - zo).abs > 0.0001) do
             command_out += cmd
             cnt += 1
-            if cnt > 100
+            if cnt > 200
                puts "high count break" 
                command_out += "ramp arc loop high count break, do not cut this code\n"
                break
@@ -682,7 +683,7 @@ module PhlatScript
             command_out += format_measure('R',rad)
             command_out += "\n"
          end  # while
-         
+         @precision -= 1
          cncPrint(command_out)
          cncPrintC("(ramplimitarc end)\n")             if(@debugramp)
          @cz = zo
@@ -778,7 +779,7 @@ module PhlatScript
     end # SpiralAt
 
 #swarfer: instead of a plunged hole, spiral bore to depth
-#handles multipass by itself
+#handles multipass by itself, also handles ramping
     def plungebore(xo,yo,zStart,zo,diam)
       zos = format_measure("depth=",zStart-zo)
       ds = format_measure(" diam=", diam)
@@ -814,12 +815,18 @@ module PhlatScript
          if ( (PhlatScript.mustramp?) && (diam > @bit_diameter) )
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
+               command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "\n"
             else
-               yoff = (diam/2 - @bit_diameter/2) * 0.75
+               if (PhlatScript.stepover < 50)  # act for a hard material
+                  yoff = (diam/2 - @bit_diameter/2) * 0.7
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  command_out += "G0 " + format_measure("Z" , sh)
+                  command_out += "\n"
+               end
             end
-            command_out += SpiralAt(xo,yo,zStart,zo, yoff )
-            command_out += "G0 " + format_measure("Z" , sh)
-            command_out += "\n"
+            
          else
             zonow = PhlatScript.tabletop? ? @material_thickness : 0
             while (zonow - zo).abs > 0.0001 do
@@ -841,13 +848,19 @@ module PhlatScript
          if ((diam > @bit_diameter) && (PhlatScript.mustramp?))
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
+               cncPrintC("!multi && ramp yoff #{yoff.to_mm}")  if (@debug)
+               command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "\n" 
             else
-               yoff = (diam/2 - @bit_diameter/2) * 0.75
+               if (PhlatScript.stepover < 50)  # act for a hard material
+                  yoff = (diam/2 - @bit_diameter/2) * 0.7
+                  cncPrintC("!multi && ramp Yoff #{yoff.to_mm}")  if (@debug)
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  command_out += "G0 " + format_measure("Z" , sh)
+                  command_out += "\n" 
+               end
             end
-            cncPrintC("!multi && ramp yoff #{yoff.to_mm}")
-            command_out += SpiralAt(xo,yo,zStart,zo, yoff )
-            command_out += "G0 " + format_measure("Z" , sh)
-            command_out += "\n"
          else
             command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
             command_out += (format_feed(so)) if (so != @cs)
@@ -889,7 +902,7 @@ module PhlatScript
             if (flag)                                    # only adjust if we need to
                temp = (temp < 1) ? 1 : temp
                puts "   temp steps = #{temp}\n" if @debug
-            #   calc new ystep
+               #   calc new ystep
                ystep = rem / temp
                if (ystep > @bit_diameter ) # limit to stepover
                   ystep = PhlatScript.stepover * @bit_diameter / 100
@@ -902,11 +915,9 @@ module PhlatScript
 
          puts "Ystep #{ystep.to_mm}\n" if @debug
          
-         
-         
          nowyoffset = (PhlatScript.mustramp?) ? @bit_diameter/2 :  0
 #         while (nowyoffset < yoff)
-         while ( (nowyoffset - yoff).abs > 0.001)         
+         while ( (nowyoffset - yoff).abs > 0.0001)         
             nowyoffset += ystep
             if (nowyoffset > yoff)
                nowyoffset = yoff
