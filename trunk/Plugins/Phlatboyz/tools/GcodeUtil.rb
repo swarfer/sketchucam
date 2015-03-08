@@ -473,8 +473,10 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
     end
 
     def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
+      debugmln = false
       # always mill the child loops first
       loopNode.children.each{ |childloop|
+         puts "mln: mill child loop" if (debugmln)
          millLoopNode(aMill, childloop, material_thickness)
       }
 #      if (PhlatScript.useMultipass?) and (Use_old_multipass == false)
@@ -484,7 +486,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #      end
 
     if (PhlatScript.useMultipass?) and (Use_old_multipass == false)
-      #all all the cuts the same type?
+      #are all the cuts the same type?
       first = true
       same = false
       atype = ""
@@ -504,12 +506,12 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       if (same)  # all same type, if they are connected, cut together, else seperately
 #			puts "SAME #{atype}"
          if (atype == "PhlatScript::CenterLineCut") || (atype == "PhlatScript::FoldCut")
-#            puts " same seperates?"
+#            puts " same separates?"
             cnt = 1
             fend = Geom::Point3d.new
             sstart = Geom::Point3d.new(1,1,1)
             # loop through the nodes and check if the end point of the first edge is the start point of the 2nd edge
-            # if they are then cut together, else cut seperately
+            # if they are then cut together, else cut separately
             loopNode.sorted_cuts.each { |pk|
                pk.cut_points(false) {    |cp, cut_factor|
                   if (cnt == 2)
@@ -523,13 +525,14 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                }
 
             if (fend.x == sstart.x	) && (fend.y == sstart.y)
-#               puts "   same Together #{atype}"
+               puts "mln: same Together #{atype}" if (debugmln)
   				   millEdges(aMill, loopNode.sorted_cuts, material_thickness)
-            else  # same separate
+            else  
+               puts "mln: same separate" if (debugmln)
                loopNode.sorted_cuts.each { |sc| millEdges(aMill, [sc], material_thickness) }
             end
          else
-#            puts "  same together #{atype}"
+            puts "  same together #{atype}" if (debugmln)
             millEdges(aMill, loopNode.sorted_cuts, material_thickness)
          end
       else
@@ -554,8 +557,14 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             folds.each { |sc| millEdges(aMill, [sc], material_thickness) }
          end
          if !centers.empty?
-#				puts "   all CenterLines #{centers.length}"
-            centers.each { |sc| millEdges(aMill, [sc], material_thickness) }
+  			   puts "mln: all CenterLines #{centers.length}" if (debugmln)
+  			   cc = 0;
+            centers.each { |sc| 
+               puts "   mln: mill centerlines #{cc}" if (debugmln)
+               millEdges(aMill, [sc], material_thickness) 
+               cc += 1
+               }
+               
 ##				millEdges(aMill, centers, material_thickness)
          end
          if !others.empty?
@@ -564,12 +573,14 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          end
       end
    else  ## if not multi, just cut em
+      puts "mln: just cut em, notmulti" if (debugmln)
       millEdges(aMill, loopNode.sorted_cuts, material_thickness)
    end
 
 #      end
 
       # finally we can walk the loop and make it's cuts
+      puts "mln: finally walk edges" if (debugmln)
       edges = []
       reverse = false
       pe = nil
@@ -592,20 +603,98 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
         edges.reverse! if reverse
       end
       edges.compact!
-      millEdges(aMill, edges, material_thickness, reverse)
+      if (edges.size)
+         puts "mln:  finally milledges" if (debugmln)
+         millEdges(aMill, edges, material_thickness, reverse)
+      end
     end
 
    def GcodeUtil.optimize(edges,reverse,trans)
       if (@g_save_point != nil)
-         #puts "last point  #{@g_save_point}"
+         #puts "optimize: last point  #{@g_save_point}"
          #swarfer: find closest point that is not a tabcut and re-order edges to start there
          cnt = edges.size;
          idx = 0
          mindist = 100000
          idxsave = -1
-         if (!edges[0].kind_of? PhlatScript::CenterLineCut)  #ignore centerlinecuts
+         
+         if (edges[0].kind_of? PhlatScript::CenterLineCut)
+            return edges
+         end
+=begin       attempts at optmizing centerlines....     
+	 puts "before"
+         if ((cnt > 1) && (edges[0].kind_of? PhlatScript::CenterLineCut)) 
+            if (reverse)
+               puts "reverse true in centerline optimize"
+            else
+               puts "cnt #{cnt}"
+               edges.each { | phlatcut |
+                  a = phlatcut.edge.start.position
+                  b = phlatcut.edge.end.position          
+                  puts "a #{a}   b #{b}  #{reverse} "
+                  
+                  point = (trans ? (a.transform(trans)) : a)
+                  adist = point.distance(@g_save_point)
+                  point = (trans ? (b.transform(trans)) : b)
+                  bdist = point.distance(@g_save_point)
+                  
+                  puts "   #{adist}   #{bdist}"    
+                  }  
+              # a = edges[0].edge.start.position
+              # b = edges[cnt-1].edge.end.position          
+              # puts "a #{a}   b #{b}  #{reverse}"
+               
+              # point = (trans ? (a.transform(trans)) : a)
+              # adist = point.distance(@g_save_point)
+              # point = (trans ? (b.transform(trans)) : b)
+              # bdist = point.distance(@g_save_point)
+               
+              # puts "#{adist}   #{bdist}"
+            end
+            if (cnt == 1)
+               a = edges[0].edge.start.position
+               b = edges[0].edge.end.position          
+               puts "a #{a}   b #{b}  #{reverse}"
+               
+               point = (trans ? (a.transform(trans)) : a)
+               adist = point.distance(@g_save_point)
+               point = (trans ? (b.transform(trans)) : b)
+               bdist = point.distance(@g_save_point)
+               
+               puts "#{adist}   #{bdist}"
+               puts "edge #{edges[0]}"
+               if (reverse)   # then b is start point
+                  if (bdist > adist)   # then we need to reverse this edge so it starts at b
+#                     c = edges[0].edge.start
+#                     edges[0].edge.start = edges[0].edge.end
+#                     edges[0].edge.end = c
+                  end
+               else   #a is start point
+                  if (adist > bdist)   # then we need to reverse this edge so it starts at b
+#                     c = edges[0].edge.start
+#                     edges[0].edge.start = edges[0].edge.end
+#                     edges[0].edge.end = c
+                  end
+               end
+
+            end
+         
+         
+         
             return edges   
+#               if (phlatcut.kind_of? PhlatScript::CenterLineCut)
+#                  #only look at first and last point
+#                  if idx == 0
+#		     puts "optimize centerline first point"
+#                     point = (trans ? (cp.transform(trans)) : cp)
+#                     dist = point.distance(@g_save_point)
+#                  end
+#                  if idx == (edges.size-1)
+#		     puts "last point"
+#                  end
          end         
+	 puts "after"
+=end	 
          edges.each { | phlatcut |
 #            if phlatcut.kind_of?( PhlatScript::CenterLineCut)
                #find which end is closest
@@ -613,15 +702,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #            end
             #               puts "edge #{phlatcut}"
             phlatcut.cut_points(reverse) {    |cp, cut_factor|
-               if (!phlatcut.kind_of? PhlatScript::CenterLineCut)
-                  #only look at first and last point
-                  if idx == 0
-                     point = (trans ? (cp.transform(trans)) : cp)
-                     dist = point.distance(@g_save_point)
-                  end
-                  if idx == (edges.count-1)
-                  end
-               elseif (!phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.kind_of? PhlatScript::PocketCut)
+	       if (!phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.kind_of? PhlatScript::PocketCut)
                #                     puts "   cutpoint #{cp} #{cut_factor}"
                   # transform the point if a transformation is provided
                   point = (trans ? (cp.transform(trans)) : cp)
@@ -639,7 +720,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             } #cut_points
             idx += 1
          } # edges.each
-         #puts "reStart from #{idxsave} of #{cnt}"
+         #puts "reStart from #{idxsave} of #{cnt} mindist #{mindist}"
          #puts "reverse #{reverse}"
          prev = (idxsave - 1 + cnt) % cnt
          nxt = (idxsave + 1 + cnt) % cnt
@@ -1156,6 +1237,8 @@ puts " new #{newedges[i-1]}\n"
       rescue Exception => e
          UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end
+   else   
+      puts "no edges in milledgesramp" if (@debug)
       end # if edges
    end  # millEdgesRamp
  #---------------------------------------------------------------------------------------------  
