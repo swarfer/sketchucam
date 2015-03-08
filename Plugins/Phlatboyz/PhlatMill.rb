@@ -75,7 +75,7 @@ module PhlatScript
       end
     end
    
-   #returns array of strings of length size 
+   #returns array of strings of length size or less
    def chunk(string, size)
       string.scan(/.{1,#{size}}/)
    end 
@@ -315,7 +315,7 @@ module PhlatScript
       end
    end
 
-   def plung(zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+   def plung(zo, so=@speed_plung, cmd=@cmd_linear)
       #      cncPrintC("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
       if (zo == @cz)
          @no_move_count += 1
@@ -351,7 +351,7 @@ module PhlatScript
       rad * 180 / Math::PI 
    end
    
-   def ramp(limitangle, op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)   
+   def ramp(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)   
       if limitangle > 0
          ramplimit(limitangle, op, zo, so, cmd)
       else
@@ -360,7 +360,7 @@ module PhlatScript
    end
 
 ## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
-   def ramplimit(limitangle, op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+   def ramplimit(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (zo == @cz)
          @no_move_count += 1
@@ -397,6 +397,9 @@ module PhlatScript
             puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, @cmd_linear)
             cncPrintC("ramplimit end, translated to plunge\n")
+            @cz = zo
+            @cs = so
+            @cc = @cmd_linear
             return
          end
          
@@ -485,10 +488,11 @@ module PhlatScript
 
 ## this ramps down to half the depth at otherpoint, and back to cut_depth at start point
 ## this may end up being quite a steep ramp if the distance is short
-   def rampnolimit(op, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+   def rampnolimit(op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp "+ sprintf("%10.6f",zo)+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (zo == @cz)
          @no_move_count += 1
+         cncPrintC("rampnolimit no move")
       else
          # we are at a point @cx,@cy and need to ramp to op.x,op.y,zo/2 then back to @cx,@cy,zo
          if (zo > @max_z)
@@ -512,6 +516,20 @@ module PhlatScript
          end
          
          command_out += cmd if (cmd != @cc)
+# check the distance         
+         point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
+         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
+         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
+         #40 thou, about 1mm, less than that = just plunge
+         if (distance < 0.04)  # dont need to ramp really since not going anywhere far, just plunge
+            puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
+            plung(zo, so, @cmd_linear)
+            @cz = zo
+            @cs = so
+            @cc = @cmd_linear
+            cncPrintC("rampnolimit end, plunging\n")
+            return
+         end
          
          # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
          command_out += format_measure('x',op.x)
@@ -551,7 +569,7 @@ module PhlatScript
 ## this arc ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
 ## not going to write an unlimited version, always limited to at least 45 degrees
 ## though some of these arguments are defaulted, they must always all be given by the caller
-   def ramplimitArc(limitangle, op, rad, cent, zo=@mill_depth, so=@speed_plung, cmd=@cmd_linear)
+   def ramplimitArc(limitangle, op, rad, cent, zo, so=@speed_plung, cmd=@cmd_linear)
       if (limitangle == 0)
          limitangle = 45   # always limit to something
       end
@@ -694,6 +712,7 @@ module PhlatScript
    
 
 # generate code for a spiral bore and return the command string
+# if ramping is on, lead angle will be limited to rampangle
    def SpiralAt(xo,yo,zstart,zend,yoff)
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
@@ -743,7 +762,7 @@ module PhlatScript
       command_out += "   (Z step #{step.to_mm})\n"          if @debug
       now = zstart
       while now > zend do
-         now += step;
+         now += step
          if (now < zend)
             now = zend
          else
@@ -855,7 +874,7 @@ module PhlatScript
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
-                  cncPrintC("!multi && ramp Yoff #{yoff.to_mm}")  if (@debug)
+                  cncPrintC("!multi && ramp 0.7 Yoff #{yoff.to_mm}")  if (@debug)
                   command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   command_out += "G0 " + format_measure("Z" , sh)
                   command_out += "\n" 
