@@ -50,9 +50,13 @@ module PhlatScript
          
          outf.puts("%")
          idx = 0
-         outf.puts("(joined files)")
+         outf.puts(PhlatScript.gcomment("joined files"))
          while(idx < filenames.length)
-            outf.puts("(   #{File.basename(filenames[idx])})")
+#            outf.puts(PhlatScript.gcomment("   #{File.basename(filenames[idx])}") )
+            comms = PhlatScript.gcomments("   #{File.basename(filenames[idx])}")
+            comms.each { |cm|
+               outf.puts(cm)
+               }
             idx += 1
          end
          idx = 0
@@ -68,19 +72,22 @@ module PhlatScript
             if (idx > 0)  # then skip header
                line = inf.readline
                while (line.match('G90') == nil)
-                  if (line.match('\(File|\(Bit') != nil)
+                  if (line.match('File|Bit') != nil)
                      outf.puts(line)
                   end
                   line = inf.readline
                end
                puts "header skipped #{idx}"
-               outf.puts("(Join   #{File.basename(filenames[idx])})")
+               comms = PhlatScript.gcomments("Join   #{File.basename(filenames[idx])}")
+               comms.each { |cm|
+                  outf.puts(cm)
+                  }
                outf.puts(line)
                end
             #output till footer
             line = inf.readline
-            while !inf.eof and (line.match('G0 X0 Y0|M30|\(Outfeed\)|\(EndPosition\)') == nil)
-               outf.puts(line)   if !line.match('\(Outfeed|\(EndPosition\)|M30|%')  #do not output leading %
+            while !inf.eof and (line.match('G0 X0 Y0|M30|Outfeed|EndPosition') == nil)
+               outf.puts(line)   if !line.match('Outfeed|EndPosition|M30|%')  #do not output leading % etc
                line = inf.readline
             end
             puts "output till footer done #{idx}  #{line}"
@@ -101,10 +108,13 @@ module PhlatScript
          end # while   
          outf.close
          puts "finished writing joined files"
-         if (UI.messagebox("All files joined into file #{outputfile}, do you want to preview the Gcode?",MB_YESNO) == IDYES)
-            GPlot.new.plot(outputfile)
+         if PhlatScript.usecommentbracket?
+            if (UI.messagebox("All files joined into file #{outputfile}, do you want to preview the Gcode?",MB_YESNO) == IDYES)
+               GPlot.new.plot(outputfile)
+            end
+         else   # dont try to open previewer with semicolon comments
+            UI.messagebox("All files joined into file #{outputfile}")
          end
-       
       end #select
    end # class
 

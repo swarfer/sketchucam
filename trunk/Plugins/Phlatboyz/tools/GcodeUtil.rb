@@ -935,7 +935,7 @@ puts " new #{newedges[i-1]}\n"
       end
    end #millEdges
    
-   
+#//////////////////   
    def GcodeUtil.millEdgesRamp(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
       begin
@@ -965,7 +965,7 @@ puts " new #{newedges[i-1]}\n"
 #      if edges[0].kind_of?(CenterLineCut) && (edges.length > 1)
 #         edges.reverse!
 #      end
-      
+      @tab_top = @before_tab = 100
       begin # multipass
          pass += 1
          aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
@@ -993,9 +993,10 @@ puts " new #{newedges[i-1]}\n"
 
                if PhlatScript.useMultipass?
                   #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
+                  prev_pass_depth = @zL - (PhlatScript.multipassDepth * (pass-1))
                   cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
                   #puts " cut_depth #{cut_depth.to_mm}  #{pass}\n"   if (pass >= 14)
-                  pass_depth = [pass_depth, cut_depth].min
+                  pass_depth = cut_depth
                   #                     puts " pass_depth #{pass_depth.to_mm}\n"
                end
 
@@ -1048,7 +1049,7 @@ puts " new #{newedges[i-1]}\n"
                                  #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
                                  if PhlatScript.useMultipass? && (points == 1) &&
                                     (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
-                                    #                                       puts "   part retract"
+                                    puts "   part retract p_pass_depth #{prev_pass_depth.to_mm} #{cut_depth.to_mm}"
                                     #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
                                     aMill.retract(prev_pass_depth+ 0.5.mm )
                                     ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
@@ -1154,9 +1155,11 @@ puts " new #{newedges[i-1]}\n"
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                         # do not ramp for vtabs, they are their own ramp!
+                           @debug = true
                            if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
                               puts "Must ramp and tab"                                     if (@debug)
                               puts "VTAB"                               if (phlatcut.vtab? &&  @debug)
+                              puts " p pass depth #{prev_pass_depth.to_mm}"                      if (@debug)
                               puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                               puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
                               puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
@@ -1168,7 +1171,9 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 # must do this move
                              if  ( ((point.x != otherpoint.x) || (point.y != otherpoint.y)) && (prev_cut_depth < cut_depth))
-                                puts "RAMP moving up onto tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
+                                puts " RAMP moving up onto tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
+                                @before_tab = prev_cut_depth
+                                @tab_top = cut_depth
                                 aMill.move(point.x, point.y, cut_depth)
                              end
 #must ramp and tab
@@ -1178,7 +1183,7 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm
 #do this move
                               if (  ((point.x == otherpoint.x) && (point.y == otherpoint.y)) && (prev_cut_depth == cut_depth) )
-                                puts "RAMP moving tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
+                                puts "  RAMP moving tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
                                 aMill.move(point.x, point.y, cut_depth)
                               end
 #must ramp and tab
@@ -1188,13 +1193,17 @@ puts " new #{newedges[i-1]}\n"
 #  other point 61.5mm  38.5mm 0.0mm                     
 #set ramp next move
                               if ( (point.x == otherpoint.x) && (point.y == otherpoint.y) && (prev_cut_depth > cut_depth) )
-                                 puts "setting ramp_next true"  if (@debug)
+                                 puts "   setting ramp_next true"  if (@debug)
                                  @ramp_next = true  && !phlatcut.vtab?
 #                                 @ramp_depth = cut_depth  # where it starts
                               end
                            else  # not a tab cut
                               if (@ramp_next)
-                                 puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
+                                 puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm} before_Tab #{@before_tab.to_mm} tab_top #{@tab_top.to_mm} "  if (@debug)
+                                 if ((prev_pass_depth < prev_cut_depth) && (prev_pass_depth < tab_top))
+                                    puts "PLUNGE to previous pass depth"
+                                    aMill.plung(save_point.x, save_point.y,prev_pass_depth)
+                                 end
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
@@ -1203,6 +1212,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
+                           @debug = false
                         else  # just move
                            puts "just move" if (@debug)
                            aMill.move(point.x, point.y, cut_depth)
@@ -1303,7 +1313,7 @@ puts " new #{newedges[i-1]}\n"
                   #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
                   cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
                   #                     puts " cut_depth #{cut_depth.to_mm}\n"
-                  pass_depth = [pass_depth, cut_depth].min
+                  pass_depth = cut_depth
                   #                     puts " pass_depth #{pass_depth.to_mm}\n"
                end
 
@@ -1339,17 +1349,17 @@ puts " new #{newedges[i-1]}\n"
                               else
                                  #            if multipass and 1 edge and not finished , then partly retract
                                  #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
-                                 if PhlatScript.useMultipass? && (points == 1) &&
+                                 if PhlatScript.useMultipass? && (points == 1) && 
                                     (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
                                     #                                       puts "   part retract"
-                                    #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
+                                    #aMill.cncPrint("(PARTIAL RETRACT)\n")
                                     aMill.retract(prev_pass_depth+ 0.5.mm )
                                     ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
                                  end
                               end
                               if ccmd
-                                 #                                    aMill.cncPrint("(RAPID #{ccmd})\n")
-                                 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, ccmd)
+                                 #aMill.cncPrint("(RAPID #{ccmd})\n")
+                                 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, "G0")
                                  ccmd = nil
                               else
                                  aMill.move(point.x, point.y)
