@@ -473,7 +473,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
     end
 
     def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = false
+      debugmln = true
       # always mill the child loops first
       loopNode.children.each{ |childloop|
          puts "mln: mill child loop" if (debugmln)
@@ -507,6 +507,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #			puts "SAME #{atype}"
          if (atype == "PhlatScript::CenterLineCut") || (atype == "PhlatScript::FoldCut")
 #            puts " same separates?"
+=begin
             cnt = 1
             fend = Geom::Point3d.new
             sstart = Geom::Point3d.new(1,1,1)
@@ -523,7 +524,54 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                   cnt = cnt + 1
                   }
                }
-
+=end               
+#new way
+            #create an array of all connected cuts and cut them, until no more cuts found
+            centers = []
+            cnt = 1
+            prev = 0
+            rev = false
+            loopNode.sorted_cuts.each { |pk|
+#               puts "looking at #{pk} #{cnt}"
+               if (cnt == 1)
+                  prev = pk
+                  #puts "pushing first #{pk} #{prev} #{cnt}"
+                  centers.push(pk)
+               else
+                  #if prev is connected to pk then add to array
+                  
+                  #puts "cnt #{cnt} #{pk}"
+                  if (prev == nil) 
+                     puts "prev is nil"
+                  end
+                  if (pk == nil)
+                     puts "pk is nil"
+                  end
+                  if ((prev.edge.start.position == pk.edge.start.position) || (prev.edge.start.position == pk.edge.end.position) ||
+                     (prev.edge.end.position == pk.edge.start.position) || (prev.edge.end.position == pk.edge.end.position) )
+                     #puts "pushing #{pk}  #{cnt}"
+                     centers.push(pk)
+                     #TODO if rev changes after 2nd push, cut what you gotand start again
+                     rev = (pk.edge.end.position == prev.edge.start.position) #try to figure cut direction
+                  else
+                     if !centers.empty?
+                        puts "CUTTING connected centers #{rev} #{centers.size}"  if (debugmln)
+                        centers.reverse! if rev
+                        millEdges(aMill, centers, material_thickness) 
+                     end
+                     centers = []
+                     centers.push(pk)
+                  end
+                  prev = pk
+               end
+               cnt += 1 
+               }   
+            if !centers.empty?
+               puts "mln: all CenterLines #{centers.length} #{rev}  #{centers.size}" if (debugmln)
+               centers.reverse! if rev
+               millEdges(aMill, centers, material_thickness) 
+            end
+=begin
             if (fend.x == sstart.x	) && (fend.y == sstart.y)
                puts "mln: same Together #{atype}" if (debugmln)
   				   millEdges(aMill, loopNode.sorted_cuts, material_thickness)
@@ -531,6 +579,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                puts "mln: same separate" if (debugmln)
                loopNode.sorted_cuts.each { |sc| millEdges(aMill, [sc], material_thickness) }
             end
+=end            
          else
             puts "  same together #{atype}" if (debugmln)
             millEdges(aMill, loopNode.sorted_cuts, material_thickness)
@@ -1066,6 +1115,10 @@ puts " new #{newedges[i-1]}\n"
                                  ccmd = nil
                               else
                                  aMill.move(point.x, point.y)
+                                 if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
+                                    aMill.cncPrintC("plunging to previous pass")
+                                    aMill.plung(prev_pass_depth,1,'G0')
+                                 end
                               end
                               aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                            else
@@ -1160,7 +1213,7 @@ puts " new #{newedges[i-1]}\n"
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                         # do not ramp for vtabs, they are their own ramp!
-                          
+#                           @debug = true
                            if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
                               puts "Must ramp and tab pass=#{pass}"                                     if (@debug)
                               puts "VTAB"                               if (phlatcut.vtab? &&  @debug)
@@ -1226,7 +1279,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
-                           
+#                           @debug = false
                         else  # just move
                            puts "just move" if (@debug)
                            aMill.move(point.x, point.y, cut_depth)
