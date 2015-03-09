@@ -199,6 +199,27 @@ def PhlatScript.gcomment(comment)
    end
 end
 
+#split a string into 'short enough' comments if it is too long for GRBL/UGS
+#returns an array of strings ready to output, used by phjoiner
+def PhlatScript.gcomments(comment)
+   output = Array.new
+      string = comment.gsub("\n","")
+      string = string.gsub(/\(|\)/,"")  # remove existing brackets
+      if (string.length > 48)
+         chunks = chunk(string,45)
+         chunks.each { |bit|
+            bb = PhlatScript.gcomment(bit)
+            output += [bb]
+            }
+      else
+         string = PhlatScript.gcomment(string)
+         output += [string]
+      end
+   return output
+end
+
+
+
 #SWARFER : need this is many places, so centralize the resource.
 def PhlatScript.isMetric()
   case Sketchup.active_model.options['UnitsOptions']['LengthUnit']
