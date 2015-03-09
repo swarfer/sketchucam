@@ -1051,13 +1051,18 @@ puts " new #{newedges[i-1]}\n"
                                     (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
                                     puts "   part retract p_pass_depth #{prev_pass_depth.to_mm} #{cut_depth.to_mm}"
                                     #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
-                                    aMill.retract(prev_pass_depth+ 0.5.mm )
+                                    if (PhlatScript.multipassDepth <= 0.5.mm)
+                                       cloffset = PhlatScript.multipassDepth / 2
+                                    else
+                                       cloffset = 0.5.mm
+                                    end
+                                    aMill.retract(prev_pass_depth+ cloffset )
                                     ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
                                  end
                               end
                               if ccmd
                                  #                                    aMill.cncPrint("(RAPID #{ccmd})\n")
-                                 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, ccmd)
+                                 aMill.move(point.x, point.y, prev_pass_depth + cloffset , PhlatScript.feedRate, 'G0')
                                  ccmd = nil
                               else
                                  aMill.move(point.x, point.y)
@@ -1115,8 +1120,8 @@ puts " new #{newedges[i-1]}\n"
                   else #cut in progress
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
                         if (phlatcut.kind_of?(PhlatScript::TabCut)) 
-                           puts "ARC tabcut with ramp "                                     if (@debug)
-                           puts "VTAB"                                  if (phlatcut.vtab? && @debug)
+                           puts "ARC tabcut with ramp "                                 if (@debug)
+                           puts "VTAB"                                if (phlatcut.vtab? && @debug)
                            puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                            puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
                            puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
@@ -1155,9 +1160,9 @@ puts " new #{newedges[i-1]}\n"
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                         # do not ramp for vtabs, they are their own ramp!
-                           @debug = true
+                          
                            if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
-                              puts "Must ramp and tab"                                     if (@debug)
+                              puts "Must ramp and tab pass=#{pass}"                                     if (@debug)
                               puts "VTAB"                               if (phlatcut.vtab? &&  @debug)
                               puts " p pass depth #{prev_pass_depth.to_mm}"                      if (@debug)
                               puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
@@ -1195,15 +1200,24 @@ puts " new #{newedges[i-1]}\n"
                               if ( (point.x == otherpoint.x) && (point.y == otherpoint.y) && (prev_cut_depth > cut_depth) )
                                  puts "   setting ramp_next true"  if (@debug)
                                  @ramp_next = true  && !phlatcut.vtab?
+                                 #if coming down on the trailing edge of a tab, and ramping, then
+                                 #we can rapid down to NEAR the previous pass level and ramp from there
+                                 if (PhlatScript.useMultipass?)
+                                    if ( (prev_pass_depth < prev_cut_depth) && (prev_cut_depth == @tab_top) )
+                                       if (PhlatScript.multipassDepth <= 0.25.mm)
+                                          cloffset = PhlatScript.multipassDepth / 2
+                                       else
+                                          cloffset = 0.25.mm
+                                       end
+                                       aMill.cncPrintC( "PLUNGE to previous pass depth #{prev_pass_depth.to_mm}") if (@debug)
+                                       aMill.plung(prev_pass_depth + cloffset,PhlatScript.feedRate, 'G0' )
+                                    end
+                                 end   
 #                                 @ramp_depth = cut_depth  # where it starts
                               end
                            else  # not a tab cut
                               if (@ramp_next)
                                  puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm} before_Tab #{@before_tab.to_mm} tab_top #{@tab_top.to_mm} "  if (@debug)
-                                 if ((prev_pass_depth < prev_cut_depth) && (prev_pass_depth < tab_top))
-                                    puts "PLUNGE to previous pass depth"
-                                    aMill.plung(save_point.x, save_point.y,prev_pass_depth)
-                                 end
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
@@ -1212,7 +1226,7 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
-                           @debug = false
+                           
                         else  # just move
                            puts "just move" if (@debug)
                            aMill.move(point.x, point.y, cut_depth)
