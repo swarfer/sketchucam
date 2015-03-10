@@ -118,7 +118,7 @@ module PhlatScript
       @must_ramp = false    # make this an option!
       @limitangle = 0      # if > 0 will limit to this ramp angle
       @debug = false
-
+      @level = 0
     def initialize
       @tooltype = 3
       @tooltip = PhlatScript.getString("Phlatboyz GCode")
@@ -473,7 +473,9 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
     end
 
     def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = true
+      debugmln = false
+      @level += 1
+      puts "millLoopNode #{@level}" if (debugmln)
       # always mill the child loops first
       loopNode.children.each{ |childloop|
          puts "mln: mill child loop" if (debugmln)
@@ -485,7 +487,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #       millEdges(aMill, [sc], material_thickness)
 #      end
 
-    if (PhlatScript.useMultipass?) and (Use_old_multipass == false)
+   if (PhlatScript.useMultipass?) and (Use_old_multipass == false)
       #are all the cuts the same type?
       first = true
       same = false
@@ -551,17 +553,17 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      (prev.edge.end.position == pk.edge.start.position) || (prev.edge.end.position == pk.edge.end.position) )
                      #puts "pushing #{pk}  #{cnt}"
                      centers.push(pk)
-                     #TODO if rev changes after 2nd push, cut what you gotand start again
+                     #TODO if rev changes after 2nd push, cut what you got and start again
                      prrev = rev
                      rev = (pk.edge.end.position == prev.edge.start.position) #try to figure cut direction
                      if (prrev != rev)
-                        puts "rev changed to #{rev} at #{cnt} #{centers.size}"
+                        puts "rev changed to #{rev} at #{cnt} #{centers.size}"  if (debugmln)
                      end
                   else
                      if !centers.empty?
                         puts "CUTTING connected centers #{rev} #{centers.size}"  if (debugmln)
                         centers.reverse! if rev
-                        millEdges(aMill, centers, material_thickness) 
+                        millEdges(aMill, centers, material_thickness, rev) 
                         prrev = rev = false
                      end
                      centers = []
@@ -572,8 +574,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                cnt += 1 
                }   
             if !centers.empty?
-               puts "mln: all CenterLines  rev#{rev}  centers.size#{centers.size}" if (debugmln)
-               #centers.reverse! if rev
+               puts "mln: remaining Centerlines  rev#{rev}  centers.size#{centers.size}" if (debugmln)
+               centers.reverse! if rev
                millEdges(aMill, centers, material_thickness) 
             end
 =begin
@@ -643,7 +645,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
         loopNode.loop.edgeuses.each{ |eu|
           pe = PhlatCut.from_edge(eu.edge)
           if (pe) && (!pe.processed)
-            if (!Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?))
+#           if (!Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?))
+            if (! PhlatScript.useOverheadGantry?)
                 reverse = reverse || (pe.kind_of?(PhlatScript::InsideCut)) || eu.reversed?
             else
                 reverse = reverse || (pe.kind_of?(PhlatScript::OutsideCut)) || eu.reversed?
@@ -659,9 +662,11 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       end
       edges.compact!
       if (edges.size)
-         puts "mln:  finally milledges #{edges.size}" if (debugmln)
-         millEdges(aMill, edges, material_thickness, reverse)
+         puts "mln:  finally milledges #{edges.size} reverse #{reverse}" if (debugmln)
+         millEdges(aMill, edges, material_thickness, !reverse)
       end
+      @level -= 1
+      puts "   millLoopNode exit" if (debugmln)
     end
 
    def GcodeUtil.optimize(edges,reverse,trans)
@@ -1104,7 +1109,7 @@ puts " new #{newedges[i-1]}\n"
                                  #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
                                  if PhlatScript.useMultipass? && (points == 1) &&
                                     (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
-                                    puts "   part retract p_pass_depth #{prev_pass_depth.to_mm} #{cut_depth.to_mm}"
+                                    puts "   part retract p_pass_depth #{prev_pass_depth.to_mm} #{cut_depth.to_mm}" if (@debug)
                                     #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
                                     if (PhlatScript.multipassDepth <= 0.5.mm)
                                        cloffset = PhlatScript.multipassDepth / 2
