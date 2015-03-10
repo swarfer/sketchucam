@@ -530,7 +530,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             centers = []
             cnt = 1
             prev = 0
-            rev = false
+            prrev = rev = false
             loopNode.sorted_cuts.each { |pk|
 #               puts "looking at #{pk} #{cnt}"
                if (cnt == 1)
@@ -552,12 +552,17 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      #puts "pushing #{pk}  #{cnt}"
                      centers.push(pk)
                      #TODO if rev changes after 2nd push, cut what you gotand start again
+                     prrev = rev
                      rev = (pk.edge.end.position == prev.edge.start.position) #try to figure cut direction
+                     if (prrev != rev)
+                        puts "rev changed to #{rev} at #{cnt} #{centers.size}"
+                     end
                   else
                      if !centers.empty?
                         puts "CUTTING connected centers #{rev} #{centers.size}"  if (debugmln)
                         centers.reverse! if rev
                         millEdges(aMill, centers, material_thickness) 
+                        prrev = rev = false
                      end
                      centers = []
                      centers.push(pk)
@@ -567,8 +572,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                cnt += 1 
                }   
             if !centers.empty?
-               puts "mln: all CenterLines #{centers.length} #{rev}  #{centers.size}" if (debugmln)
-               centers.reverse! if rev
+               puts "mln: all CenterLines  rev#{rev}  centers.size#{centers.size}" if (debugmln)
+               #centers.reverse! if rev
                millEdges(aMill, centers, material_thickness) 
             end
 =begin
@@ -625,6 +630,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       puts "mln: just cut em, notmulti" if (debugmln)
       millEdges(aMill, loopNode.sorted_cuts, material_thickness)
    end
+ 
 
 #      end
 
@@ -653,7 +659,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       end
       edges.compact!
       if (edges.size)
-         puts "mln:  finally milledges" if (debugmln)
+         puts "mln:  finally milledges #{edges.size}" if (debugmln)
          millEdges(aMill, edges, material_thickness, reverse)
       end
     end
