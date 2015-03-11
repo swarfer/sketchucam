@@ -472,8 +472,124 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       return loop_root
     end
 
-    def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = false
+   #take array of loop node sorted cuts and return true if they are all the same type of cut         
+   def GcodeUtil.sameType(edges)
+      first = true
+      same = false
+      atype = ""
+      edges.each { |sc|  # find out if all same type of cuts
+#		   puts "sc #{sc}"
+         if (first)
+            atype = sc.class.to_s
+            puts #{atype}"
+            first = false
+            same = true
+         else
+            if (atype != sc.class.to_s)
+               same = false
+               break
+            end
+         end
+         }
+      if (same   )
+         return atype
+      else
+         return nil
+      end
+   end
+   
+   # compare two cuts and return true if they share a vertex
+   def GcodeUtil.shareaVertex(v1,v2)
+      c1 = ((v1.edge.start.position.x - v2.edge.start.position.x).abs < 0.001) && 
+           ((v1.edge.start.position.y - v2.edge.start.position.y).abs < 0.001) 
+                  
+      c2 = ((v1.edge.start.position.x - v2.edge.end.position.x).abs < 0.001) &&
+           ((v1.edge.start.position.x - v2.edge.end.position.y).abs < 0.001) 
+      
+      c3 = ((v1.edge.end.position.x - v2.edge.start.position.x).abs < 0.001) &&
+           ((v1.edge.end.position.y - v2.edge.start.position.y).abs < 0.001)
+      
+      c4 = ((v1.edge.end.position.x - v2.edge.end.position.x).abs < 0.001) &&
+           ((v1.edge.end.position.y - v2.edge.end.position.y).abs < 0.001) 
+      return c1 || c2 || c3 || c4            
+   end
+
+#take the array of edges of *same* type and cut the connected ones together    
+#probably only useful for centerline and fold cuts
+   def GcodeUtil.cutConnected(aMill, sortedcuts, material_thickness)
+      #create an array of all connected cuts and cut them, until no more cuts found
+      debugcutc = true
+      centers = []
+      cnt = 1
+      prev = nil
+      prrev = rev = false
+      puts "cutc: cutting #{sortedcuts.size} edges" if (debugcutc)
+      sortedcuts.each { |pk|
+#               puts "looking at #{pk} #{cnt}"
+         if (cnt == 1)
+            prev = pk
+            #puts "pushing first #{pk} #{prev} #{cnt}"
+            centers.push(pk)
+            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
+         else
+            #if prev is connected to pk then add pk to array
+            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
+            #puts "cnt #{cnt} #{pk}"
+            if (prev == nil) 
+               puts "cutc: prev is nil"
+            end
+            if (pk == nil)
+               puts "cutc: pk is nil"
+            end
+            if ( shareaVertex(prev,pk) )
+               #puts "pushing #{pk}  #{cnt}"
+               centers.push(pk)
+               #TODO if rev changes after 2nd push, cut what you got and start again?
+               prrev = rev
+               #try to figure cut direction
+               rev = (((pk.edge.end.position.x - prev.edge.start.position.x).abs < 0.001) && ((pk.edge.end.position.y - prev.edge.start.position.y).abs < 0.001 ) )
+               if (prrev != rev)
+                  puts "cutc: rev changed to #{rev} at #{cnt} #{centers.size}"  if (debugcutc)
+               end
+            else
+               if !centers.empty?
+                  puts "cutc: CUTTING connected centers #{rev} #{centers.size}"  if (debugcutc)
+#                        centers.reverse! if rev
+                  if (rev)
+                     c = 1
+                     centers.each { |ed|
+                        puts "#{c} #{ed.edge.start.position} #{ed.edge.end.position}"
+                        c += 1
+                        }
+                     centers.reverse!
+                     rev = false
+                  end
+                  millEdges(aMill, centers, material_thickness, rev) 
+                  prrev = rev = false
+               end
+               centers = []
+               centers.push(pk)
+            end
+            prev = pk
+         end
+         cnt += 1 
+         }   
+      if !centers.empty?
+         puts "cutc: remaining Centerlines  rev(#{rev})  centers.size(#{centers.size})" if (debugcutc)
+#               centers.reverse! if rev
+                  if (rev)
+                     puts " cutting remaining centers with rev TRUE"
+                     c = 1
+                     centers.each { |ed|
+                        puts " #{c} #{ed.edge.start.position} #{ed.edge.end.position}"
+                        }
+                  end
+         millEdges(aMill, centers, material_thickness, rev) 
+      end
+   end   
+
+   def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
+      debugmln = true
       @level += 1
       puts "millLoopNode #{@level}" if (debugmln)
       # always mill the child loops first
@@ -487,28 +603,18 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #       millEdges(aMill, [sc], material_thickness)
 #      end
 
-   if (PhlatScript.useMultipass?) and (Use_old_multipass == false)
+   if (PhlatScript.useMultipass?) #and (Use_old_multipass == false)
       #are all the cuts the same type?
-      first = true
-      same = false
-      atype = ""
-      loopNode.sorted_cuts.each { |sc|
-#		   puts "sc #{sc}"
-         if (first)
-            atype = sc.class.to_s
-            first = false
-            same = true
-         else
-            if (atype != sc.class.to_s)
-               same = false
-               break
-           end
-         end
-         }
+      same = sameType(loopNode.sorted_cuts) # return type name if same, else nil
       if (same)  # all same type, if they are connected, cut together, else seperately
-#			puts "SAME #{atype}"
+         atype = same
+			#puts "SAME #{atype}"
+
          if (atype == "PhlatScript::CenterLineCut") || (atype == "PhlatScript::FoldCut")
 #            puts " same separates?"
+#new way
+            cutConnected(aMill,loopNode.sorted_cuts, material_thickness)
+
 =begin
             cnt = 1
             fend = Geom::Point3d.new
@@ -527,57 +633,6 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                   }
                }
 =end               
-#new way
-            #create an array of all connected cuts and cut them, until no more cuts found
-            centers = []
-            cnt = 1
-            prev = 0
-            prrev = rev = false
-            loopNode.sorted_cuts.each { |pk|
-#               puts "looking at #{pk} #{cnt}"
-               if (cnt == 1)
-                  prev = pk
-                  #puts "pushing first #{pk} #{prev} #{cnt}"
-                  centers.push(pk)
-               else
-                  #if prev is connected to pk then add to array
-                  
-                  #puts "cnt #{cnt} #{pk}"
-                  if (prev == nil) 
-                     puts "prev is nil"
-                  end
-                  if (pk == nil)
-                     puts "pk is nil"
-                  end
-                  if ((prev.edge.start.position == pk.edge.start.position) || (prev.edge.start.position == pk.edge.end.position) ||
-                     (prev.edge.end.position == pk.edge.start.position) || (prev.edge.end.position == pk.edge.end.position) )
-                     #puts "pushing #{pk}  #{cnt}"
-                     centers.push(pk)
-                     #TODO if rev changes after 2nd push, cut what you got and start again
-                     prrev = rev
-                     rev = (pk.edge.end.position == prev.edge.start.position) #try to figure cut direction
-                     if (prrev != rev)
-                        puts "rev changed to #{rev} at #{cnt} #{centers.size}"  if (debugmln)
-                     end
-                  else
-                     if !centers.empty?
-                        puts "CUTTING connected centers #{rev} #{centers.size}"  if (debugmln)
-                        centers.reverse! if rev
-                        millEdges(aMill, centers, material_thickness, rev) 
-                        prrev = rev = false
-                     end
-                     centers = []
-                     centers.push(pk)
-                  end
-                  prev = pk
-               end
-               cnt += 1 
-               }   
-            if !centers.empty?
-               puts "mln: remaining Centerlines  rev#{rev}  centers.size#{centers.size}" if (debugmln)
-               centers.reverse! if rev
-               millEdges(aMill, centers, material_thickness) 
-            end
 =begin
             if (fend.x == sstart.x	) && (fend.y == sstart.y)
                puts "mln: same Together #{atype}" if (debugmln)
@@ -610,26 +665,26 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             }
          if !folds.empty?
 #				puts "   all folds #{folds.length}"
-            folds.each { |sc| millEdges(aMill, [sc], material_thickness) }
+            cutConnected(aMill,folds, material_thickness)
+            #folds.each { |sc| millEdges(aMill, [sc], material_thickness) }
          end
          if !centers.empty?
   			   puts "mln: all CenterLines #{centers.length}" if (debugmln)
-  			   cc = 0;
-            centers.each { |sc| 
-               puts "   mln: mill centerlines #{cc}" if (debugmln)
-               millEdges(aMill, [sc], material_thickness) 
-               cc += 1
-               }
-               
-##				millEdges(aMill, centers, material_thickness)
+            cutConnected(aMill,centers, material_thickness)
+#  			   cc = 0;
+#            centers.each { |sc| 
+#               puts "   mln: mill centerlines #{cc}" if (debugmln)
+#               millEdges(aMill, [sc], material_thickness) 
+#               cc += 1
+#               }
          end
          if !others.empty?
 #				puts "   all others #{others.length}"
             millEdges(aMill, others, material_thickness)
          end
       end
-   else  ## if not multi, just cut em
-      puts "mln: just cut em, notmulti" if (debugmln)
+   else  ## if not multipass, just cut em
+      puts "mln: JUST CUT EM, NOTMULTI" if (debugmln)
       millEdges(aMill, loopNode.sorted_cuts, material_thickness)
    end
  
@@ -654,19 +709,20 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             edges.push(pe)
             pe.processed = true
           end
-        }
+          }
         loopNode.loop_start.downto(0) { |x|
-          edges.push(edges.shift) if x > 0
-        }
+           edges.push(edges.shift) if x > 0
+           }
         edges.reverse! if reverse
       end
       edges.compact!
       if (edges.size)
          puts "mln:  finally milledges #{edges.size} reverse #{reverse}" if (debugmln)
-         millEdges(aMill, edges, material_thickness, !reverse)
+         millEdges(aMill, edges, material_thickness, reverse)
       end
+      
+      puts "   millLoopNode exit #{@level}" if (debugmln)
       @level -= 1
-      puts "   millLoopNode exit" if (debugmln)
     end
 
    def GcodeUtil.optimize(edges,reverse,trans)
@@ -1335,6 +1391,9 @@ puts " new #{newedges[i-1]}\n"
    def GcodeUtil.millEdgesPlain(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
       begin
+      
+      puts "millEdgesPlain reverse=#{reverse}"
+      
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
       trans = trans * mirror if Reflection_output
@@ -1474,9 +1533,8 @@ puts " new #{newedges[i-1]}\n"
                         g3 =  reverse  # the fix might be this simple....
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
-                        center = phlatcut.center
-                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
-#puts "arc length #{phlatcut.edge.length}\n"
+#                        center = phlatcut.center
+#                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else 
