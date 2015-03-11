@@ -132,7 +132,8 @@ module PhlatScript
       vs2 = $PhlatScriptExtension.version
       verstr = "#{vs1%vs2}" + "\n"
       cncPrintC(verstr)
-      cncPrintC("File: #{PhlatScript.sketchup_file}") if PhlatScript.sketchup_file
+      fn = PhlatScript.sketchup_file.gsub(/\(|\)/,"-") # remove existing brackets, confuses CNC controllers to have embedded brackets
+      cncPrintC("File: #{fn}") if PhlatScript.sketchup_file
       cncPrintC("Bit diameter: #{Sketchup.format_length(@bit_diameter)}")
       cncPrintC("Feed rate: #{Sketchup.format_length(@speed_curr)}/min")
       if (@speed_curr != @speed_plung)
