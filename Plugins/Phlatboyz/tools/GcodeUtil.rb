@@ -504,7 +504,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
            ((v1.edge.start.position.y - v2.edge.start.position.y).abs < 0.001) 
                   
       c2 = ((v1.edge.start.position.x - v2.edge.end.position.x).abs < 0.001) &&
-           ((v1.edge.start.position.x - v2.edge.end.position.y).abs < 0.001) 
+           ((v1.edge.start.position.y - v2.edge.end.position.y).abs < 0.001) 
       
       c3 = ((v1.edge.end.position.x - v2.edge.start.position.x).abs < 0.001) &&
            ((v1.edge.end.position.y - v2.edge.start.position.y).abs < 0.001)
@@ -518,7 +518,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #probably only useful for centerline and fold cuts
    def GcodeUtil.cutConnected(aMill, sortedcuts, material_thickness)
       #create an array of all connected cuts and cut them, until no more cuts found
-      debugcutc = true
+      debugcutc = false
       centers = []
       cnt = 1
       prev = nil
@@ -530,10 +530,10 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             prev = pk
             #puts "pushing first #{pk} #{prev} #{cnt}"
             centers.push(pk)
-            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
+#            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
          else
             #if prev is connected to pk then add pk to array
-            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
+#            puts "#{cnt} #{pk.edge.start.position} #{pk.edge.end.position}"
             #puts "cnt #{cnt} #{pk}"
             if (prev == nil) 
                puts "cutc: prev is nil"
@@ -556,11 +556,6 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                   puts "cutc: CUTTING connected centers #{rev} #{centers.size}"  if (debugcutc)
 #                        centers.reverse! if rev
                   if (rev)
-                     c = 1
-                     centers.each { |ed|
-                        puts "#{c} #{ed.edge.start.position} #{ed.edge.end.position}"
-                        c += 1
-                        }
                      centers.reverse!
                      rev = false
                   end
@@ -578,18 +573,20 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          puts "cutc: remaining Centerlines  rev(#{rev})  centers.size(#{centers.size})" if (debugcutc)
 #               centers.reverse! if rev
                   if (rev)
-                     puts " cutting remaining centers with rev TRUE"
-                     c = 1
-                     centers.each { |ed|
-                        puts " #{c} #{ed.edge.start.position} #{ed.edge.end.position}"
-                        }
+#                     puts " cutting remaining centers with rev TRUE"
+#                     c = 1
+#                     centers.each { |ed|
+#                        puts " #{c} #{ed.edge.start.position} #{ed.edge.end.position}"
+#                        }
+                  centers.reverse!
+                  rev = false      
                   end
          millEdges(aMill, centers, material_thickness, rev) 
       end
    end   
 
    def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = true
+      debugmln = false
       @level += 1
       puts "millLoopNode #{@level}" if (debugmln)
       # always mill the child loops first
@@ -1076,12 +1073,11 @@ puts " new #{newedges[i-1]}\n"
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
-      skipcut = false
       
 #      if edges[0].kind_of?(CenterLineCut) && (edges.length > 1)
 #         edges.reverse!
 #      end
-      @tab_top = @before_tab = 100
+      @tab_top  = 100
       begin # multipass
          pass += 1
          aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
@@ -1183,7 +1179,7 @@ puts " new #{newedges[i-1]}\n"
                               else
                                  aMill.move(point.x, point.y)
                                  if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                    aMill.cncPrintC("plunging to previous pass")
+                                    aMill.cncPrintC("plunging to previous pass")    if (@debug)
                                     aMill.plung(prev_pass_depth,1,'G0')
                                  end
                               end
@@ -1232,8 +1228,7 @@ puts " new #{newedges[i-1]}\n"
                               aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
                            else
                               puts "straight ramp to #{cut_depth}"            if (@debug)
-                              
-                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)  if (!skipcut)
+                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                            end
                         end # if plungecut
                      end # if else multipass
@@ -1275,16 +1270,15 @@ puts " new #{newedges[i-1]}\n"
                            puts "ARC to #{point.x}  #{point.y} #{cut_depth.to_mm}" if (@debug)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                         end
-                     else
+                     else  # not arc
                         if (@must_ramp)
 #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
                         # need to detect the plunge end of a tab, save the height, and flag it for 'ramp next time'
                         # do not ramp for vtabs, they are their own ramp!
-#                           @debug = true
                            if ((phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.vtab?))
-                              puts "Must ramp and tab pass=#{pass}"                                     if (@debug)
+                              puts "Must ramp and tab pass=#{pass}"                        if (@debug)
                               puts "VTAB"                               if (phlatcut.vtab? &&  @debug)
-                              puts " p pass depth #{prev_pass_depth.to_mm}"                      if (@debug)
+                              puts " p pass depth #{prev_pass_depth.to_mm}"                if (@debug)
                               puts " p cut_depth #{prev_cut_depth.to_mm}"                  if (@debug)
                               puts "   cut_depth #{cut_depth.to_mm}"                       if (@debug)
                               puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
@@ -1297,7 +1291,6 @@ puts " new #{newedges[i-1]}\n"
 # must do this move
                              if  ( ((point.x != otherpoint.x) || (point.y != otherpoint.y)) && (prev_cut_depth < cut_depth))
                                 puts " RAMP moving up onto tab #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}"  if (@debug)
-                                @before_tab = prev_cut_depth
                                 @tab_top = cut_depth
                                 aMill.move(point.x, point.y, cut_depth)
                              end
@@ -1337,7 +1330,7 @@ puts " new #{newedges[i-1]}\n"
                               end
                            else  # not a tab cut
                               if (@ramp_next)
-                                 puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm} before_Tab #{@before_tab.to_mm} tab_top #{@tab_top.to_mm} "  if (@debug)
+                                 puts "ramping ramp_next true #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}  tab_top #{@tab_top.to_mm} "  if (@debug)
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
@@ -1346,7 +1339,6 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                               end
                            end
-#                           @debug = false
                         else  # just move
                            puts "just move" if (@debug)
                            aMill.move(point.x, point.y, cut_depth)
@@ -1354,14 +1346,10 @@ puts " new #{newedges[i-1]}\n"
                      end
                   end # if !cutstarted
                end # if point != savepoint
-               if (!skipcut)
-                  cut_started = true 
-                  save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
-               else
-                  skipcut = false
-               end
-               
-            }
+               cut_started = true 
+               save_point = (point.nil?) ? nil : Geom::Point3d.new(point.x, point.y, cut_depth)
+             
+            } # phlatcut.cut_points.each
          } # edges.each
          if pass > ((material_thickness / PhlatScript.multipassDepth) + 2) # just in case it runs away, mainly debugging
             rem =  (pass_depth-max_depth).abs
@@ -1372,12 +1360,10 @@ puts " new #{newedges[i-1]}\n"
          end
          # new condition, detect 'close enough' to max_depth instead of equality,
          # for some multipass settings this would result in an extra pass with the same depth
-         rem =  (pass_depth-max_depth).abs
-         #puts "remaining #{rem}"
+#         rem =  (pass_depth-max_depth).abs
+#         puts "remaining #{rem}"
       end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
-      if save_point != nil
-         @g_save_point = save_point   # for optimizer
-      end
+      @g_save_point = save_point if (save_point != nil)   # for optimizer
       rescue Exception => e
          UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end
@@ -1392,7 +1378,7 @@ puts " new #{newedges[i-1]}\n"
       if (edges) && (!edges.empty?)
       begin
       
-      puts "millEdgesPlain reverse=#{reverse}"
+      #puts "millEdgesPlain reverse=#{reverse}"
       
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
@@ -1421,7 +1407,7 @@ puts " new #{newedges[i-1]}\n"
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
-      skipcut = false
+
       begin # multipass
          pass += 1
          aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
@@ -1470,7 +1456,6 @@ puts " new #{newedges[i-1]}\n"
                               aMill.move(point.x, point.y)
                               #aMill.plung(cut_depth)
                               diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
-                              #c_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
                               c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                               #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
                               aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
@@ -1557,9 +1542,9 @@ puts " new #{newedges[i-1]}\n"
          # new condition, detect 'close enough' to max_depth instead of equality,
          # for some multipass settings this would result in an extra pass with the same depth
       end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
-      if save_point != nil
-         @g_save_point = save_point   # for optimizer
-      end
+
+      @g_save_point = save_point if (save_point != nil)   # for optimizer
+
       rescue Exception => e
          UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end

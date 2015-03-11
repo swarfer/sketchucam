@@ -132,7 +132,11 @@ module PhlatScript
       vs2 = $PhlatScriptExtension.version
       verstr = "#{vs1%vs2}" + "\n"
       cncPrintC(verstr)
-      fn = PhlatScript.sketchup_file.gsub(/\(|\)/,"-") # remove existing brackets, confuses CNC controllers to have embedded brackets
+      if PhlatScript.sketchup_file
+         fn = PhlatScript.sketchup_file.gsub(/\(|\)/,"-") # remove existing brackets, confuses CNC controllers to have embedded brackets
+      else
+         fn = "nonam"         
+      end
       cncPrintC("File: #{fn}") if PhlatScript.sketchup_file
       cncPrintC("Bit diameter: #{Sketchup.format_length(@bit_diameter)}")
       cncPrintC("Feed rate: #{Sketchup.format_length(@speed_curr)}/min")
@@ -235,7 +239,7 @@ module PhlatScript
             yo = @max_y
          elsif (yo < @min_y)
             #puts "yo small"
-            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " LT min of ", @min_y.to_s+ "\n")
+            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " LT min of "+ @min_y.to_s+ "\n")
             yo = @min_y
          end
 
