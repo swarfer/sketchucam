@@ -187,11 +187,14 @@
       </div>
       
       <div class="intro">
-      <h4>New in V1.2b</h4>
+      <h4>New in V1.2b (Mar 2015)</h4>
       <ul>
-      <li>Ramping: instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
-      <li>Set Ramp VTabs on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs, <a href="toolsmenu.html">read the help</a>
-      <li>Commenting options, switch between using () and ; so you can use whatever your controller prefers
+      <li><a href="howto_ramping.html">Ramping:</a> (option on parameters dialog) instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
+      <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
+      <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the Gcode.
+      <li>Gcode Joiner is happy with both comment formats.
+      <li>Polygons are now correctly identified and output as line segments instead of arc segments.
+      <li>'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
       </ul>
       </div>
       
