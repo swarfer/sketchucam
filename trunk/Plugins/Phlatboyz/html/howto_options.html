@@ -267,6 +267,17 @@ cuts = 3.3</pre>
       <dd>Set this to negative (-) your Z travel.   Gcode will never contain Z travel more than this figure.
    <dt>Max_z
       <dd>Set this to your Z travel. Gcode will never contain Z travel more than this figure.
+   <dt id="comments">Comments use Bracket(true) or semicolon(false)
+      <dd>Most CNC controllers accept comments in the form  of bracketed text, like this<br>
+         <i>(this is a Gcode comment)</i><br>
+         but some prefer to have comments with semicolons, like this<br>
+         <i>; alternate comment format</i><br>
+         Use this option to select what you need for your controller.<br>
+         <b>NOTE:</b>  The Gcode previewer included with SektchUcam DOES NOT understand semicolon comments.
+         If you need to use them, do not turn on 'Show Gplot after Gcode generation' in the parameters dialog.<br>
+         <b>NOTE 2:</b> This option is mostly to cater for GRBL.  Since GRBL does not accept long lines,
+         all Gcode has been shortened to keep lines as short as possible, and long comments will be folded across
+         multiple lines to keep them shorter than 50 characters.
 </dl>
 </p>
 <h2><a id="a4">Feature Options</a></h2>
