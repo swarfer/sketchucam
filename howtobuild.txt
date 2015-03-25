@@ -1,0 +1,13 @@
+How to build the SketchUcam distribution file
+
+You need
+1 - php-cli installed and in the environment path
+2 - 7zip installed in 'c:\program files\7-zip\7z.exe'
+3 - Sketchup 8 installed in either
+   'C:\Program Files (x86)\Google\Google SketchUp 8'   (under 64bit Windows)
+   'C:\Program Files\Google\Google SketchUp 8'         (under 32bit Windows)
+4 - the code repo must be in one of the above folders, not in a subfolder called 'sketchucam', thus
+   after you have first cloned it you need to move the contents of ..../sketchucam to the 'Google Sketchup 8' folder
+5 - run make.bat
+      this will create a zip of the .rb and supporting files and then create the .rbz from that.
+      

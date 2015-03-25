@@ -23,3 +23,5 @@ utilities.rb
 PocketTool.r_b
 attribs*
 test
+smustard*
+freedxf*
