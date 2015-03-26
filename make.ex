@@ -8,6 +8,7 @@ RCS
 TRUEPLUNGE.TXT
 bezierspline.rb
 *.zip
+*.rbz
 CNC_Files
 Examples
 Ocean
