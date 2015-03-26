@@ -136,7 +136,10 @@ module PhlatScript
       wd.execute_script("isChecked('mustramp')")
       PhlatScript.mustramp = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
       PhlatScript.rampangle = wd.get_element_value("rampangle")
-      
+      PhlatScript.rampangle = PhlatScript.rampangle < 0 ? 0 : PhlatScript.rampangle
+      if (PhlatScript.rampangle > 45)
+         PhlatScript.rampangle =  PhlatScript.rampangle % 46
+      end
       comment_text = wd.get_element_value("commenttext").delete("'\"")
       encoded_comment_text = ""
       comment_text.each_line { |line| encoded_comment_text += line.chomp()+"$/"}

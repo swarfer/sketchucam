@@ -115,13 +115,45 @@
 
 
 <p>
-<img src="images/options.png" style="float: right;">
-SketchUcam system has long had a file called Constants.rb which contains
-a long list of constant values.  Some of them are used only by the system and are not user settable 
-while others were designed to be user settings that you set once and forget.
+<img src="images/ramp01.png" style="float: right;">
+
+With the advent of stronger home CNC routers (and mills) like the Shapeoko and OX, comes the need to cut harder materials like aluminum.
+The right way to enter cuts in such materials is to ramp in at an angle until the cutter reaches the correct depth.<br>
+With this release (1.2b, Apr 2015) SketchUcam brings you simple ramping options that increase your work envelope in harder materials.
+Of course, the previous option of plunging directly into the work is still available.
 </p>
+<h3>Basics</h3>
+<p>With ramping turned on any point that would have been a plunge becomes a ramp along the first segment of the cut, and also after tabs, 
+as you can see in the image at right.
+The cut begins at the closest corner to the origin and ramps along the first segment, taking two passes to get to full depth.  In this case the ramp angle
+limit is 5 degrees. 
+</p>
+<p>If the first segment of a cut is very short, less than 0.02" or 0.5mm, the cut will be converted to a vertical plunge.  
+A comment will be inserted in the code saying <br>
+<code>(ramplimit end, translated to plunge) </code>
+</p>
+If the first segment (or a tab on an arc), yes, the arc will be ramped to depth.  Some controllers will not cut a proper helix, instead 
+plunging and then cutting the arc, despite the Gcode specifying a helical (ramped arc) motion.
+<p>
+The 'plunge rate' feed speed is used for all ramp movements.   <br>
+This can be the same as the Feed speed, or less, depending on the capabilities of your tool bit and machine strength.
 
-
+<p>
+There are two modes of operation, with and without ramp angle limiting.</p>
+<ol>
+<li>With the ramp angle set to 0 degrees, the angle is not limited.   This means that depth will always be reached in a single zigzag.
+For a short segment the 'ramp' could be almost vertical so it is important to study the Gcode in a previewer before cutting to ensure
+that the angles are sensible.
+<li>
+With the ramp angle limit set from 1 to 45 degrees the actual cut angle is always less than or equal to the given angle.
+The number of ramps must always be an even number so the count is rounded up, thus reducing the angle in many cases.
+</ol>
+<hr>
+<p><img src="images/ramp02.png" style="float: right;">
+The ramp options are set on the parameters dialog, and segment of which is shown at right.
+Tick 'Ramp in Z' to turn ramping on.<br>
+Set the 'Ramp angle limit' to 0 for no limit, or to a value from 1 to 45 degrees.<br>
+</p>
 
 <br clear=all>
 </div>

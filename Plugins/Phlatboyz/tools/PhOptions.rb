@@ -644,7 +644,7 @@ module PhlatScript
          @ramp_angle
       end
       def ramp_angle=(newval)
-         @ramp_angle = newval % 45  # must be less than 45 degrees
+         @ramp_angle = newval % 46  # must be <=  45 degrees
       end
 
       def must_ramp? 
