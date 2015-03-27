@@ -11,14 +11,14 @@ SketchUcam is made possible though many great volunteers (super heroes) who have
 the project free of charge! Give a shout out to them.
 
 SketchUcam can not be used for commercial gain or sold in any form. We are keeping this truly open source.
-```
-Thank You, Mark and Trish Carew 
-http://www.Phlatforum.com 
+
+Thank You, Mark and Trish Carew <br>
+http://www.Phlatforum.com <br>
 http://www.OpenBuilds.com 
-```
+
 #Installing
-Please get the latest release from
-http://www.phlatforum.com/xenforo/threads/sketchucam-download.3128/
+Please get the latest release from<br>
+http://www.phlatforum.com/xenforo/threads/sketchucam-download.3128/ <br>
 and **follow the install instructions**.
 
 **NOTE**
