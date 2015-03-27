@@ -144,7 +144,27 @@
          an ever changing and evolving program. <br><br>
          <i>This is a great project and if you would like to contribute your time and talents to help SketchUcam grow,
          please <a href="mailto:kram2422@comcast.net">contact us</a></i>
-      </div>
+         </div>
+         
+      <div class="intro">
+         Since SketchUcam is released as open source, anyone and everyone
+         is welcome to download it and experiment with it. The ultimate goal is
+         to create a complete and powerful CAM solution directly within SketchUp
+         capable of outputting 3D tool paths and possibly in the future will be
+         the ability to not only output the g-code but control the Phlatprinter
+         as well :) Have fun and please let us know how you are using 
+         SketchUcam at <a href="http://www.Phlatforum.com">www.Phlatforum.com</a> 
+         </div>
+         <div class="intro"> SketchUcam or any form of this
+            code can not be used for commercial gain or sold in any form. This code
+            is a volunteer collaboration project that consist of the efforts of
+            many people. We are keeping this truly open source. <br>
+            <b>Please send questions or comments to </b><a href="mailto:kram2422@comcast.net">Phlatboyz,LLC</a>
+            <br>
+            <a href="http://www.phlatboyz.com/">
+            Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
+         </div>
+         
    </td>
    <td>
          <div class="command-description" style="float: right; width: 220px; display: block; margin-left: 10px; font-size: 0.80em;">
@@ -156,8 +176,25 @@
                <li><a class="index" href="howto_phlatbones.html">Use the PhlatBones tool</a>
                <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
                <li><a class="index" href="#toolbar">Toolbar Icons</a>
+               <ul>
+                  <li><a href="#toolparameters">Parameters</a>
+                  <Li><A href="#tooloutside">Outside cut</a>
+                  <Li><A href="#toolinside">Inside cut</a>
+                  <Li><A href="#tooltab">Tab tool</a>
+                  <Li><A href="#toolfold">Fold cut</a>
+                  <Li><A href="#toolplunge">Plunge hole</a>
+                  <Li><A href="#toolcenterline">Centerline cut</a>
+                  <Li><A href="#toolpocket">Pocket</a>
+                  <Li><A href="#tooleraser">Eraser</a>
+                  <Li><A href="#toolsafe">Safe Area mover</a>
+                  <Li><A href="#toolreorder">Group reorder</a>
+                  <Li><A href="#toolgcode">Generate Gcode</a>
+                  <Li><A href="#toolgoto">Goto Phlatforum</a>
+                  <Li><A href="#toolhelp">Help</a>
+               </ul>
                <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
                <li><a class="index" href="toolsmenu.html">Tools|PhlatBoyz Menu</a>
+               <li><a class="index" href="howto_ramping.html"><b>How to use Ramping</b></a>
             </ul>
          </div>						
    </td>   
@@ -167,24 +204,6 @@
 <tr>
    <td width="90%">
    
-      <div class="intro">
-         Since SketchUcam is released as open source, anyone and everyone
-         is welcome to download it and experiment with it. The ultimate goal is
-         to create a complete and powerful CAM solution directly within SketchUp
-         capable of outputting 3D tool paths and possibly in the future will be
-         the ability to not only output the g-code but control the Phlatprinter
-         as well :) Have fun and please let us know how you are using 
-         SketchUcam at <a href="http://www.Phlatforum.com">www.Phlatforum.com</a> </div>
-         <div class="intro"> SketchUcam or any form of this
-            code can not be used for commercial gain or sold in any form. This code
-            is a volunteer collaboration project that consist of the efforts of
-            many people. We are keeping this truly open source. <br>
-            <b>Please send questions or comments to </b><a href="mailto:kram2422@comcast.net">Phlatboyz,LLC</a>
-            <br>
-            <a href="http://www.phlatboyz.com/">
-            Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
-         </div>
-      </div>
       
       <div class="intro">
       <h4>New in V1.2b (Mar 2015)</h4>
@@ -193,8 +212,8 @@
       <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
       <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the Gcode.
       <li>Gcode Joiner is happy with both comment formats.
-      <li>Polygons are now correctly identified and output as line segments instead of arc segments.
-      <li>'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
+      <li>Bugfix: Polygons are now correctly identified and output as line segments instead of arc segments.
+      <li>Bugfix: 'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
       </ul>
       </div>
       
@@ -233,12 +252,11 @@
          <li>  arcs, extra digit of precision
          <li>  3D - removed full depth plunge at start of last multipass pass that may remove extra material.
          <li>  added Z-Zero option to parameters dialog 
-         
          </ul>
       </div>
       
    </td>
-   <td width="10%">
+   <td width="10%" valign="top">
       <img alt="" src="../images/andy.png" title="Andy the Aviator" border="0">
    </td>
 </tr>
@@ -253,7 +271,7 @@
       </th>
    </tr>
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolparameters">
          <img alt="" src="../images/parameterstool_large.png" title="Enter Phlatboyz Parameters" width="32">
       </td>
       <td class="command-description">
@@ -392,7 +410,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="tooloutside">
          <img alt="" src="../images/outsidecuttool_large.png" title="Phlatboyz Outside Cut Tool" width="32">
       </td>
       <td class="command-description">
@@ -414,7 +432,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolinside">
          <img alt="" src="../images/insidecuttool_large.png" title="Phlatboyz Inside Cut Tool" width="32">
       </td>
       <td class="command-description">
@@ -445,7 +463,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="tooltab">
          <img alt="" src="../images/tabtool_large.png" title="Phlatboyz Tab Tool" width="32">
       </td>
       <td class="command-description">
@@ -476,7 +494,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolfold">
          <img alt="" src="../images/foldtool_large.png" title="Phlatboyz Fold Tool" width="32">
       </td>
       <td class="command-description">
@@ -507,7 +525,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolplunge">
          <img alt="" src="../images/plungetool_large.png" title="Phlatboyz Plunge Tool" width="32">
       </td>
       <td class="command-description">
@@ -546,7 +564,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolcenterline">
          <img alt="" src="../images/centerlinetool_large.png" title="Phlatboyz Centerline Tool" width="32">
       </td>
       <td class="command-description">
@@ -569,7 +587,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolpocket">
          <img alt="" src="../images/Pocket_large.png" title="Phlatboyz Pocket Tool" width="32">
       </td>
       <td class="command-description">
@@ -598,7 +616,7 @@
 
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="tooleraser">
          <img alt="" src="../images/erasetool_large.png" title="Phlatboyz Erase Tool" width="32">
       </td>
       <td class="command-description">
@@ -624,7 +642,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolsafe">
          <img alt="" src="../images/safetool_large.png" title="Safetool" width="32">
       </td>
       <td class="command-description">
@@ -640,7 +658,7 @@
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id="toolreorder">
       <img alt="" src="../images/reorder_large.png" title="reorder tool" width="32">
       </td>
       <td class="command-description">
@@ -656,11 +674,11 @@
    </tr>
 
 
-                <tr>
-                        <td class="command-image" valign=top>
-                                <img alt="" src="../images/gcode_large.png" title="Phlatboyz GCode" width="32">
-                        </td>
-                        <td class="command-description">
+    <tr>
+      <td class="command-image" valign=top id="toolgcode">
+              <img alt="" src="../images/gcode_large.png" title="Phlatboyz GCode" width="32">
+      </td>
+      <td class="command-description">
 <b>Generate GCode</b> - This tool is the last step in the PhlatScripT process. Once
 the parts are surrounded by safe cutting area and all cut lines and
 tabs have been assigned, click on this icon to open a file save
@@ -678,7 +696,7 @@ do unexpected things, be very careful! &nbsp; </td>
                 </tr>
 
                 <tr>
-                        <td class="command-image" valign=top>
+                        <td class="command-image" valign=top id="toolgoto">
                                 <a href="http://www.Phlatboyz.com" title="Go To Phlatboyz Homepage"><img alt="" src="../images/Phlatboyz_homepage_large.png" title="Go To Phlatboyz Homepage" width="32" style="border-style: none"></a>
                         </td>
                         <td class="command-description">
@@ -688,7 +706,7 @@ do unexpected things, be very careful! &nbsp; </td>
                 </tr>
 
                 <tr>
-                        <td class="command-image" valign=top>
+                        <td class="command-image" valign=top id="toolhelp">
                                 <img alt="" src="../images/helptool_large.png" title="Open Phlatboyz Help" width="32">
                         </td>
                         <td class="command-description">
