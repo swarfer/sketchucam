@@ -134,6 +134,62 @@ With this release (1.2b, Apr 2015) SketchUcam brings you simple ramping options 
 Of course, the previous option of plunging directly into the work is still available.
 </p>
 
+<pre>
+
+Ramping replaces the plunge at the start of a segment with a ramp along the 
+segment.   Thus it will run to the other end of the segment to half depth, and then 
+back to the start for the other half depth, then do the cut at the set depth as 
+usual.  Works for single and multipass. 
+
+With ramp angle limit = 0 there is no limit on the ramp angle.  In effect this means 
+that if the starting segment happens to be very short the ramp angle 
+could be just about vertical.  If the segment is less than 0.02" then it will be 
+converted to a plunge.
+
+With ramp angle from 1 to 45 the ramping angle is limited to that angle or less.   
+Less because it optimizes the number of ramps to always be an even number, 
+preferring a higher number of passes, thus reducing the ramp angle.   Many carbide 
+insert style cutters have limit angles in the 3 to 10 degree range, and some cannot 
+plunge at all.
+
+Since very short segments will be converted to plunges, one would have to be very 
+careful when generating code for this type of cutter, using the group reordering to 
+force start points on longer segments to force them to ramp.
+
+With a real limited ramp angle, short segments > 0.02" will do multiple ramps.  When 
+placing arcs it might be better to use 8 or 12 segments instead of the default 24, 
+this makes each segment longer giving it a decent chance to ramp.
+
+It will ramp along arcs.
+
+It is best to use normal tabs on arcs, Vtabs can easily be too short to maintain the 
+limited ramp angle.  Might not matter on plywood, but will matter on aluminum.
+
+It will ramp down after tabs, with the added optimization of plunging down to almost 
+(less a few thou) the previous pass depth before starting the new ramp.
+
+Ramping will be at plunge feed rate, so you can fine tune the process.
+
+If the start segment is very long, the ramp will take a long time if plunge feed is 
+slow.   You can shorten the ramp by placing AND REMOVING a tab on the cut line.  
+This creates a break in the line that you cannot see until you preview the Gcode 
+where you will see the ramp stop at the tab position.
+
+With ramping on, the angle will be used for the helix angle in plungebores.   At the 
+time that Gcode is generated, the setting of Stepover% will change the way it bores 
+the center of holes.
+If < 50% then it will spiral in and never plunge straight down.
+If > 50% it might plunge straight in for the center hole before it spirals for the rest of the hole.  
+   This allows some optimization for material hardness and bit capability.
+
+If your bit cannot plunge, you absolutely have to preview the code carefully to make 
+sure no plunges were generated.   In this regard you may want to generate a 'drill' 
+file that runs with a real drill bit to pre-drill spots that cannot avoid being 
+plunged.  run this before running the cut code.
+
+
+</pre>
+
 <h3>Basics</h3>
 <p>With ramping turned on any point that would have been a plunge becomes a ramp along the first segment of the cut, and also after tabs, 
 as you can see in the image at right.
