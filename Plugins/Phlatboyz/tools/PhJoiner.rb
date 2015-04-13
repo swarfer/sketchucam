@@ -26,10 +26,40 @@ module PhlatScript
          filename = PhlatScript.cncFileName
          status = false
          filenames = Array.new
-         wildcard = "Select|\*.#{$phoptions.default_file_ext}||"
+		 
+       #credit this change! 13 Apr 2015
+       #Lance Lefebure <lance@lefebure.com> 
+       #It now handles file extensions better and keeps the user in the same directory when selecting subsequent files. 
+       #Feel free to roll this into your next release.
+             
+         file_ext_2 = ""							# This will be the extension of the last file the user picked
+         file_ext_1 = $phoptions.default_file_ext	# Local variable so we can format it
+         file_ext_1 = file_ext_1.upcase				# Convert string to upper case
+         if (file_ext_1[0].chr == ".")				# First char is a dot
+            file_ext_1.slice!(0)					# Remove the dot
+         end
+         wildcard = ".#{file_ext_1} Files|\*.#{file_ext_1}|All Files|\*.\*||"
+          
          result = UI.openpanel("Select first gcode file", directory_name, wildcard)
          while (result != nil)
             filenames += [result]
+
+            directory_name = File.dirname(result)
+            this_file_ext = File.extname(result)	# Get this file's extension
+            this_file_ext = this_file_ext.upcase	# Convert string to upper case
+            if (this_file_ext[0].chr == ".")		# First char is a dot
+               this_file_ext.slice!(0)				# Remove the dot
+            end
+            if (this_file_ext.eql? file_ext_1)
+               # This ext is the same as the original ext. Do nothing
+            elsif (this_file_ext.eql? file_ext_2)
+               # This ext is the same as the last file selected. Do nothing
+            else
+               # Extension is different, add ext to wildcard list
+               wildcard = ".#{this_file_ext} Files|\*.#{this_file_ext}|#{wildcard}"
+            end
+            file_ext_2 = this_file_ext				# Save for check on next file
+            
             result = UI.openpanel("Select next Gcode file, cancel to end", directory_name, wildcard)
          end
 
@@ -39,7 +69,7 @@ module PhlatScript
          end
          
          #get output file name
-         UI.messagebox("Now you will be promted for the OUTPUT file name")
+         UI.messagebox("Now you will be prompted for the OUTPUT file name")
          outputfile = UI.savepanel("Select OUTPUT file name", directory_name, "joined#{$phoptions.default_file_ext}" )
          if (outputfile == nil)
             UI.messagebox("No output file selected, exiting")
