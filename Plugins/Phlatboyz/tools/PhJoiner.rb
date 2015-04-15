@@ -38,9 +38,17 @@ module PhlatScript
          if (file_ext_1[0].chr == ".")				# First char is a dot
             file_ext_1.slice!(0)					# Remove the dot
          end
-         wildcard = ".#{file_ext_1} Files|\*.#{file_ext_1}|All Files|\*.\*||"
-          
-         result = UI.openpanel("Select first gcode file", directory_name, wildcard)
+         @vv = Sketchup.version.split(".")[0].to_i  #primary version number
+         if (@vv >= 14)
+            #for >= 2014
+            wildcard = ".#{file_ext_1} Files|\*.#{file_ext_1}|All Files|\*.\*||"
+            result = UI.openpanel("Select first gcode file", directory_name, wildcard)
+         else
+            #for < 2014
+            wildcard = "*.#{file_ext_1}"
+            result = UI.openpanel("Select first gcode file", wildcard)
+         end
+         
          while (result != nil)
             filenames += [result]
 
@@ -56,11 +64,18 @@ module PhlatScript
                # This ext is the same as the last file selected. Do nothing
             else
                # Extension is different, add ext to wildcard list
-               wildcard = ".#{this_file_ext} Files|\*.#{this_file_ext}|#{wildcard}"
+               if (@vv >= 14)
+                  wildcard = ".#{this_file_ext} Files|\*.#{this_file_ext}|#{wildcard}"
+               else
+                  wildcard = "*.#{this_file_ext}"
+               end
             end
             file_ext_2 = this_file_ext				# Save for check on next file
-            
-            result = UI.openpanel("Select next Gcode file, cancel to end", directory_name, wildcard)
+            if (@vv >= 14)
+               result = UI.openpanel("Select next Gcode file, cancel to end", directory_name, wildcard)
+            else
+               result = UI.openpanel("Select next Gcode file, cancel to end", wildcard)
+            end
          end
 
          if filenames.length <= 1
