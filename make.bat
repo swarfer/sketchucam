@@ -1,5 +1,5 @@
 @echo off
-if exist i:\ goto ido
+rem if exist i:\ goto ido
 if exist c:\ goto cdo
 goto fail
 
