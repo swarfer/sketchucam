@@ -16,6 +16,7 @@ module PhlatScript
       @debug = false   # if true then a LOT of stuff will appear in the ruby console
       @debugramp = false
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
+      @quarters = true  # use quarter circles in plunge bores
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -101,7 +102,7 @@ module PhlatScript
       m2 = @is_metric ? measure.to_mm : measure.to_inch
       #UI.messagebox(sprintf("  #{axis}%-10.*f", @precision, m2))
       #UI.messagebox("out mm: #{measure.to_mm} inch: #{measure.to_inch}")
-      sprintf(" #{axis}%-5.*f", @precision, m2)
+      sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
     end
 
     def format_feed(f)
@@ -802,9 +803,176 @@ module PhlatScript
       return command_out
     end # SpiralAt
 
+# generate code for a spiral bore and return the command string, using quadrants
+# if ramping is on, lead angle will be limited to rampangle
+   def SpiralAtQ(xo,yo,zstart,zend,yoff)
+   @debugramp = true
+      @precision += 1
+      cwstr = @cw ? 'CW' : 'CCW';
+      cmd =   @cw ? 'G02': 'G03';
+      command_out = ""
+      command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
+      command_out += "G00" + format_measure("Y",yo-yoff)
+      command_out += "\n"
+      command_out += "G01"
+      command_out += format_measure(" Z",zstart)
+      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
+      command_out += "\n"
+      #if ramping with limit use plunge feed rate
+      @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
+
+      #// now output spiral cut
+      #//G02 X10 Y18.5 Z-3 I0 J1.5 F100
+      if (PhlatScript.mustramp? && (PhlatScript.rampangle > 0))
+         #calculate step for this diameter
+         #calculate lead for this angle spiral
+         circ = Math::PI * yoff.abs * 2   # yoff is radius
+         step = -Math::tan(torad(PhlatScript.rampangle)) * circ
+         puts "(SpiralAtQ z step = #{step.to_mm} for ramp circ #{circ.to_mm}"         if (@debugramp)
+         # now limit it to multipass depth or half bitdiam because it can get pretty steep for small diameters
+         if PhlatScript.useMultipass?
+            if step.abs > PhlatScript.multipassDepth
+               step = -PhlatScript.multipassDepth
+               puts " step #{step.to_mm} limited to multipass"       if (@debugramp)
+            end
+         else
+            if step.abs > (@bit_diameter/2)
+               s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+               step = -(zstart-zend) / s
+               puts " step #{step.to_mm} limited to fuzzybitdiam/2"       if (@debugramp)
+            end
+         end
+      else
+         if PhlatScript.useMultipass?
+            step = -PhlatScript.multipassDepth
+         else
+            s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+            step = -(zstart-zend) / s     # ensures every step down is the same size
+         end
+      end
+      d = zstart-zend
+      puts("SpiralatQ: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
+      command_out += "   (Z step #{step.to_mm})\n"          if @debug
+      now = zstart
+      prevz = now
+      while now > zend do
+         now += step
+         if (now < zend)
+            now = zend
+         else
+            if ( (zend - now).abs < (@bit_diameter / 8) )
+               df = zend - now;
+               if (df.abs > 0)
+                  command_out += "   (SpiralAt: forced depth as very close " if @debug
+                  command_out += format_measure("",df) + ")\n"                if @debug
+               end
+               now = zend
+            end
+         end
+         zdiff = (prevz - now) /4   # how much to feed on each quarter circle
+         command_out += "   (Z diff #{zdiff.to_mm})\n"          if @debug
+
+         if (@cw)
+            #x-o y I0 Jo
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo - yoff) + format_measure(" Y",yo)
+            command_out += format_measure(" Z",prevz - zdiff)
+            command_out += " I0"  + format_measure(" J",yoff)
+            command_out += "\n"
+            #x y+O IOf J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff)
+            command_out += format_measure(" Z",prevz - (zdiff*2))
+            command_out += format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += "\n"
+            #x+of Y I0 J-of
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo+yoff) + format_measure(" Y",yo)
+            command_out += format_measure(" Z",prevz - (zdiff*3))
+            command_out += format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += "\n"
+            #x Y-of I-of J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff)
+            command_out += format_measure(" Z",prevz - (zdiff*4))
+            command_out += format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += "\n"
+         else
+            #x+of Y  I0 Jof
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo + yoff) + format_measure(" Y",yo)
+            command_out += format_measure(" Z",prevz - zdiff)
+            command_out += format_measure(" I",0)  + format_measure(" J",yoff)
+            command_out += "\n"
+            #x Yof   I-of  J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff)
+            command_out += format_measure(" Z",prevz - zdiff*2)
+            command_out += format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += "\n"
+            #X-of  Y  I0    J-of
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo-yoff) + format_measure(" Y",yo)
+            command_out += format_measure(" Z",prevz - zdiff*3)
+            command_out += format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += "\n"
+            #X  Y-of  Iof   J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff)
+            command_out += format_measure(" Z",prevz - zdiff*4)
+            command_out += format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += "\n"
+         end
+         prevz = now
+      end # while
+    # now the bottom needs to be flat at $depth
+      command_out += "(flatten bottom)\n" if @debug
+      if (@cw)
+            #x-o y I0 Jo
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo - yoff) + format_measure(" Y",yo) + " I0"  + format_measure(" J",yoff)
+            command_out += "\n"
+            #x y+O IOf J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff) + format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += "\n"
+            #x+of Y I0 J-of
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo+yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += "\n"
+            #x Y-of I-of J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff) + format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += "\n"
+         else
+            #x+of Y  I0 Jof
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo + yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",yoff)
+            command_out += "\n"
+            #x Yof   I-of  J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff) + format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += "\n"
+            #X-of  Y  I0    J-of
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo-yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += "\n"
+            #X  Y-of  Iof   J0
+            command_out += "#{cmd}"
+            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff) + format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += "\n"
+         end
+      command_out += "   (SPIRAL END)\n" if @debug
+      @precision -= 1
+   @debugramp = false
+      return command_out
+    end # SpiralAtQ
+    
+    
 #swarfer: instead of a plunged hole, spiral bore to depth
 #handles multipass by itself, also handles ramping
-    def plungebore(xo,yo,zStart,zo,diam)
+   def plungebore(xo,yo,zStart,zo,diam)
+   @debug = true
       zos = format_measure("depth=",zStart-zo)
       ds = format_measure(" diam=", diam)
       cncPrintC("(plungebore #{zos} #{ds})\n")
@@ -839,13 +1007,21 @@ module PhlatScript
          if ( (PhlatScript.mustramp?) && (diam > @bit_diameter) )
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
-               command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               if (@quarters)
+                  command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
+               else
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               end
                command_out += "G0 " + format_measure("Z" , sh)
                command_out += "\n"
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
-                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  if (@quarters)
+                     command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
+                  else
+                     command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  end
                   command_out += "G0 " + format_measure("Z" , sh)
                   command_out += "\n"
                end
@@ -873,14 +1049,22 @@ module PhlatScript
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
                cncPrintC("!multi && ramp yoff #{yoff.to_mm}")  if (@debug)
-               command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               if (@quarters)
+                  command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
+               else
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+               end
                command_out += "G0 " + format_measure("Z" , sh)
                command_out += "\n" 
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
                   cncPrintC("!multi && ramp 0.7 Yoff #{yoff.to_mm}")  if (@debug)
-                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  if (@quarters)
+                     command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
+                  else
+                     command_out += SpiralAt(xo,yo,zStart,zo, yoff )
+                  end
                   command_out += "G0 " + format_measure("Z" , sh)
                   command_out += "\n" 
                end
@@ -950,7 +1134,11 @@ module PhlatScript
             else
                puts "   nowyoffset #{nowyoffset.to_mm}\n"            if @debug
             end
-            command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
+            if (@quarters)
+               command_out += SpiralAtQ(xo,yo,zStart,zo,nowyoffset)
+            else
+               command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
+            end
 #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
                command_out += "G0 " + format_measure("Z" , sh)
@@ -960,7 +1148,11 @@ module PhlatScript
       else
          if (diam > @bit_diameter) # only need a spiral bore if desired hole is bigger than the drill bit
             puts " (SINGLE spiral)\n"                    if @debug
-            command_out += SpiralAt(xo,yo,zStart,zo,yoff);
+            if (@quarters)
+               command_out += SpiralAtQ(xo,yo,zStart,zo,yoff);
+            else
+               command_out += SpiralAt(xo,yo,zStart,zo,yoff);
+            end
          end
          if (diam < @bit_diameter)
             cncPrintC("NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter}")
@@ -982,7 +1174,8 @@ module PhlatScript
       @cz = @retract_depth
       @cs = so
       @cc = '' #resetting command here so next one is forced to be correct
-    end
+   @debug = false   
+   end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
    def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)

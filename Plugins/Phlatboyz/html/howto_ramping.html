@@ -128,9 +128,9 @@
 </tr>
 </table>   
 <p>
-With the advent of stronger home CNC routers (and mills) like the Shapeoko and OX, comes the need to cut harder materials like aluminum.
+With the advent of stronger home CNC routers (and mills) like the Shapeoko and OX, comes the desire to cut harder materials like G10 and aluminum.
 The right way to enter cuts in such materials is to ramp in at an angle until the cutter reaches the correct depth.<br>
-With this release (1.2b, Apr 2015) SketchUcam brings you simple ramping options that increase your work envelope in harder materials.
+With this release (1.2b, May 2015) SketchUcam brings you simple ramping options that increase your work envelope in harder materials.
 Of course, the previous option of plunging directly into the work is still available.
 </p>
 
@@ -163,20 +163,20 @@ this makes each segment longer giving it a decent chance to ramp.
 It will ramp along arcs.
 
 It is best to use normal tabs on arcs, Vtabs can easily be too short to maintain the 
-limited ramp angle.  Might not matter on plywood, but will matter on aluminum.
+limited ramp angle.  Might not matter on plywood, but will matter on aluminum and on angle limited cutter types.
 
 It will ramp down after tabs, with the added optimization of plunging down to almost 
 (less a few thou) the previous pass depth before starting the new ramp.
 
 Ramping will be at plunge feed rate, so you can fine tune the process.
 
-If the start segment is very long, the ramp will take a long time if plunge feed is 
-slow.   You can shorten the ramp by placing AND REMOVING a tab on the cut line.  
+If the start segment on an inside or outside cut is very long, the ramp will take a long time 
+if plunge feed is slow.   You can shorten the ramp by placing AND REMOVING a tab on the cut line.  
 This creates a break in the line that you cannot see until you preview the Gcode 
 where you will see the ramp stop at the tab position.
 
 With ramping on, the angle will be used for the helix angle in plungebores.   At the 
-time that Gcode is generated, the setting of Stepover% will change the way it bores 
+time that Gcode is generated, the setting of <b>Stepover%</b> will change the way it bores 
 the center of holes.
 If < 50% then it will spiral in and never plunge straight down.
 If > 50% it might plunge straight in for the center hole before it spirals for the rest of the hole.  
@@ -192,7 +192,7 @@ plunged.  run this before running the cut code.
 
 <h3>Basics</h3>
 <p>With ramping turned on any point that would have been a plunge becomes a ramp along the first segment of the cut, and also after tabs, 
-as you can see in the image at right.
+as you can see in the image at above right.
 The cut begins at the closest corner to the origin and ramps along the first segment, taking two passes to get to full depth.  In this case the ramp angle
 limit is 5 degrees. 
 </p>
@@ -201,18 +201,19 @@ A comment will be inserted in the code saying <br><br>
 <code>
 <b>(ramplimit end, translated to plunge) </b><br>
 </code><br>
-Again we emphasize the need to preview the Gcode before cutting, especially if the bit has limited plunge capability 
+<i>Again we emphasize the need to preview the Gcode before cutting, especially if the bit has limited plunge capability 
 (in which case a possible solution is to do a drawing with plunge holes at all start points and use an actual drill bit to
-pre-drill all those holes).
+pre-drill all those holes).</i>
 
 </p>
 
-<div style="float: right; width: 409px;">
+<div style="float: right; width: 409px; border: 2px solid gray;">
 <img src="images/ramp04.png">
 <div>Ramping on an arc, 20 degree limit, 10mm deep, 12 segments in arc</div>
 </div>
-If the first segment (or a tab on an arc), yes, the arc will be ramped to depth.  Some controllers will not cut a proper helix, instead 
-plunging and then cutting the arc, despite the Gcode specifying a helical (ramped arc) motion.
+If the first segment is an arc (or a tab on an arc), the arc will be ramped to depth.  Some controllers will not cut a proper helix, instead 
+plunging and then cutting the arc, despite the Gcode specifying a helical (ramped arc) motion. (You will already know this for your controller
+since plunge holes with larger than bit diameter use helical arcs to get to the desired diameter).
 <p>
 The 'plunge rate' feed speed is used for all ramp movements.   <br>
 This can be the same as the Feed speed, or less, depending on the capabilities of your tool bit and machine strength.
@@ -222,7 +223,7 @@ There are two modes of operation, with and without <b>ramp angle limiting</b>.</
 <ol>
 <li>With the ramp angle set to 0 degrees, the angle is not limited.   This means that depth will always be reached in a single zigzag.
 For a short segment the 'ramp' could be almost vertical so it is important to study the Gcode in a previewer before cutting to ensure
-that the angles are sensible.   However, ramping on arcs will be limited to 45 degrees even when limit set to 0.
+that the angles are sensible.   However, ramping on arcs will be limited to 45 degrees even when limit is set to 0.
 <li>
 With the ramp angle limit set from 1 to 45 degrees the actual cut angle is always less than or equal to the given angle.
 As many ramp movements as are needed to get to depth at the angle given will be generated.
