@@ -1,4 +1,5 @@
 require 'sketchup.rb'
+require 'sketchup.rb'
 #require 'Phlatboyz/Constants.rb'
 #see note at end of file
 module PhlatScript
@@ -16,7 +17,7 @@ module PhlatScript
       @debug = false   # if true then a LOT of stuff will appear in the ruby console
       @debugramp = false
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
-      @quarters = true  # use quarter circles in plunge bores
+      @quarters = $phoptions.quarter_arcs?  # use quarter circles in plunge bores?  defaults to true
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -806,7 +807,7 @@ module PhlatScript
 # generate code for a spiral bore and return the command string, using quadrants
 # if ramping is on, lead angle will be limited to rampangle
    def SpiralAtQ(xo,yo,zstart,zend,yoff)
-   @debugramp = true
+#   @debugramp = true
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
@@ -815,7 +816,7 @@ module PhlatScript
       command_out += "G00" + format_measure("Y",yo-yoff)
       command_out += "\n"
       command_out += "G01"
-      command_out += format_measure(" Z",zstart)
+      command_out += format_measure("Z",zstart)
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       #if ramping with limit use plunge feed rate
@@ -870,7 +871,7 @@ module PhlatScript
             end
          end
          zdiff = (prevz - now) /4   # how much to feed on each quarter circle
-         command_out += "   (Z diff #{zdiff.to_mm})\n"          if @debug
+#         command_out += "   (Z diff #{zdiff.to_mm})\n"          if @debug
 
          if (@cw)
             #x-o y I0 Jo
@@ -919,7 +920,7 @@ module PhlatScript
             #X  Y-of  Iof   J0
             command_out += "#{cmd}"
             command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff)
-            command_out += format_measure(" Z",prevz - zdiff*4)
+            command_out += format_measure(" Z",now) #prevz - zdiff*4)
             command_out += format_measure(" I",yoff)  + format_measure(" J",0)
             command_out += "\n"
          end
@@ -964,7 +965,7 @@ module PhlatScript
          end
       command_out += "   (SPIRAL END)\n" if @debug
       @precision -= 1
-   @debugramp = false
+#   @debugramp = false
       return command_out
     end # SpiralAtQ
     
@@ -972,7 +973,7 @@ module PhlatScript
 #swarfer: instead of a plunged hole, spiral bore to depth
 #handles multipass by itself, also handles ramping
    def plungebore(xo,yo,zStart,zo,diam)
-   @debug = true
+#   @debug = true
       zos = format_measure("depth=",zStart-zo)
       ds = format_measure(" diam=", diam)
       cncPrintC("(plungebore #{zos} #{ds})\n")
@@ -1057,7 +1058,7 @@ module PhlatScript
                command_out += "G0 " + format_measure("Z" , sh)
                command_out += "\n" 
             else
-               if (PhlatScript.stepover < 50)  # act for a hard material
+               if (PhlatScript.stepover < 50)  # act for a hard material, do initial spiral 
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
                   cncPrintC("!multi && ramp 0.7 Yoff #{yoff.to_mm}")  if (@debug)
                   if (@quarters)
@@ -1092,11 +1093,15 @@ module PhlatScript
 # if fuzzy stepping, calc new ystep from optimized step count
 # find number of steps to complete hole
          if ($phoptions.use_fuzzy_holes?)
-            rem = (diam / 2) - (@bit_diameter/2)  # still to be cut
-            temp = ((diam / 2) - (@bit_diameter/2)) / ystep   # number of steps to do it
+            if (PhlatScript.mustramp?)
+               rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
+            else
+               rem = (diam / 2) - (@bit_diameter/2) # have drilled a bit diam hole
+            end
+            temp = rem / ystep   # number of steps to do it
             puts " temp steps = #{temp}\n" if @debug
             puts " ystep old #{ystep.to_mm}\n" if @debug
-
+            oldystep = ystep  
             flag = false
             if (PhlatScript.stepover < 50)               #round temp up to create more steps
                temp = (temp + 0.5).round
@@ -1109,7 +1114,7 @@ module PhlatScript
             end
             if (flag)                                    # only adjust if we need to
                temp = (temp < 1) ? 1 : temp
-               puts "   temp steps = #{temp}\n" if @debug
+               puts "   new temp steps = #{temp}\n" if @debug
                #   calc new ystep
                ystep = rem / temp
                if (ystep > @bit_diameter ) # limit to stepover
@@ -1117,6 +1122,9 @@ module PhlatScript
                   puts " ystep was > bit, limited to stepover\n"         if @debug
                end
                puts " ystep new #{ystep.to_mm}\n" if @debug
+               if oldystep != ystep
+                  cncPrintC("old step #{oldystep.to_mm} new step #{ystep.to_mm}")  if (@debug)
+               end
             end
          end
 #######################
@@ -1174,7 +1182,7 @@ module PhlatScript
       @cz = @retract_depth
       @cs = so
       @cc = '' #resetting command here so next one is forced to be correct
-   @debug = false   
+   #@debug = false   
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers

@@ -71,6 +71,7 @@ module PhlatScript
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
          @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
+         @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
       end
    end
 
@@ -129,6 +130,7 @@ module PhlatScript
          @use_fuzzy_holes = true
          @ramp_angle             =  0
          @must_ramp              =  false
+         @quarter_arcs            =  true
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -267,6 +269,11 @@ module PhlatScript
             value = -1
             value = getvalue(optin['must_ramp'])                if (optin.has_key?('must_ramp'))
             @must_ramp = value > 0 ? true :  false              if (value != -1)
+            
+            value = -1
+            value = getvalue(optin['quarter_arcs'])             if (optin.has_key?('quarter_arcs'))
+            @quarter_arcs = value > 0 ? true :  false            if (value != -1)
+            
 
          end
 
@@ -654,6 +661,13 @@ module PhlatScript
          @must_ramp = newval
       end
       
+      def quarter_arcs?
+         @quarter_arcs
+      end
+      def quarter_arcs=(newval)
+         @quarter_arcs = newval
+      end
+      
       
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -935,7 +949,8 @@ end # class
             'End position Y ',
             'Use fuzzy hole stepover ',
             'Limit ramping angle to (degrees) ',
-            'Use Ramping '
+            'Use Ramping ',
+            'Output helixes as quarter arcs '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -953,7 +968,8 @@ end # class
             Sketchup.format_length(@options.end_y),
             @options.use_fuzzy_holes?.inspect(),
             @options.ramp_angle.to_f,
-            @options.must_ramp?.inspect()
+            @options.must_ramp?.inspect(),
+            @options.quarter_arcs?.inspect()
             ];
          list=[
             'true|false',
@@ -971,6 +987,7 @@ end # class
             '',
             'true|false',
             '',
+            'true|false',
             'true|false'
             ];
 
@@ -999,6 +1016,7 @@ end # class
 
             @options.ramp_angle              = input[14].to_f
             @options.must_ramp               = (input[15] == 'true')
+            @options.quarter_arcs            = (input[16] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save
