@@ -18,6 +18,7 @@ module PhlatScript
       @debugramp = false
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
       @quarters = $phoptions.quarter_arcs?  # use quarter circles in plunge bores?  defaults to true
+      @canneddrill = false
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -36,7 +37,7 @@ module PhlatScript
       @spindle_speed = PhlatScript.spindleSpeed
       @retract_depth = PhlatScript.safeTravel.to_f
       @table_flag = false # true if tabletop is zZero
-      @mill_depth  = -0.35
+#      @mill_depth  = -0.35
       @speed_curr  = PhlatScript.feedRate
       @speed_plung = PhlatScript.plungeRate
       @material_w = PhlatScript.safeWidth
@@ -974,7 +975,7 @@ module PhlatScript
 #handles multipass by itself, also handles ramping
    def plungebore(xo,yo,zStart,zo,diam)
 #   @debug = true
-      zos = format_measure("depth=",zStart-zo)
+      zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
       cncPrintC("(plungebore #{zos} #{ds})\n")
       if (zo > @max_z)
@@ -991,14 +992,16 @@ module PhlatScript
 #      ys = format_measure('Y', yo)
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
-      if $phoptions.use_reduced_safe_height?
+      if ($phoptions.use_reduced_safe_height?) 
          sh = (@retract_depth - zStart) / 3 # use reduced safe height
          if zStart > 0
             sh += zStart.to_f
          end
-         puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
-         command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
-         command_out += "\n"
+         if (!@canneddrill) || (PhlatScript.mustramp?) 
+            puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
+            command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+            command_out += "\n"
+         end
       else
          sh = @retract_depth
       end
@@ -1030,18 +1033,32 @@ module PhlatScript
             
          else
             zonow = PhlatScript.tabletop? ? @material_thickness : 0
-            while (zonow - zo).abs > 0.0001 do
-               zonow -= PhlatScript.multipassDepth
-               if zonow < zo
-                  zonow = zo
-               end
-               command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
+            if (@canneddrill)
+               command_out += (diam > @bit_diameter) ? "G99" : "G98"
+               command_out += " G83"
+               command_out += format_measure("X",xo)
+               command_out += format_measure("Y",yo )
+               command_out += format_measure("Z",zo )
+               command_out += format_measure("R",sh )
+               command_out += format_measure("Q",PhlatScript.multipassDepth)
+               
                command_out += (format_feed(so)) if (so != @cs)
-               command_out += "\n"
-               @cs = so
-               command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
-               command_out += "\n"
-            end #while
+               command_out += "\n"               
+               command_out += "G80\n";
+            else
+               while (zonow - zo).abs > 0.0001 do
+                  zonow -= PhlatScript.multipassDepth
+                  if zonow < zo
+                     zonow = zo
+                  end
+                  command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
+                  command_out += (format_feed(so)) if (so != @cs)
+                  command_out += "\n"
+                  @cs = so
+                  command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
+                  command_out += "\n"
+               end #while
+            end # else canneddrill
          end
       else
 #todo - if ramping, then do not plunge this, rather do a spiralat with yoff = bit/2      
@@ -1071,12 +1088,33 @@ module PhlatScript
                end
             end
          else
-            command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-            command_out += (format_feed(so)) if (so != @cs)
-            command_out += "\n"
+            if (@canneddrill)
+               if (diam > @bit_diameter)  # then prepare for multi spirals by retracting to reduced height
+#                  command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+#                  command_out += "\n"
+                  command_out += "G99 G82"  #drill with dwell  - gplot does not like this!
+               else
+                  command_out += "G98 G82"  #drill with dwell  - gplot does not like this!
+               end
+               command_out += format_measure("X",xo)
+               command_out += format_measure("Y",yo )
+               command_out += format_measure("Z",zo )
+               command_out += format_measure("R",sh )
+               command_out += format_measure("P",0.2/25.4)               # dwell 1/5 second
+#               command_out += format_measure("Q",PhlatScript.multipassDepth)
+               
+               command_out += (format_feed(so)) if (so != @cs)
+               command_out += "\n"               
+               command_out += "G80\n";
+            else
+               command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
+               command_out += (format_feed(so)) if (so != @cs)
+               command_out += "\n"
+               command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
+               command_out += "\n"
+            end
             @cs = so
-            command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
-            command_out += "\n"
+
          end
       end
 

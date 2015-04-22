@@ -1210,10 +1210,13 @@ puts " new #{newedges[i-1]}\n"
                            #puts "   plunge dia #{phlatcut.diameter}"
                            if phlatcut.diameter > 0
                               diam = phlatcut.diameter
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
                            else
-                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              diam = @current_bit_diameter
                            end
+                           aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+#                           else
+#                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+#                           end
                         else
                            
                            if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) )
@@ -1499,12 +1502,15 @@ puts " new #{newedges[i-1]}\n"
                         if (phlatcut.kind_of? PlungeCut)
                            #puts "plunge #{phlatcut}"
                            #puts "   plunge dia #{phlatcut.diameter}"
-                           if phlatcut.diameter > 0
+                           if (phlatcut.diameter > 0)
                               diam = phlatcut.diameter
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
                            else
-                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+                              diam = @current_bit_diameter
                            end
+                           aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+#                           else
+#                              aMill.plung(cut_depth, PhlatScript.plungeRate)
+#                           end
                         else
                            aMill.plung(cut_depth, PhlatScript.plungeRate)
                         end # if plungecut
