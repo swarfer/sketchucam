@@ -99,7 +99,7 @@ module PhlatScript
         } #groups.each
       loops.flatten!
       loops.uniq!
-      puts("Located #{loops.length.to_s} loops containing PhlatCuts")
+      puts("Located #{loops.length.to_s} loops containing PhlatCuts") if (loops.length > 0)
       return groups
     end #listgroups
 
@@ -457,7 +457,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       }
       loops.flatten!
       loops.uniq!
-      puts("Located #{loops.length.to_s} loops containing PhlatCuts")
+      puts("Located #{loops.length.to_s} loops containing PhlatCuts")   if (loops.length > 0)
 
       loop_root = LoopNode.new(nil)
       loops.each { |loop|
@@ -481,7 +481,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #		   puts "sc #{sc}"
          if (first)
             atype = sc.class.to_s
-            puts #{atype}"
+#            puts "atype=#{atype}"
             first = false
             same = true
          else
