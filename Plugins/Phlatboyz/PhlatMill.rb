@@ -1,5 +1,4 @@
 require 'sketchup.rb'
-require 'sketchup.rb'
 #require 'Phlatboyz/Constants.rb'
 #see note at end of file
 module PhlatScript
@@ -57,6 +56,8 @@ module PhlatScript
 
       @Limit_up_feed = false #swarfer: set this to true to use @speed_plung for Z up moves
       @cw =  PhlatScript.usePlungeCW?           #swarfer: spiral cut direction
+      
+      @tooshorttoramp = 0.02     #length of an edge that is too short to bother ramping
     end
 
    def set_retract_depth(newdepth, tableflag)
@@ -67,6 +68,11 @@ module PhlatScript
     def set_bit_diam(diameter)
       #@curr_bit.diam = diameter
       @bit_diameter = diameter
+      @tooshorttoramp = diameter / 2   # do not ramp edges that are less than a bit radius long - also affect optimizer
+    end
+    
+    def tooshorttoramp
+       @tooshorttoramp
     end
 
     def cncPrint(*args)
@@ -128,6 +134,7 @@ module PhlatScript
       end
 #      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
       @bit_diameter = PhlatScript.bitDiameter
+      @tooshorttoramp = @bit_diameter / 2
 
       cncPrint("%\n")
 #do a little jig to prevent the code highlighter getting confused by the bracket constructs      
@@ -401,8 +408,8 @@ module PhlatScript
          point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
          distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
          
-         if (distance < 0.02)  # dont need to ramp really since not going anywhere far, just plunge
-            puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
+         if (distance < @tooshorttoramp)  # dont need to ramp really since not going anywhere far, just plunge
+            puts "distance=#{distance.to_mm} < #{@tooshorttoramp.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, @cmd_linear)
             cncPrintC("ramplimit end, translated to plunge\n")
             @cz = zo
@@ -627,7 +634,7 @@ module PhlatScript
 #         point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
 #         distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
          distance =  arclength
-         if (distance < 0.02)  # dont need to ramp really since not going anywhere, just plunge
+         if (distance < @tooshorttoramp)  # dont need to ramp really since not going anywhere, just plunge
             puts "arcramp distance=#{distance.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, @cmd_linear)
             cncPrintC("ramplimitarc end, translated to plunge\n")
@@ -1092,15 +1099,15 @@ module PhlatScript
                if (diam > @bit_diameter)  # then prepare for multi spirals by retracting to reduced height
 #                  command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
 #                  command_out += "\n"
-                  command_out += "G99 G82"  #drill with dwell  - gplot does not like this!
+                  command_out += "G99 G81"  #drill with dwell  - gplot does not like this!
                else
-                  command_out += "G98 G82"  #drill with dwell  - gplot does not like this!
+                  command_out += "G98 G81"  #drill with dwell  - gplot does not like this!
                end
                command_out += format_measure("X",xo)
                command_out += format_measure("Y",yo )
                command_out += format_measure("Z",zo )
                command_out += format_measure("R",sh )
-               command_out += format_measure("P",0.2/25.4)               # dwell 1/5 second
+#               command_out += format_measure("P",0.2/25.4)               # dwell 1/5 second
 #               command_out += format_measure("Q",PhlatScript.multipassDepth)
                
                command_out += (format_feed(so)) if (so != @cs)

@@ -722,7 +722,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       @level -= 1
     end
 
-   def GcodeUtil.optimize(edges,reverse,trans)
+   def GcodeUtil.optimize(edges,reverse,trans,aMill)
       if (@g_save_point != nil)
          #puts "optimize: last point  #{@g_save_point}"
          #swarfer: find closest point that is not a tabcut and re-order edges to start there
@@ -815,8 +815,17 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #            end
             #               puts "edge #{phlatcut}"
             phlatcut.cut_points(reverse) {    |cp, cut_factor|
-	       if (!phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.kind_of? PhlatScript::PocketCut)
+	            if (!phlatcut.kind_of? PhlatScript::TabCut) && (!phlatcut.kind_of? PhlatScript::PocketCut)
                #                     puts "   cutpoint #{cp} #{cut_factor}"
+                  #if ramping then ignore segments that are too short
+                  if @must_ramp
+                     if (phlatcut.edge.length < aMill.tooshorttoramp)
+                        puts "#{phlatcut.edge.length.to_mm} < #{aMill.tooshorttoramp.to_mm}" if (@debug)
+                        break
+                     end
+                  end
+                  
+                  
                   # transform the point if a transformation is provided
                   point = (trans ? (cp.transform(trans)) : cp)
                   dist = point.distance(@g_save_point)
@@ -1064,7 +1073,7 @@ puts " new #{newedges[i-1]}\n"
       pass = 0
       pass_depth = 0
       if @optimize &&  (@g_save_point != nil)
-         edges = optimize(edges,reverse,trans)
+         edges = optimize(edges,reverse,trans,aMill)
       end # optimize
 
       points = edges.size  # number of edges in this cut
@@ -1395,7 +1404,7 @@ puts " new #{newedges[i-1]}\n"
       pass = 0
       pass_depth = 0
       if @optimize &&  (@g_save_point != nil)
-         edges = optimize(edges,reverse,trans)
+         edges = optimize(edges,reverse,trans,aMill)
       end # optimize
 
       #edges = dragknife(edges,reverse,trans)

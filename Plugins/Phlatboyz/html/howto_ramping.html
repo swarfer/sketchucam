@@ -156,7 +156,7 @@ Since very short segments will be converted to plunges, one would have to be ver
 careful when generating code for this type of cutter, using the group reordering to 
 force start points on longer segments to force them to ramp.
 
-With a real limited ramp angle, short segments > 0.02" will do multiple ramps.  When 
+With a real limited ramp angle, short segments > bitRadius will do multiple ramps.  When 
 placing arcs it might be better to use 8 or 12 segments instead of the default 24, 
 this makes each segment longer giving it a decent chance to ramp.
 
@@ -196,7 +196,7 @@ as you can see in the image at above right.
 The cut begins at the closest corner to the origin and ramps along the first segment, taking two passes to get to full depth.  In this case the ramp angle
 limit is 5 degrees. 
 </p>
-<p>If the first segment of a cut is very short, less than 0.02" or 0.5mm, the cut will be converted to a <b>vertical plunge</b>.  
+<p>If the first segment of a cut is very short, less than bitDima/2, the cut will be converted to a <b>vertical plunge</b>.  
 A comment will be inserted in the code saying <br><br>
 <code>
 <b>(ramplimit end, translated to plunge) </b><br>
