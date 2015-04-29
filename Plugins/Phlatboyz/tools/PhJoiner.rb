@@ -42,11 +42,11 @@ module PhlatScript
          if (@vv >= 14)
             #for >= 2014
             wildcard = ".#{file_ext_1} Files|\*.#{file_ext_1}|All Files|\*.\*||"
-            result = UI.openpanel("Select first gcode file", directory_name, wildcard)
+            result = UI.openpanel("Select first G-code file.", directory_name, wildcard)
          else
             #for < 2014
             wildcard = "*.#{file_ext_1}"
-            result = UI.openpanel("Select first gcode file", wildcard)
+            result = UI.openpanel("Select first G-code file.", wildcard)
          end
          
          while (result != nil)
@@ -71,23 +71,28 @@ module PhlatScript
                end
             end
             file_ext_2 = this_file_ext				# Save for check on next file
+            fcnt = 0  # sketchup < 2013 does not have an array.count method
+            filenames.each{|it| fcnt +=1 }
             if (@vv >= 14)
-               result = UI.openpanel("Select next Gcode file, cancel to end", directory_name, wildcard)
+               result = UI.openpanel("Select next G-code file, or Cancel to end. You have selected #{fcnt} files so far.", directory_name, wildcard)
             else
-               result = UI.openpanel("Select next Gcode file, cancel to end", wildcard)
+               result = UI.openpanel("Select next G-code file, or Cancel to end. You have selected #{fcnt} files so far.", wildcard)
             end
          end
 
          if filenames.length <= 1
-            UI.messagebox("Not enough files selected, exiting")
+            UI.messagebox("Not enough files selected, exiting.")
             return
          end
          
          #get output file name
-         UI.messagebox("Now you will be prompted for the OUTPUT file name")
+		 message = "Files to be joined:\n"
+		 filenames.each {|x| message += "#{x}\n"}
+		 message += "\nNow you will be prompted for the OUTPUT file name."
+         UI.messagebox(message)
          outputfile = UI.savepanel("Select OUTPUT file name", directory_name, "joined#{$phoptions.default_file_ext}" )
          if (outputfile == nil)
-            UI.messagebox("No output file selected, exiting")
+            UI.messagebox("No output file selected, exiting.")
             return
          end
          
@@ -154,7 +159,7 @@ module PhlatScript
          outf.close
          puts "finished writing joined files"
          if PhlatScript.usecommentbracket?
-            if (UI.messagebox("All files joined into file #{outputfile}, do you want to preview the Gcode?",MB_YESNO) == IDYES)
+            if (UI.messagebox("All files joined into file #{outputfile}, do you want to preview the G-code?",MB_YESNO) == IDYES)
                GPlot.new.plot(outputfile)
             end
          else   # dont try to open previewer with semicolon comments
