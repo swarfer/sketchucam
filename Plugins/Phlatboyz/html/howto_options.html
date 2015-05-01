@@ -142,6 +142,7 @@ their computer or CNC machine  environment using simple menus as shown at right.
 <h2>The Options menu</h2>
 <p>
 The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items with subitems as follows:
+</p>
 <dl>
 <dt><a href="#a1">Tool Options</a>
    <dd>Things affecting tools
@@ -150,11 +151,10 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
 <dt><a href="#a3">Machine Options</a>
    <dd>Things affecting your machine type and size
 <dt><a href="#a4">Feature Options</a>
-   <dd>Things you may want to change to get different Gcode output options
+   <dd>Things you may want to change to get different G-code output options
 <dt><a href="#a5">File Options</a>
    <dd>Default file naming options
 </dl>
-</p>
 <br clear="all">
 
 <h2><a id="a1">Tool Options</a></h2>
@@ -162,9 +162,10 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
 <img src="images/options-tool.png" style="float: right;">
 These defaults will only be seen on new drawings.  These settings should reflect your most commonly used cutting tool and material.
 These settings can easily be overridden by using the Tool Profiles save and load mechanism.
+</p>
 <dl>
    <dt>Default_spindle_speed
-      <dd>This sets the default 'S' word written to the Gcode, which sets the spindle speed if your controller supports it.
+      <dd>This sets the default 'S' word written to the G-code, which sets the spindle speed if your controller supports it.
    <dt>Default_feed_rate 
       <dd>This is the default cutting feed rate in current drawing units per minute
    <dt>Default_plunge_rate 
@@ -192,23 +193,23 @@ These settings can easily be overridden by using the Tool Profiles save and load
       <dd>Set this to true to have pocket zigzags default to along Y axis, false for along X axis.
          This setting can be changed on the fly with the END key
 </dl>
-</p>
 
 <h2><a id="a2">Misc Options</a></h2>
 <p>
 <img src="images/options-misc.png" style="float: right;">
+</p>
 <dl>
    <dt>Default_comment_remark
-      <dd>A default text string for the Comment area of the parameters.  This will be written in the Gcode header.
+      <dd>A default text string for the Comment area of the parameters.  This will be written in the G-code header.
    <dt>Default_gen3d
       <dd>This is normally false since most use of SketchUcam is for 2.5D cutting.  Set to true if all you do is 3D.
    <dt>Default_show_gplot after output 
-      <dd>Set this to true to have the gplot program open with your new Gcode file EVERY TIME after generating Gcode.
+      <dd>Set this to true to have the gplot program open with your new G-code file EVERY TIME after generating G-code.
    <dt>Default_tabletop is Z-Zero 
       <dd>Set this TRUE if you want to always zero your tool to the table top instead of the material top.
       Phlatprinters must use the material top for Z-Zero (set this false), but all other machines can use the table top.
       If you fit an automatic tool zero sensor level with the table top, Mach3 and LinuxCNC make this very easy to use.
-      Using the table as zero will also all you to generate Gcode that can cut many thicknesses of material up to the maximum of the
+      Using the table as zero will also all you to generate G-code that can cut many thicknesses of material up to the maximum of the
       thickness you specified.
    <dt id="compat">Use_compatible_dialogs set TRUE if you cannot see the parameters dialog
       <dd>This one is rather obvious.  If the main Parameters Dialog shows up largely blank, you need to set this to true.
@@ -216,19 +217,20 @@ These settings can easily be overridden by using the Tool Profiles save and load
       by installing 'winetricks' and then issuing the command 'winetricks ie8'.  This will install IE8 and allow the Parameters dialog to work
       correctly with this setting set to false.
 </dl>   
-</p>
+
 <h2><a id="a3">Machine Options</a></h2>
 <p>
 <img src="images/options-machine.png" style="float: right;">
 These options set defaults taken from the size and shape of your CNC machine.  If you have more than one machine, set these to the largest
 machines values and be careful when generating code for the smaller ones.
+</p>
 <dl>
    <dt>Default_safe_origin_x 
       <dd>   Normally 0, this is where the safe area is placed by default.
    <dt>Default_safe_origin_y 
       <dd>   Normally 0, this is where the safe area is placed by default.            
    <dt>Default_safe_width (X)
-      <dd>Set this to the largest workpiece your machien can take in the X direction.
+      <dd>Set this to the largest workpiece your machine can take in the X direction.
    <dt>Default_safe_height (Y) 
       <dd>Set this to the largest workpiece Y size.
    <dt>Default_overhead_gantry
@@ -250,8 +252,7 @@ machines values and be careful when generating code for the smaller ones.
 cuts = 110/100 * 6 / 2
 cuts = 3.3</pre>
       will actually result in 4 passes, with the last pass being only 0.3*2 = 0.6mm deep.
-      </p>
-      <p>To optimize
+      <p>To optimize</p>
       <ol>
       <li>Round the number of cuts UP if the material is hard, DOWN if the material is soft
       <li>3.3 becomes 4 (for hard material)
@@ -264,22 +265,22 @@ cuts = 3.3</pre>
       Tool manufactuers discourage values between 30 and 70% as this shortens tool life, 
       so for soft material use 70 or more and for hard materials use 30% or less.
    <dt>Min_z 
-      <dd>Set this to negative (-) your Z travel.   Gcode will never contain Z travel more than this figure.
+      <dd>Set this to negative (-) your Z travel.   G-code will never contain Z travel more than this figure.
    <dt>Max_z
-      <dd>Set this to your Z travel. Gcode will never contain Z travel more than this figure.
+      <dd>Set this to your Z travel. G-code will never contain Z travel more than this figure.
    <dt id="comments">Comments use Bracket(true) or semicolon(false)
       <dd>Most CNC controllers accept comments in the form  of bracketed text, like this<br>
-         <i>(this is a Gcode comment)</i><br>
+         <i>(this is a G-code comment)</i><br>
          but some prefer to have comments with semicolons, like this<br>
          <i>; alternate comment format</i><br>
          Use this option to select what you need for your controller.<br>
-         <b>NOTE:</b>  The Gcode previewer included with SektchUcam DOES NOT understand semicolon comments.
-         If you need to use them, do not turn on 'Show Gplot after Gcode generation' in the parameters dialog.<br>
+         <b>NOTE:</b>  The G-code previewer included with SektchUcam DOES NOT understand semicolon comments.
+         If you need to use them, do not turn on 'Show Gplot after G-code generation' in the parameters dialog.<br>
          <b>NOTE 2:</b> This option is mostly to cater for GRBL.  Since GRBL does not accept long lines,
-         all Gcode has been shortened to keep lines as short as possible, and long comments will be folded across
+         all G-code has been shortened to keep lines as short as possible, and long comments will be folded across
          multiple lines to keep them shorter than 50 characters.
 </dl>
-</p>
+
 <h2><a id="a4">Feature Options</a></h2>
 <img src="images/options-feature.png" style="float: right;">
 <dl>
@@ -302,7 +303,7 @@ cuts = 3.3</pre>
    <dt>Use_pocket_CW
       <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
          Please research 'climb milling' before changing this.<br>
-         Note this is a draw time option, if you change it in the Gcode you have to redraw all pocket cuts.
+         Note this is a draw time option, if you change it in the G-code you have to redraw all pocket cuts.
             
    <dt>Use_plunge_CW
       <dd>Set this true to generate plunge hole cuts in CW instead of usual CCW cut direction<br>
@@ -336,7 +337,7 @@ cuts = 3.3</pre>
    <dt>Use_End_Position
       <dd>If this is set true then the values for X and Y below will be used for the final rapid move.<br>
       You can use this to move the gantry out of the way at the end of a job for easy material removal.<br>
-      Set <i>Use_Home_Height</i> true as well to enable a Z height that is higher than the safe height used in the Gcode.<br>
+      Set <i>Use_Home_Height</i> true as well to enable a Z height that is higher than the safe height used in the G-code.<br>
       NOTE: these values will be limited by your <i>Default_safe_width (X)</i> and <i>Default_safe_height (Y)</i> material size settings.
       <dl>
       <dt>End position X
@@ -360,22 +361,18 @@ cuts = 3.3</pre>
    <dt>Use Ramping
       <dd>Set this to have the default for new drawings to use ramping for plunge moves.
    </dl>
-
-</p>
    
 <h2><a id="a5">File Options</a></h2>
-<p>
 <img src="images/options-file.png" style="float: right;">
-   Some options that affect saving Gcode files.
+   Some options that affect saving G-code files.
 <dl>
    <dt>Default_file_name
       <dd>The default gocode file name, with extension
    <dt>Default_file_ext
-      <dd>The default extension to use for Gcode files.  This will be added to the name if you do not give an extension in the save dialog.
+      <dd>The default extension to use for G-code files.  This will be added to the name if you do not give an extension in the save dialog.
    <dt>Default_directory_name
-      <dd>The default directory to save Gcode into.  Make sure it exists!
+      <dd>The default directory to save G-code into.  Make sure it exists!
 </dl>      
-</p>
 
 
 <br clear=all>

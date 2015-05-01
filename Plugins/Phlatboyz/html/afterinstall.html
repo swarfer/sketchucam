@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="id" content="$Id$">
+<title>SketchUcam - Thing to do After Instal</title>
+   <style type="text/css">
+   body, div, span {
+           font-family: Verdana;
+   }
+   body {
+           background-color: grey;
+           text-align: center;
+           width: 1024px;
+           padding-left:0.5%;
+           padding-right:0.5%;
+   }
+   div.shell {
+           /*background-color: #eee;*/
+           background-color: #ddeeff;
+           /*background-color: white;*/
+           font-size: 1.05em;
+   }
+
+   div.intro-name {
+           text-align:center;
+           font-size: 1.20em;
+           font-weight: bold;
+           padding-top:25px;
+   }
+   div.intro-name div {
+           font-size: 0.60em;
+           font-weight: normal;
+   }
+   div.intro-title {
+           text-align:center;
+           margin:10px;
+           font-size: 1.10em;
+           font-weight: bold;
+           padding-top: 15px;
+   }
+   div.intro {
+           text-align:left;
+           margin:5px;
+           padding: 5px;
+           font-size: 0.90em;
+   }
+
+
+   .command-image {
+           /*background-color: #ededed;*/
+           background-color: #ddeeff;
+           height: 100px;
+           font-weight: bold;
+           font-size: 0.90em;
+           vertical-align:center;
+           padding:10px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+   }
+   .command-description {
+           /*background-color: #ededed;*/
+           background-color: #eaecfa;
+           /*margin: 2px;*/
+           padding: 15px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           font-size: 0.90em;
+   }
+
+   .command-title {
+           font-size: 1.00em;
+           font-weight: bold;
+           /*border-bottom: thin solid blue;*/
+           text-align: center;
+           padding-top: 25px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           text-decoration: underline;
+   }
+   .command-subtitle {
+           font-size: 0.70em;
+           font-style: italic;
+           }
+   .newcolour {
+            color: #000000;
+            }
+   hr {
+      background-color: #6699ff; 
+      height: 2px; 
+      border: 0; 
+      }
+   td {
+      text-align: justify;
+      }
+   dt {
+      margin-top: 5px;
+      }
+   .index {
+      line-height: 1.6em;
+      }
+   </style>
+</head>
+<body>
+
+<div class="shell">
+
+   <br>
+   <div class="intro-name">After install...</div>
+   <hr width="100%">
+   <div class="intro">
+   <span style="float: right;"><a href="help.html">Back to help index</a></span>
+
+<div>
+<p>After installing Sketchucam all features will work without further setup.
+However, there are some settings you will want to change to suite your machines size and capabilities.
+</p>
+<img src="images/options-machine.png" align="right">
+
+To make these changes you need to access the "<b>Tools|Phlatboyz|Options|Machine Options</b>" menu item as illustrated at right.
+<h3>Things you may need to change</h3>
+<dl>
+<dt>Default_safe_width (X)
+    <dd>Set this to the largest workpiece your machine can take in the X direction. 
+<dt>Default_safe_height (Y)
+    <dd>Set this to the largest workpiece Y size.
+<dt>Default_overhead_gantry
+    <dd>If all you have is a Phlatprinter, set this to false. If all you have is a gantry type machine, set this to true. If you have both styles, set to the one you use the most.
+</dl>
+<br clear=all>
+<dl>    
+<dt><b>Min_z </b>
+   <span style="color: red; float: right; width: 50%;">It is VERY IMPORTANT that you get these settings correct.  
+      Do NOT set Min_Z to zero unless you also set <b>Default_tabletop is Z-Zero</b> on the Misc Options dialog to TRUE, and NEVER change it
+      in the parameters dialog.  Failing to do this correctly will result in faulty G-code generation.<br>
+      Min_z = -maxZtravel<br>
+      Max_z = maxZtravel<br>
+      are the preferred settings, allowing both 'material top' and 'table top' as Z-zero to work properly. 
+   </span>
+    <dd>Set this to negative (-) your Z travel. G-code will never contain negative Z travel more than this figure. 
+<dt><b>Max_z</b>
+    <dd>Set this to your Z travel. G-code will never contain Z travel more than this figure.     
+</dl>
+
+You can read the full help for <a href="howto_options.html#a3">that dialog here</a>.
+
+</div>
+</div>
+
+        
+        
+        
+
+   <div>
+   <p>&nbsp;</p>
+        <br/><hr width="100%" >
+
+   <i><b>Thank you for your interest in the Phlatboyz project. Please take the time to visit the <a href="http://www.phlatforum.com/">Phlatforum</a> 
+   for lots of great people sharing great ideas and designs created with SketchUcam on their Phlatboyz machines!</b></i>
+   <hr width="100%" ><br/>
+   </div>
+</div>
+
+</body></html>

@@ -112,7 +112,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.2b</b><br>Mar 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3</b><br>May 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -168,29 +168,34 @@
    </td>
    <td>
          <div class="command-description" style="float: right; width: 220px; display: block; margin-left: 10px; font-size: 0.80em;">
+            <b>Jump to:</b>
+            <ul style="padding-left: 3px;">
+            <li><a href="afterinstall.html">After install - things to do</a>
+            <li><a href="sketchucamtoolbar.html"><b>The Toolbar</b></a>  very important!
+            </ul>
             <b>HOWTO:</b><br>
             <ul style="padding-left: 2px;">
                <li><a class="index" href="howto_options.html">Change Default Options</a>
                <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog blank</a>            
-               <li><a class="index" href="howto-changegplot.html">Change Gcode plotter</a>
-               <li><a class="index" href="howto_phlatbones.html">Use the PhlatBones tool</a>
+               <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
+               <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
                <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
                <li><a class="index" href="#toolbar">Toolbar Icons</a>
                <ul>
-                  <li><a href="#toolparameters">Parameters</a>
-                  <Li><A href="#tooloutside">Outside cut</a>
-                  <Li><A href="#toolinside">Inside cut</a>
-                  <Li><A href="#tooltab">Tab tool</a>
-                  <Li><A href="#toolfold">Fold cut</a>
-                  <Li><A href="#toolplunge">Plunge hole</a>
-                  <Li><A href="#toolcenterline">Centerline cut</a>
-                  <Li><A href="#toolpocket">Pocket</a>
-                  <Li><A href="#tooleraser">Eraser</a>
-                  <Li><A href="#toolsafe">Safe Area mover</a>
-                  <Li><A href="#toolreorder">Group reorder</a>
-                  <Li><A href="#toolgcode">Generate Gcode</a>
-                  <Li><A href="#toolgoto">Goto Phlatforum</a>
-                  <Li><A href="#toolhelp">Help</a>
+                  <li><a href="sketchucamtoolbar.html#toolparameters">Parameters</a>
+                  <Li><A href="sketchucamtoolbar.html#tooloutside">Outside cut</a>
+                  <Li><A href="sketchucamtoolbar.html#toolinside">Inside cut</a>
+                  <Li><A href="sketchucamtoolbar.html#tooltab">Tab tool</a>
+                  <Li><A href="sketchucamtoolbar.html#toolfold">Fold cut</a>
+                  <Li><A href="sketchucamtoolbar.html#toolplunge">Plunge hole</a>
+                  <Li><A href="sketchucamtoolbar.html#toolcenterline">Centerline cut</a>
+                  <Li><A href="sketchucamtoolbar.html#toolpocket">Pocket</a>
+                  <Li><A href="sketchucamtoolbar.html#tooleraser">Eraser</a>
+                  <Li><A href="sketchucamtoolbar.html#toolsafe">Safe Area mover</a>
+                  <Li><A href="sketchucamtoolbar.html#toolreorder">Group reorder</a>
+                  <Li><A href="sketchucamtoolbar.html#toolgcode">Generate G-code</a>
+                  <Li><A href="sketchucamtoolbar.html#toolgoto">Goto Phlatforum</a>
+                  <Li><A href="sketchucamtoolbar.html#toolhelp">Help</a>
                </ul>
                <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
                <li><a class="index" href="toolsmenu.html">Tools|PhlatBoyz Menu</a>
@@ -201,37 +206,38 @@
 </tr>
 </table>
 <table cellspacing=0 cellpadding=1>
+<tbody>
 <tr>
    <td width="90%">
    
       
       <div class="intro">
-      <h4>New in V1.2b (Mar 2015)</h4>
+      <h4>New in V1.3 (May 2015)</h4>
       <ul>
       <li><a href="howto_ramping.html">Ramping:</a> (option on parameters dialog) instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
       <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
-      <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the Gcode.
-      <li>Gcode Joiner is happy with both comment formats.
-      <li>Gcode Joiner file selection remembers the folder, and remembers a change in extension.   Also detects Sketchup versions
+      <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the G-code.
+      <li>G-code Joiner is happy with both comment formats.
+      <li>G-code Joiner file selection remembers the folder, and remembers a change in extension.   Also detects Sketchup versions
          prior to Make2014 and works around the wildcard bug
       <li>Bugfix: Polygons are now correctly identified and output as line segments instead of arc segments.
       <li>Bugfix: 'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
-      <li>Gcode lines have been shortened to be more GRBL friendly.
+      <li>G-code lines have been shortened to be more GRBL friendly.
       </ul>
       </div>
       
       <div class="intro">
       <h4>New in V1.2a</h4>
          <ul>
-         <li>Gcode Joiner - on the Phlatboyz menu, this tool allows you to join 2 or more Gcode files together to make a single file that 
+         <li>G-code Joiner - on the Phlatboyz menu, this tool allows you to join 2 or more G-code files together to make a single file that 
             does all of the cuts in the order specified.  This is handy for combining files generated from a drawing that needs seperate operations
             carried out on the same part.
          <li>Use_End_Position - on the Options|Features menu, setting this true allows you to select an ending position other than X0 Y0 for the gantry.
             TIP: use in combination with the Use_Home_Height option.
-         <LI>Bug fixes in the 3D Gcode generator.
+         <LI>Bug fixes in the 3D G-code generator.
          <li>3D code that uses multipass will now stop early once all features have been cut, ie it will not 
             continue to full material depth if all features have been cut. 
-         <li>Plunge holes are automatically grouped.  This prevents underlying geometry from interfering with Gcode generation.
+         <li>Plunge holes are automatically grouped.  This prevents underlying geometry from interfering with G-code generation.
             Only an underlying horizontal line will interfere but in this case it is very easy to delete the part that overlaps the colored 'hole' line.
             Ordinary holes have no name while enlarged holes are named with the diameter and depth.
             For example a plain 8mm hole will be named "_diam_8.0mm" and a depth restricted 9mm hole will be "_diam_9.0mm_depth_76.0".            <br>
@@ -246,7 +252,7 @@
          <li>The '<u>Table top is Z-Zero</u>' checkbox.  If this is ticked the table top will be used as the Z zero reference
          instead of the material top surface.  This is most useful on overhead gantry machines, and <i>not at all useful</i> on Phlatprinters.
          <li>The <a href="howto_options.html">Options Menu</a> allows you to set default options that will be applied to new drawings.  These options affect such things as
-         your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and Gcode generation options.
+         your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and G-code generation options.
          <i>This menu system replaces the MyConstants.rb file in a transparent way.  Your existing settings will be used until you use the Options menu to change them.</i>
          <li>  profile file format was changed to ini format, extension .pri
          <li>  fix for parameters tool on mac
@@ -266,463 +272,11 @@
 </tbody>
 </table>
 		
-<table summary="help 2" id="toolbar">
-   <tbody>
-   <tr>
-      <th colspan="2" class="command-title">
-         Phlatboyz Command Toolbar<br> <img src="images/toolbar.png" style="float: center;" alt="toolbar image">
-      </th>
-   </tr>
-   <tr>
-      <td class="command-image" valign=top id="toolparameters">
-         <img alt="" src="../images/parameterstool_large.png" title="Enter Phlatboyz Parameters" width="32">
-      </td>
-      <td class="command-description">
-      <img align=right src="images/params.png" title="params" border="0" style="margin-left: 10px;" alt="params menu">
-         <p>
-         Enter <b>Phlatboyz Parameters</b> to set: [spindle speed, feed rate, plunge rate, safe travel,
-         material thickness, bit diameter, tab width, tab depth factor, the safe
-         cutting area size and comment text] which will appear in
-         the generated g-code. All g-code output uses the safe cutting
-         area's local origin(the bottom left corner) and only
-         edges within the safe cutting area will generate g-code. This will
-         allow designs requiring multiple sheets to be contained within one
-         SketchUp file and the cut codes processed as one sheet at a time for
-         separate g-code files for each sheet.  The safe area is assumed to be
-         at sketchup's origin, unless placed elsewhere using the Safe Area Tool.</p>
-
-         Also, there are 2 check boxes for additional options: <br>
-         1) "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
-         by cutting multiple thin layers. <br>
-         2) "<u>Overhead Gantry</u>".  The original 2
-         Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
-         cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
-         See the <a href="howto_options.html">Options Menu help</a> for setting this as a default
-         <br><br>
-
-         <p><u>Note</u>: When you press "OK", these settings will be saved as attributes to your
-         sketchup model.  So each sketchup file will retain their individual settings.
-         </p>
-         <br clear=all>
-         <h3>Profiles</h3>
-         <p class="newcolour">
-         <img alt="" src="images/profiles.png" align=right border=1  style="margin-left: 10px;">
-         New in 1.1c is the ability to save and restore tool profiles.  This allows you to quickly restore a tool setup that relates to 
-         a type of material or operation.  For example one might store the settings for a drilling operation with multipass on, low feed speeds etc.
-         For a foam milling tool one can store high feed speeds, not multipass and so on.<br>
-         <img alt="" src="images/profilesave.png" align="right" border="0" style="margin-left: 10px;">
-         Clicking the <b>'Save'</b> button will produce a prompt for a profile name. Profile names must not have spaces or punctuation in them.
-         The following settings will be saved</p>
-         <table style="font-size: smaller;" summary="list of options">
-         <tr>
-         <td>
-            <ul>
-            <li>spindlespeed
-            <li>feedrate
-            <li>plungerate
-            <li>cutfactor
-            <li>bitdiameter
-            <li>tabwidth
-            <li>tabdepth
-            </ul>
-         </td>
-         <td>
-            <ul>
-            <li>safetravel
-            <li>usemultipass
-            <li>multipassdepth
-            <li>gen3d
-            <li>stepover
-            <li>Ramping on/off
-            <li>Ramp Angle
-            </ul>
-         </td>
-         </tr></table>
-         <p>Note the material thickness is deliberately NOT saved.  The concept of the profile is to save a tool setup for 
-         a specific <b>type</b> of material rather than a size of material.
-         </p>
-         <p class="newcolour">
-         <img alt="" src="images/profileload.png" align=right style="margin-left: 10px;">
-         Clicking the <b>'Load'</b> button will bring up a prompt box showing the currently available profiles.
-         Select one and click 'Ok'.<br>
-         After a load, the comment parameter will read "Loaded profile NAME" where NAME is the name of the profile.
-         </p>
-         <p class="newcolour">
-            The <b>'Delete'</b> button will allow you to select a profile and delete it.
-         </p>
-         <p class="newcolour">
-         For those using the compatibility menu (on Mac or Linux) the profile functions are available on the 
-         <a href="toolsmenu.html">Tools|Phlatboyz</a>
-         menu.
-         </p>
-         <p class="newcolour">
-         <img alt="" src="images/optsummary.png" align=right style="margin-left: 10px;">
-         Also on that menu us the <b>Options Summary</b> entry.
-         This will display your current settings for a number of global options settable in the <a href="howto_options.html">Options menu</a>.
-         Yes, we know it is misnamed 'Validity Check', that is a Sketchup default we cannot change :-)
-         Please see the <a href="howto_options.html">Options</a> help.
-         </p>
-         <hr>
-         
-         <b>Some points to note:</b>         
-         <dl>
-            <dt>Inside/Outside overcut%
-            <dd>This value is used as a multiplier on the material thickness.   The Phlatprinter is designed to cut through sheet material
-            so normal cuts must go deeper than the material thickness.  This is normally about 140%, ie through the material and 40% 
-            out the other side to account for wavy dollar tree blue foam.   If you are using an overhead gantry and do not want to cut 
-            into your spoil board then set this value to 100% and zero your toolbit end accurately.
-           <dt>Plunge rate:</dt>
-           <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
-           
-           <dt>Table top is Z-Zero</dt>
-           <dd>If this is checked then Z zero level is on the table top, if unchecked, Z-Zero is on the top of the material (the default).</dd>
-           
-           <dt>Ramp in Z</dt>
-           <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment
-           of the cut.   Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.
-           The Plunge Feed Rate will be used for ramp moves.<br>
-           Note that ramping will not affect plunge holes, the center hole will still be plunged for holes larger than 2x bit diameter
-           so if your milling bit cannot plunge DO NOT use it for holes, do a seperate drilling program with a drill bit.
-           </dd>
-           <dt>Ramp angle limit</dt>
-           <dd>If this is 0 then there is no limit on the ramp angle.  This mean that short segments will be ramped almost vertically.
-           If set to an angle from 1 to 45 the ramp angle will be limited to this value, ie it might be less for a long segments, but will never be more.
-           Multiple ramp moves will be generated to achieve this angle, while the total number of ramp moves will be rounded to always be an even 
-           number, ensuring that the limiting angle is not exceeded.
-           
-           <dt>Step Over %</dt>
-           <dd>This percentage is used by the 3D code generator and by the <b>Pocket Tool</b> to determine how much of the bit diameter to overlap each cut pass.
-               Tool manufacturers recommend using 1-30% or 70 to 100%, but not 30-70% as this range increases tool wear.
-           <br><b>Only select 'Generate 3D Code' for an actual 3D model.  If selected for a plain flat drawing, Sketchup Will Stop Responding</b></dd>
-            <dt>Tab width
-            <dd>Half the bit diameter will be removed from each end of the tab.  Thus a tab width equal or less than the
-            bit diameter will not leave a useful tab at all.
-           
-           <dt>Tab Depth %
-           <dd>The percentage of the material thickness to cut away when doing tabs.  Thus 75% will cut away 75% of the material leaving 25% behind.
-           Note that the bit will remove a little extra material at the top of the V, the bigger the bit the more will be removed.  This means
-           that the remaining material will be a bit thinner than expected.
-           
-           <dt><br>Show Gcode after output</dt>
-           <dd>Ticking this will cause Gplot to display the Gcode directly after generating it. The Gplot program will open after you click 'Ok' to confirm the file save.
-           Note that Sketchup 2013 onward requires you to click on the drawing, or select a new tool, before the Gcode program will be displayed.
-           </dd>
-         </dl>
-         Tooltips will displayed for each edit box with simplified help.  
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="tooloutside">
-         <img alt="" src="../images/outsidecuttool_large.png" title="Phlatboyz Outside Cut Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Outside Cut Tool</b> - This tool is used to cut the outside contour
-         of your part. It is assigned to a closed loop of edges and requires a corresponding face.
-         The cut path is offset to the outside, to compensate for the material removed by the cutter.
-         The thin face between the original line and the Outside Cut line will get a transparent texture.
-         It differs from the inside cut tool in that the path cut direction, will be clockwise.
-         <br>
-         <br>
-         Use the<u>["Shift" key]</u> if the preview shows the outside cut on the wrong side. Just press and
-         hold "Shift" prior to clicking.                                                          <br><br>
-
-         Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
-         hover over faces instead of edges.                             &nbsp;   <br><br>
-
-         Note: reversing the face (Edit/Face/Reverse Faces) <i>prior</i> to using the Outside Cut Tool will cause the cut direction to be reversed.  This works the same as the Inside Cut Tool.
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolinside">
-         <img alt="" src="../images/insidecuttool_large.png" title="Phlatboyz Inside Cut Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Inside Cut Tool</b> - This tool is used to cut out openings.  It is
-         assigned to a closed loop of edges and requires a corresponding face.  The cut path is offset to the inside,
-         to compensate for the material removed by the cutter. The face will change
-         to a transparent texture to resemble a hole. It differs from the outside cut
-         tool in that the path cut direction, will be counter-clockwise.<br><br>
-
-         Use the<u>["Shift" key]</u> if the preview shows the inside cut on the wrong side. Just press and
-         hold "Shift" prior to clicking.                                                          <br><br>
-
-         Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
-         hover over faces instead of edges.                                      &nbsp; <br><br>
-
-         Note: reversing the face (Edit/Face/Reverse Faces) <i>prior</i>
-         to using the Inside Cut Tool will cause the cut direction to be
-         reversed. In milling, the rotation of the bit, counter clockwise or
-         clockwise, determines which edge of the design will be left rough.
-         Normally, in SketchUp, you would leave the default grey side
-         facing up for all faces, before you assign cut lines. Otherwise, if the
-         face is reversed (white), and a cut line is assigned whether
-         inside or outside, the rough edge will be on the part and not the waste. So, in
-         short, make sure that the grey side is facing up and SketchUcam
-         will cut your part file in the right direction leaving a nice clean
-         edge on the part.
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="tooltab">
-         <img alt="" src="../images/tabtool_large.png" title="Phlatboyz Tab Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Tab Tool</b> -
-         This tool is used to place tabs along any inside or outside cut Phlatboyz edge.
-         The tabs hold the parts in place while the media (foam sheet, balsa, cardboard, etc.) moves back and forth in the machine.
-         <br><br>
-         This tool uses the tab width and tab depth factors which are defined in the Parameters dialog.
-         Use that dialog to define the tab tool parameters prior to using the tool;
-         changing the values in the Parameters dialog will not affect tabs that have already been placed.
-         <br><br>
-         Use the <u>["End" key]</u>, to toggle from standard Tabs to V-Tabs.  V describes the angled tabs vs the standard rectangular tabs.
-         The cursor will change from a T to V to show the current mode.
-         <br><br>
-         Use the <u>["Home" key]</u>, to toggle Bold Tab viewing mode off/on.  When the tab tool is active, this feature makes
-         the tabs easy to see.  Turn it off, if sketchup slows down when using the tab tool.
-         <br><br>
-         Note:
-         A feature of the Tab Tool is the ability to 'draw' tabs to any width
-         you desire always starting with the default width. For example, if the
-         tabs placed along a curve are too small, you can hold the left mouse
-         button down and draw then in wider. The tab depth will remain the same
-         as defined in the parameters dialogue.
-         <br><br>
-         Note:
-         The tab tool has click/drag functionality, for multiple tabs or extending tab width.                 &nbsp;
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolfold">
-         <img alt="" src="../images/foldtool_large.png" title="Phlatboyz Fold Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Fold Tool</b> -
-         This tool is used to define a fold line.  The use of a fold line is
-         to create a crease, so a sheet of foam can be folded or bent to form 3d shapes.  Or by using
-         a series of stepped depth fold lines, create a hinge line for a model airplane control surface.
-         <br><br>
-         It automatically selects a single edge.  Press the <u>["Shift" key]</u>, if you want all connected edges.
-         <br><br>
-         Use the <u>["End" key]</u> to toggle between short and wide mode.  When hovering over an edge, the short
-         mode shows a pink color preview.  Wide mode shows a darker red/purple preview color.  Short and Wide mode
-         status is also shown on the bottom status text.
-         The default short mode will shorten both ends of the edge by a small amount.
-         The main reason is to break contact and stop the possible creation of an extra face and loop,
-         which could confuse SketchUcam.  Wide mode will act normally
-         and not offer this protection.  But you can use wide mode, if say you want a connected chain of edges.
-
-         <br><br>
-         Use the <u>["Left Arrow"]["Right Arrow"]</u> keys to scroll through the preset depths: [25%, 50%, 75% &amp; 100%].
-         This will result in the cut depth, as a percentage of the material thickness.
-         You can see the current depth factor in the VCB (lower right hand corner in SketchUp). <br>
-         Use the <u>["Down" key]</u> to set the depth back to the default of 50%.
-         <br><br>Note:  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
-         is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 140%.
-         &nbsp;
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolplunge">
-         <img alt="" src="../images/plungetool_large.png" title="Phlatboyz Plunge Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Plunge Tool</b> -
-         This tool is used to create a plunge point at any given cursor position.  The use of the plunge tool is to drill holes.
-         <br><br>
-         The plunge tool creates a circle with a brown radius line extending from the center to the outside diameter.
-         The diameter of the circle is determined by the Phlatboyz "Bit Diameter" parameter.
-         <br><br>
-         The plunge tool allows the generation of gcode required to plunge the bit at the depth indicated
-         in the "Material Thickness" Parameters dialog.<br>
-         OR<br>
-         You can set the percentage depth before you click.  This hole will then be that
-         percentage of the material thickness in depth.  You will need to set the depth for every hole.<br>
-         AND<br>
-         You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
-         The hole will then be spiral bored to that diameter.  This is quite slow so holes that are
-         greater than 3 times the diameter of the bit should rather be a circle with an inside cut to remove
-         the waste.<br>
-         Feedrate will be the normal rate set for cuts.<br>
-         Downfeed will be limited to either
-         <ul>
-         <li>half the bit diameter per revolution</li>
-         <li>the multipass depth if multipass is on.</li>
-         </ul>
-         Notes:
-         <ol class="newcolour">
-         <li>Note that the various CNC controllers will perform this operation in different ways.
-         LinuxCNC will do true spiral decending cuts, while other controllers might step down 
-         and do a circle with constant Z instead.
-         <li>The normal cut direction is anticlockwise giving a 'climbing cut'.  On stiff machines this will
-         give a superior surface finish.   If your machine gives a bad finish in this and pocket cuts, please review the
-         <i>Use_pocket_CW</i> and <i>Use_plunge_CW</i> settings in the <a href="howto_options.html">Options menu</a> section
-         </ol>
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolcenterline">
-         <img alt="" src="../images/centerlinetool_large.png" title="Phlatboyz Centerline Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Center line Tool</b> -
-         This tool is used to define a center line cut on a SketchUp edge.
-         The common use of center lines, is to cut a shallow graphical design or slot.
-         If you are able to draw the necessary pattern of lines to form a pocket, you can also use center lines to cut out the pocket.  Pocket milling
-         is when you cut out shallow openings, that doesn't penetrate to the other side.
-         <br><br>
-         It automatically selects all connected edges.  Press the <u>["Shift" key]</u>, if you only want a single edge.
-         <br><br>
-         Use the <u>["Left Arrow"]["Right Arrow"]</u> keys to scroll through the preset depths: [25%, 50%, 75% &amp; 100%].
-         This will result in the cut depth, as a percentage of the material thickness.
-         You can see the current depth factor in the VCB (lower right hand corner in SketchUp). <br>
-         Use the <u>["Down" key]</u> to set the depth back to the default of 50%.
-         <br><br>Note:  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
-         is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 140%.
-         &nbsp;
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolpocket">
-         <img alt="" src="../images/Pocket_large.png" title="Phlatboyz Pocket Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Pocket Tool</b> - This tool is used to create a pocket inside a shape.
-
-         <p>A pocket is a shallow depression in the surface of the part.  While this tool will automatically deal with
-         simple shapes, some shapes will produce incorrect results.  These can be fixed manually or can be drawn using the
-         keyboard options as follows:</p>
-         <ul>
-         <li>hold down CTRL key to draw only the boundary inside the shape. Click to accept it.</li>
-         <li>hold down SHIFT to draw only the zigzag.  If there are errors or missing portions, do this:
-            <ol>
-            <li>simplify the shape by drawing one or more lines across it to split it up into simple convex shapes.</li>
-            <li>Hold SHIFT and zigzag the resulting subshapes</li>
-            <li>Remove the lines you added</li>
-            </ol>
-         <li class="newcolour">press the END key to swap zigzag direction from 'along X' to 'along Y'.  Each time you press END, the direction will
-         toggle.  'Along Y' is particularly useful on Phlatprinters as it helps prevent the material slipping.<br>
-         You can set the default direction in <a href="howto_options.html">Options menu</a>
-         </ul>
-         <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
-         is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 99%.
-         &nbsp;</p>
-      </td>
-   </tr>
-
-
-   <tr>
-      <td class="command-image" valign=top id="tooleraser">
-         <img alt="" src="../images/erasetool_large.png" title="Phlatboyz Erase Tool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Eraser Tool</b> -    With this tool you can erase any Phlatboyz Edge.
-         <br><br>
-         Default is to erase all types of Phlatedges. This is the cursor that has
-         no letters next to it.
-         <br><br>
-         Use the <u>["Left Arrow"]["Right Arrow"]</u> keys, if you want to erase only one type of edge.  It will cycle through
-         and show in the VCB(lower right hand corner of
-         SketchUp) which line type is currently assigned to the eraser. Also, each type has it's own unique cursor.<br>
-         Use the <u>["Down" key]</u> to quickly go back to the default "erase All types".
-         <br><br>
-         Tab highlighting has been added to the eraser tool: <br>
-         Use the <u>["Home" key]</u>, to toggle Bold Tab viewing mode off/on.  When the eraser tool is active, this feature makes
-         the tabs easy to see.  Turn it off, if sketchup slows down when using the eraser tool.
-         <br><br>
-         Note: The right click context menu will also allow you to erase ALL selected Phlatboyz edges.
-         <br><br>
-         Tip: Instead of deleting one item at a time, select many or all.  Activate the eraser tool.
-         And click the selected items.  If any unwanted Phlatboyz edges still remain, then repeat.  &nbsp;
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolsafe">
-         <img alt="" src="../images/safetool_large.png" title="Safetool" width="32">
-      </td>
-      <td class="command-description">
-         <b>Safe Area Tool</b> - Use this to graphically define the safe cutting area
-         for your parts. This tool uses the safe width and height defined in the
-         parameters dialog and allows dynamic placement of the "safe" cutting
-         area rectangle. <br><br> G-code output will be generated only from designated
-         Phlatboyz edges within this safe rectangle and will be relative to the
-         safe origin (bottom left corner).  <br><br>
-         Note:  Even if the user doesn't use this tool to graphically define a safe area,
-         the safe cutting area still exists and assumed to be at sketchup's origin. &nbsp;
-      </td>
-   </tr>
-
-   <tr>
-      <td class="command-image" valign=top id="toolreorder">
-      <img alt="" src="../images/reorder_large.png" title="reorder tool" width="32">
-      </td>
-      <td class="command-description">
-      <b>Reorder Groups Tool</b> - Redorder groups to change cut order
-      <p>
-      Grouped cuts will be cut first, in the order they were grouped.  However, in order to
-      edit a group it has to be exploded.  Grouping it again affects the cut order.  <br>
-      To reorder groups select this tool and then simply click on each group in the order you want them cut.<br>
-      You can use the 'Tools|Phlatboyz|Groups Summary' menu item to see the current group ordering.
-      </p>
-
-   </td>
-   </tr>
-
-
-    <tr>
-      <td class="command-image" valign=top id="toolgcode">
-              <img alt="" src="../images/gcode_large.png" title="Phlatboyz GCode" width="32">
-      </td>
-      <td class="command-description">
-<b>Generate GCode</b> - This tool is the last step in the SketchUcam process. Once
-the parts are surrounded by safe cutting area and all cut lines and
-tabs have been assigned, click on this icon to open a file save
-dialogue box to save your g-code file to the location you specify. <br><br>
-The SketchUcam will calculate the optimal cut order.  Or you can choose your own cut order.
-You do this by grouping your parts and they will be cut in the same order.
-<br><br>
-Note:
-The output g-code file has the extension .cnc but is simply a text file
-of X, Y, Z coordinates for the Phlatboyz machine to follow. Depending
-on your control software, this extension can be renamed to anything
-desired. To edit the g-code file, you can right click and open with a
-text editor of your choice. If you alter this file, your machine may 
-do unexpected things, be very careful! &nbsp; </td>
-                </tr>
-
-                <tr>
-                        <td class="command-image" valign=top id="toolgoto">
-                                <a href="http://www.Phlatboyz.com" title="Go To Phlatboyz Homepage"><img alt="" src="../images/Phlatboyz_homepage_large.png" title="Go To Phlatboyz Homepage" width="32" style="border-style: none"></a>
-                        </td>
-                        <td class="command-description">
-                                Link to the Phlatboyz homepage.
-                                &nbsp;
-                        </td>
-                </tr>
-
-                <tr>
-                        <td class="command-image" valign=top id="toolhelp">
-                                <img alt="" src="../images/helptool_large.png" title="Open Phlatboyz Help" width="32">
-                        </td>
-                        <td class="command-description">
-                                Opens this help file.  <br>
-                                Known to not display on Linux under WINE, search for file help.html under the Sketchup Plugins folder within ~/.wine.
-                                Installing IE8 using 'winetricks ie8' may solve this.
-                                &nbsp;
-                        </td>
-                </tr>
-        </tbody></table>
-
-
-
+<h3>Where to go next</h3>
+<ol>
+<li>First things to do after install
+<Li>Learn about the toolbar
+</ol>
         
         
         
