@@ -22,8 +22,8 @@ goto zipit
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   echo 23apr > phrev.dat
-   php move.php plugins\tp.zip SketchUcam-1_2b.rbz
+   echo a > phrev.dat
+   php move.php plugins\tp.zip SketchUcam-1_3.rbz
 
 goto end
 
