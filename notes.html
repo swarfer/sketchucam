@@ -292,7 +292,7 @@ List of things to fix/add for next release, in no particular order
    <dd>send the gantry to this position after the cuts.  Limited by material size.   
 </dl>      
 
-<h2> 1.2b unreleased</h2>
+<h2> 1.3 release 1 MAy 2015</h2>
 <dl>
 <dt>polygons were output as circle segments. 
    <dd>used to be output as circles unless exploded, now correctly detected and output as line segments.
@@ -306,6 +306,16 @@ List of things to fix/add for next release, in no particular order
       <dd>Options|Machine|Comment option, true outputs () format comments, false outputs ; format comments for GRBL
 <dt>Set Vtab ramping
          <dd>a tools menu item to use the current ramp settings to calculate Vtab size to conform to the angle limit.
+         
+<h2>1.3a unreleased</h2>
+<dl>
+   <dt>lance pointed out an arc error, some arcs are output with the wrong G code making the segments curve the wrong way.
+   <dd>this is because of the g3 = reverse ? !.g3? : g3  lines in milledges.
+   looks like a problem in the cut_face() routinein CutTool.rb where it checks for the center being inside or outside the face.
+   I don't think this is a sufficient test to determine direction, but what else is there?
+   
+   <dd>possible solution is a rightclick menu tool to reverse the g3 settings for a selected arc.
+         
 <hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
 </pre>

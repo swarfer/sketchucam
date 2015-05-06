@@ -144,7 +144,11 @@ module PhlatScript
                g3 = false
             else
                pt3 = Geom::Point3d.new [((pt1.x+pt2.x)/2), ((pt1.y+pt2.y)/2), 0]
-               g3 = !(Geom.point_in_polygon_2D(pt3, face.outer_loop.vertices, false))
+#               cinface = Geom.point_in_polygon_2D(c.center, face.outer_loop.vertices, true)
+#               pt3inface = Geom.point_in_polygon_2D(pt3, face.outer_loop.vertices, true)
+#               puts "arccurve center #{c.center} pt3 #{pt3} #{cinface} #{pt3inface}"
+#swarfer - changed last param to true for 1.3a - some arcs came out reversed and this appears to fix it
+               g3 = !(Geom.point_in_polygon_2D(pt3, face.outer_loop.vertices, true))
             end
             phlatcuts.each { |phlatcut| phlatcut.define_arc((c.radius + dist), (c.end_angle - c.start_angle), g3, e_last.curve.center) }
          end

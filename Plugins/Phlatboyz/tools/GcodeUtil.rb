@@ -1200,7 +1200,9 @@ puts " new #{newedges[i-1]}\n"
                                  center = phlatcut.center
                                  tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                                  puts "arc ramping in tcenter #{tcenter}" if (@debug)
-                                 if (reverse)
+                                 g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                                 puts "ramping multi g3=#{g3}"
+                                 if (g3)
                                     cmnd = 'G3'
                                  else
                                     cmnd = 'G2'
@@ -1232,7 +1234,8 @@ puts " new #{newedges[i-1]}\n"
                               center = phlatcut.center
                               tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                               puts "arc ramping in tcenter #{tcenter}" if (@debug)
-                              if (reverse)
+                              g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                              if (g3)
                                  cmnd = 'G3'
                               else
                                  cmnd = 'G2'
@@ -1254,13 +1257,14 @@ puts " new #{newedges[i-1]}\n"
                            puts "        point #{point.x}  #{point.y} #{point.z}"       if (@debug)
                            puts "  other point #{otherpoint.x}  #{otherpoint.y} #{otherpoint.z}"    if (@debug)
                         end
-
+                        
+                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
                         if (@ramp_next)
                            puts "RAMP_NEXT true for arc, ramping then arcing" if (@debug)
                            center = phlatcut.center
                            tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                            puts "arc ramping in tcenter #{tcenter}" if (@debug)
-                           if (reverse)
+                           if (g3)
                               cmnd = 'G3'
                            else
                               cmnd = 'G2'
@@ -1268,8 +1272,6 @@ puts " new #{newedges[i-1]}\n"
                            aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
                            @ramp_next = false
                         end
-                        
-                        g3 =  reverse  # the fix might be this simple....
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
                         center = phlatcut.center
@@ -1526,11 +1528,9 @@ puts " new #{newedges[i-1]}\n"
                      end # if else multipass
                   else #cut in progress
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
-
-#puts "reverse #{reverse} .g3 #{phlatcut.g3?}"
 #something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
-#                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                        g3 =  reverse  # the fix might be this simple....
+                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
+                        puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}" if (@debug)
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
 #                        center = phlatcut.center
