@@ -107,6 +107,7 @@ module PhlatScript
       if (self.is_arc?)
         radius = self.radius
         angle = self.angle
+        center = self.center
         g3 = self.g3?
       end
 
@@ -128,9 +129,27 @@ module PhlatScript
       if (radius)
         cut.radius = radius
         cut.angle = angle
+        cut.center = center
         cut.g3 = g3
       end
     end
+    
+   # given the start end and center point of an arccruve, find the midpoint of the arc
+   #ps start point
+   #pe endpoint
+   #pc center point
+   #r radius
+   def midarc(ps,pe,pc,r)
+      x = (ps.x + pe.x) /2
+      y = (ps.y + pe.y) /2
+
+      midpoint = Geom::Point3d.new(x,y,0)
+      vect = pc.vector_to(midpoint)
+      vect.length = r
+      p2 = pc.offset(vect)
+      return p2
+   end   
+
 
     def cut_points(reverse=false)
 # a couple of conditions that need to be tested to figure out the depth of the start and end point
@@ -158,7 +177,17 @@ module PhlatScript
 
       pts = [[@edge.start.position, start_depth]]
       if self.vtab?
-        ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
+         if (self.is_arc?)
+#            puts "#{self.center} #{self.g3?.inspect} #{self.radius}\n"
+            if self.g3?
+               ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
+               #ptm = midarc(@edge.start.position,@edge.end.position, self.center, self.radius)
+            else
+               ptm = midarc(@edge.end.position,@edge.start.position, self.center, self.radius)
+            end                  
+         else
+            ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
+         end
         pts.push([ptm, PhlatScript.tabDepth])
       else
         pts.push([@edge.start.position, PhlatScript.tabDepth])
