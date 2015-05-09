@@ -67,7 +67,7 @@ module PhlatScript
      def initialize
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
        self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating Phlatprinter g-code.' 
-       self.version = '1.3'   #b107
+       self.version = '1.3a'   #b107
        self.creator = 'Phlatboyz' 
        self.copyright = '2015, Phlatboyz' 
      end
