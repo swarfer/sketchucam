@@ -1013,7 +1013,7 @@ puts "  ay #{ay.to_mm}\n"
       newedges = edges
       pts = Array.new()
       edges.each { | phlatcut |
-#puts "#{phlatcut}\n";
+puts "#{phlatcut}\n";
          phlatcut.cut_points(reverse) { |cp, cut_factor|
 #puts "   #{cp}\n";
 #         point = (trans ? (cp.transform(trans)) : cp)
@@ -1409,7 +1409,7 @@ puts " new #{newedges[i-1]}\n"
          edges = optimize(edges,reverse,trans,aMill)
       end # optimize
 
-      #edges = dragknife(edges,reverse,trans)
+#      edges = dragknife(edges,reverse,trans)
 
       points = edges.size
       if @tabletop

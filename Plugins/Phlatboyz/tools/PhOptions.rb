@@ -429,7 +429,9 @@ module PhlatScript
          @default_bit_diameter
       end
       def default_bit_diameter=(newval)
-         @default_bit_diameter = newval
+         if (newval > 0)
+            @default_bit_diameter = newval
+         end
       end
 
       def default_tab_width
@@ -527,7 +529,9 @@ module PhlatScript
          @default_stepover
       end
       def default_stepover=(newval)
-         @default_stepover = newval
+         if (newval > 0) && (newval <= 100)
+            @default_stepover = newval
+         end
       end
 
       def min_z
@@ -909,7 +913,7 @@ end # class
             @options.default_overhead_gantry = (input[4] == 'true');
             @options.default_multipass       = (input[5] == 'true');
             @options.default_multipass_depth = Sketchup.parse_length(input[6]);
-            @options.default_stepover        = input[7].to_f;
+            @options.default_stepover        = input[7].to_f  if (input[7].to_f > 0)
             @options.min_z                   = Sketchup.parse_length(input[8]);
             @options.max_z                   = Sketchup.parse_length(input[9]);
             @options.bracket                 = (input[10] == 'true');

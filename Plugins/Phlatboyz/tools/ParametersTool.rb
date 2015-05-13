@@ -1,6 +1,7 @@
 require 'Phlatboyz/PhlatTool.rb'
 
-# $Id$
+# May 2015 - make sure bitdiameter cannot be set to 0, set precision to allow for enough digits
+#            also range check stepover% to 1..100
 module PhlatScript
 
   module WebDialogX
@@ -31,6 +32,30 @@ module PhlatScript
 
     def format_length(s)
       escape_javascript(Sketchup.format_length(s))
+    end
+    
+    # if model units are not set with enough precision digits we can lose so much precision that
+    # bitdiameter becomes 0.   try to prevent this by examining the number of decimals provided by the user and
+    # adjusting precision to suite if there are too few available
+    def CheckDecimals(str)
+       currentdec = Sketchup.active_model.options["UnitsOptions"]["LengthPrecision"]
+#       puts "currentdec #{currentdec}\n"
+       str.chomp!('mm')
+       str.chomp!('"')
+       while str[/0$/] == '0'       #remove trailing 0's
+          str.chop!
+#          puts "chopped #{str}\n"
+       end
+       bits = str.split('.')
+#       puts "bits #{bits}\n"
+       if (bits.length == 2)
+          newdec = bits[1].length
+#          print "newdec #{newdec}\n"
+          if newdec > currentdec
+             Sketchup.active_model.options["UnitsOptions"]["LengthPrecision"] = newdec
+             puts "precision set to #{newdec}\n"
+          end
+       end
     end
 
     def setValues(wd) # set values from ruby into java for given web_dialog(wd)
@@ -109,7 +134,11 @@ module PhlatScript
       PhlatScript.plungeRate = Sketchup.parse_length(wd.get_element_value("plungerate"))
       PhlatScript.materialThickness = Sketchup.parse_length(wd.get_element_value("materialthickness"))
       PhlatScript.cutFactor = wd.get_element_value("cutfactor") # don't use parse_length for percentages
-      PhlatScript.bitDiameter = Sketchup.parse_length(wd.get_element_value("bitdiameter"))
+      CheckDecimals(wd.get_element_value("bitdiameter"))
+      tmp = Sketchup.parse_length(wd.get_element_value("bitdiameter"))
+      if (tmp > 0)
+         PhlatScript.bitDiameter = tmp
+      end
       PhlatScript.tabWidth = Sketchup.parse_length(wd.get_element_value("tabwidth"))
       PhlatScript.tabDepth = wd.get_element_value("tabdepthfactor")
       PhlatScript.safeTravel = Sketchup.parse_length(wd.get_element_value("safetravel"))
@@ -121,11 +150,17 @@ module PhlatScript
       if PhlatScript.multipassEnabled?
         wd.execute_script("isChecked('multipass')")
         PhlatScript.useMultipass = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-        PhlatScript.multipassDepth = Sketchup.parse_length(wd.get_element_value("multipassdepth"))
+        tmp = Sketchup.parse_length(wd.get_element_value("multipassdepth"))
+        if (tmp > 0)
+           PhlatScript.multipassDepth = tmp
+        end
       end
       wd.execute_script("isChecked('gen3D')")
       PhlatScript.gen3D = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-      PhlatScript.stepover = wd.get_element_value("stepover")
+      tmp = wd.get_element_value("stepover").to_f
+      if (tmp > 0) && (tmp <= 100)
+         PhlatScript.stepover = tmp
+      end
 
       wd.execute_script("isChecked('showgplot')")
       PhlatScript.showGplot = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
@@ -220,7 +255,11 @@ module PhlatScript
             PhlatScript.plungeRate  = Sketchup.parse_length(input[2]).to_f
             PhlatScript.materialThickness = Sketchup.parse_length(input[3]).to_f
             PhlatScript.cutFactor = input[4].to_i
-            PhlatScript.bitDiameter = Sketchup.parse_length(input[5]).to_f
+            CheckDecimals(input[5])
+            tmp = Sketchup.parse_length(input[5]).to_f
+            if (tmp > 0) 
+               PhlatScript.bitDiameter = tmp
+            end
             PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
             PhlatScript.tabDepth = input[7].to_i
             PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
@@ -230,9 +269,15 @@ module PhlatScript
 
             if PhlatScript.multipassEnabled?
                PhlatScript.useMultipass = (input[12] == 'true')
-               PhlatScript.multipassDepth = Sketchup.parse_length(input[13]).to_f
+               tmp = Sketchup.parse_length(input[13]).to_f
+               if (tmp > 0)
+                  PhlatScript.multipassDepth = tmp
+               end
                PhlatScript.gen3D = (input[14] == 'true')
-               PhlatScript.stepover = input[15].to_f
+               tmp = input[15].to_f
+               if (tmp > 0) && (tmp <= 100)
+                  PhlatScript.stepover = tmp
+               end
                PhlatScript.showGplot = (input[16] == 'true')
                PhlatScript.tabletop = (input[17] == 'true')
                PhlatScript.mustramp = (input[18] == 'true')

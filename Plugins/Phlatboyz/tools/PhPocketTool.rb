@@ -41,7 +41,7 @@ module PhlatScript
       # set this to change zigzag stepover, less for hard material, more for soft
       @stepover_percent = PhlatScript.stepover
       #               puts "stepover percent #{@stepover_percent}%"
-      if (@stepover_percent < 100)
+      if (@stepover_percent <= 100)
          @stepOver = @stepover_percent / 100
       else
          @stepOver = 0.5
@@ -236,8 +236,8 @@ module PhlatScript
       if zigzag_points != nil
          if (zigzag_points.length >= 2)
             zedges = model.entities.add_curve(zigzag_points)
-            cuts = PocketCut.cut(zedges)
-            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            cuts = PocketCut.cut(zedges, compute_fold_depth_factor)
+#            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
          end
       end
       if (contour_points != nil)
@@ -254,8 +254,8 @@ module PhlatScript
 #               cedges = cface.edges
                cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
             end
-            cuts = PocketCut.cut(cedges)
-            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            cuts = PocketCut.cut(cedges,compute_fold_depth_factor)
+#            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
          end
       end
 
@@ -365,6 +365,7 @@ end
          next if ((x1 < x2) && ((x < x1) || (x > x2)))
 
          line = [points[i-1], points[i]]
+#         puts "#{line} #{x.to_mm}"
          pt = Geom::intersect_line_plane(line, plane)
          if (pt)
             pts << pt
@@ -379,9 +380,9 @@ end
       dir = 1
       zigzag_points = []
       if @keyflag == 1
-         offset = @bit_diameter * 0.1
+         offset = @bit_diameter * @stepOver
       else
-         offset = @bit_diameter * 0.6
+         offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
       end
       #puts "   offset #{offset}"
 
@@ -390,10 +391,12 @@ end
       #puts "offset_points #{offset_points}"
 
       bb = loop.face.bounds
-      if @keyflag == 0
-         y = bb.min.y + offset
-      else
-         y = bb.min.y + offset
+      y = bb.min.y + offset
+      
+      stepOverinuse = @bit_diameter * @stepOver
+      if (@stepOver != 0.5)
+         ylen = bb.max.y - bb.min.y - (2 * offset) - 0.1.mm
+         stepOverinuse = getfuzzystepover(ylen)
       end
 
       while (y < bb.max.y) do
@@ -410,11 +413,10 @@ end
             end
          end
          #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
-         y = y + @bit_diameter * @stepOver
-         if (@stepOver <= 0) # prevent infinite loop
+         y = y + stepOverinuse
+         if (stepOverinuse <= 0) # prevent infinite loop
             puts "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
             break;
-            #code
          end
       end #while
       return zigzag_points
@@ -429,28 +431,75 @@ end
       end
    end
 
-def get_zigzag_points_x(loop)
-      #puts "get zigzag points #{@stepOver}"
+   def getfuzzystepover(len)
+      stepOverinuse = curstep = @bit_diameter * @stepOver
+      
+      steps = len / curstep
+      puts " steps #{steps} curstep #{curstep.to_mm} len #{len.to_mm}\n"
+      if (@stepOver < 0.5)
+         newsteps = (steps + 0.5).round   # step size gets smaller  
+      else
+         newsteps = (steps - 0.5).round  # step size gets bigger
+      end   
+      newstep = len / newsteps
+      newstepover = newstep / @bit_diameter
+      
+      while (newstepover > 1.0)  #this might never happen, but justincase
+         puts "increasing steps"
+         newsteps += 1
+         newstep = len / newsteps
+         newstepover = newstep / @bit_diameter
+      end
+      
+      newstep = (newstep * 10000.0).round / 10000.0
+      newstep = 1.mm if (newstep == 0.0)
+      
+      puts "newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
+      if (newstepover > 0)
+         stepOverinuse = newstep
+      end
+      puts ""
+      return stepOverinuse           
+   end   
+
+   def get_zigzag_points_x(loop)
+      puts "get X zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
-      if @keyflag == 1
+      if @keyflag == 1   # do only zigzag
          offset = @bit_diameter * 0.1
       else
          offset = @bit_diameter * 0.6
       end
-      #puts "   offset #{offset}"
+
+      puts "  offset #{offset}"
+      if @keyflag == 1
+         offset = @bit_diameter * @stepOver
+      else
+#         if (@stepOver <= 0.5)
+            offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
+#         else
+#            offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver /  2)
+#         end            
+      end
+      puts "   offset #{offset}"
 
       offset_points = get_offset_points(loop, -(offset))
-
       #puts "offset_points #{offset_points}"
 
       bb = loop.face.bounds
-      if @keyflag == 0
-         x = bb.min.x + offset
-      else
-         x = bb.min.x + offset
+      x = bb.min.x + offset
+      
+      #fuzzy stepover
+      stepOverinuse = @bit_diameter * @stepOver
+      if (@stepOver != 0.5)
+         xlen = bb.max.x - bb.min.x - (2 * offset) - 0.1.mm
+         stepOverinuse = getfuzzystepover(xlen)
       end
-      while (x < bb.max.x) do
+      
+      xend = bb.max.x 
+      while (x < xend) do
+#         puts "x #{x.to_mm}"
          pts = get_hatch_points_x(offset_points, x)
          if (pts.length >= 2)
             if (dir == 1)
@@ -464,12 +513,12 @@ def get_zigzag_points_x(loop)
             end
          end
          #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
-         x = x + @bit_diameter * @stepOver
-         if (@stepOver <= 0) # prevent infinite loop
-            puts "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
-            break;
+         x = x + stepOverinuse
+#         if (stepOverinuse <= 0) # prevent infinite loop
+#            puts "stepOver <= 0, #{stepOverinuse} #{@bit_diameter}"
+#            break;
             #code
-         end
+#         end
       end #while
       return zigzag_points
    end

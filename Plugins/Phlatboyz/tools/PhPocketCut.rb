@@ -42,22 +42,23 @@ class PocketCut < CenterLineCut
       return Key_pocket_cut
    end
 
-    def PocketCut.cut(edges)
+    def PocketCut.cut(edges,depth)
       cuts = []
       edges.each do | e |
         cut = PocketCut.new
-        cut.cut(e)
+        cut.cut(e,depth)
         cuts.push(cut)
       end
       return cuts
     end
 
-    def cut(edge)
+    def cut(edge,depth)
 #	    puts "cut #{edge}"
       model = edge.model
 #      model.start_operation("Creating Pocket Line", true, true)
       @edge = edge
       @edge.material = Color_pocket_cut
+      cut_factor = depth
       @edge.set_attribute(Dict_name, Dict_edge_type, Key_pocket_cut)
 #      model.commit_operation
     end
