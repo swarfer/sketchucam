@@ -374,16 +374,27 @@ end
       pts.uniq!
       return pts.sort{|a,b| a.y <=> b.y}
    end
+   
+   #get the offset from the main loop for the zigzag lines
+   def getOffset
+      #if @keyflag == 1
+      #   offset = @bit_diameter * @stepOver
+      #else
+      #   offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
+      #end
+      if @keyflag == 1   # then only zigzag
+         offset = @bit_diameter * 0.1
+      else
+         offset = @bit_diameter * 0.6  #zigzag plus outline so leave space for outline
+      end
+      return offset
+   end
 
    def get_zigzag_points_y(loop)
       #puts "get zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
-      if @keyflag == 1
-         offset = @bit_diameter * @stepOver
-      else
-         offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
-      end
+      offset = getOffset()
       #puts "   offset #{offset}"
 
       offset_points = get_offset_points(loop, -(offset))
@@ -430,7 +441,7 @@ end
          return get_zigzag_points_y(loop)  # zigs along x - suites gantries
       end
    end
-
+#=============================================================
    def getfuzzystepover(len)
       stepOverinuse = curstep = @bit_diameter * @stepOver
       
@@ -466,23 +477,12 @@ end
       puts "get X zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
-      if @keyflag == 1   # do only zigzag
-         offset = @bit_diameter * 0.1
-      else
-         offset = @bit_diameter * 0.6
-      end
-
-      puts "  offset #{offset}"
-      if @keyflag == 1
-         offset = @bit_diameter * @stepOver
-      else
-#         if (@stepOver <= 0.5)
-            offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
-#         else
-#            offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver /  2)
-#         end            
-      end
-      puts "   offset #{offset}"
+      #if @keyflag == 1   # do only zigzag
+      #   offset = @bit_diameter * 0.1
+      #else
+      #   offset = @bit_diameter * 0.6
+      #end
+      offset =  getOffset()
 
       offset_points = get_offset_points(loop, -(offset))
       #puts "offset_points #{offset_points}"
