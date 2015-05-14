@@ -20,6 +20,12 @@
 #
 # ** Swarfer 2013-08-27 - integrated into Phlatscript toolset
 #	default depth is 50% - no support for additional languages yet
+#
+#  swarfer May 2015 - use fuzzy stepover.  this makes the zigzag start and end at the same offset from the outline
+#                   - use the stepover to set the offset.  used to use 0.1 offset of the zigzag from the outline, but   
+#                       for larger offsets this does not make the best use of time.  now uses half the stepover for the offset
+#                       up to 75%, then 1/3 up to 85%, then 1/4 - the offset cannot be allowed to grow too large, if it does
+#                       you get pins left behind in the pocket, especially on curved edges.
 # $Id$
 
 require 'sketchup.rb'
@@ -339,9 +345,24 @@ end
       for i in 0..points.length-1 do
          y1 = points[i-1].y
          y2 = points[i].y
-         next if (y1 == y2)
-         next if ((y1 > y2) && ((y > y1) || (y < y2)))
-         next if ((y1 < y2) && ((y < y1) || (y > y2)))
+         # very small differences in Y values will cause the following tests to 'next' when they should not
+         # ie Y might display as 2.9mm but be 1e-17 different than the point.y, and y < y1 so you get no point
+         # where you want apoint
+         #rather use signed differences
+#         next if (y1 == y2)
+#         next if ((y1 > y2) && ((y > y1) || (y < y2)))
+#         next if ((y1 < y2) && ((y < y1) || (y > y2)))
+         if (y1 - y2).abs < 0.00001   # 1/100 of a thou, small enough?
+            next
+         end
+         d1 = y - y1
+         d2 = y - y2
+         if ((y1 > y2) && ((d1 > 0.0001) || (d2 < -0.0001)))
+            next
+         end
+         if ((y1 < y2) && ((d1 < -0.0001) || (d2 > 0.0001)))
+            next
+         end
 
          line = [points[i-1], points[i]]
          pt = Geom::intersect_line_plane(line, plane)
@@ -360,9 +381,20 @@ end
       for i in 0..points.length-1 do
          x1 = points[i-1].x
          x2 = points[i].x
-         next if (x1 == x2)
-         next if ((x1 > x2) && ((x > x1) || (x < x2)))
-         next if ((x1 < x2) && ((x < x1) || (x > x2)))
+#         next if (x1 == x2)
+#         next if ((x1 > x2) && ((x > x1) || (x < x2)))
+#         next if ((x1 < x2) && ((x < x1) || (x > x2)))
+         if (x1 - x2).abs < 0.00001
+            next
+         end
+         d1 = x - x1
+         d2 = x - x2
+         if ((x1 > x2) && ((d1 > 0.0001) || (d2 < -0.0001)))  # the signs are important
+            next
+         end
+         if ((x1 < x2) && ((d1 < -0.0001) || (d2 > 0.0001)))
+            next
+         end
 
          line = [points[i-1], points[i]]
 #         puts "#{line} #{x.to_mm}"
@@ -377,21 +409,26 @@ end
    
    #get the offset from the main loop for the zigzag lines
    def getOffset
-      #if @keyflag == 1
-      #   offset = @bit_diameter * @stepOver
-      #else
-      #   offset = @bit_diameter * 0.5 + (@bit_diameter * @stepOver)
-      #end
-      if @keyflag == 1   # then only zigzag
-         offset = @bit_diameter * 0.1
-      else
-         offset = @bit_diameter * 0.6  #zigzag plus outline so leave space for outline
+      #as stepover get bigger, so the chance of missing bits around the edge inscreases, so make the offset smaller for large stepovers
+      div = (@stepOver > 0.75) ? 3 : 2
+      if (@stepOver > 85)
+         div = 4
       end
+      if @keyflag == 1
+         offset = @bit_diameter * @stepOver / div
+      else
+         offset = @bit_diameter * 0.5 + @bit_diameter * @stepOver / div
+      end
+#      if @keyflag == 1   # then only zigzag
+#         offset = @bit_diameter * 0.1
+#      else
+#         offset = @bit_diameter * 0.6  #zigzag plus outline so leave space for outline
+#      end
       return offset
    end
 
    def get_zigzag_points_y(loop)
-      #puts "get zigzag points #{@stepOver}"
+      #puts "get zigzag Y points #{@stepOver}"
       dir = 1
       zigzag_points = []
       offset = getOffset()
@@ -426,7 +463,7 @@ end
          #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
          y = y + stepOverinuse
          if (stepOverinuse <= 0) # prevent infinite loop
-            puts "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
+            print "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
             break;
          end
       end #while
@@ -446,7 +483,7 @@ end
       stepOverinuse = curstep = @bit_diameter * @stepOver
       
       steps = len / curstep
-      puts " steps #{steps} curstep #{curstep.to_mm} len #{len.to_mm}\n"
+      #puts " steps #{steps} curstep #{curstep.to_mm} len #{len.to_mm}\n"
       if (@stepOver < 0.5)
          newsteps = (steps + 0.5).round   # step size gets smaller  
       else
@@ -456,7 +493,7 @@ end
       newstepover = newstep / @bit_diameter
       
       while (newstepover > 1.0)  #this might never happen, but justincase
-         puts "increasing steps"
+         #puts "increasing steps"
          newsteps += 1
          newstep = len / newsteps
          newstepover = newstep / @bit_diameter
@@ -465,16 +502,16 @@ end
       newstep = (newstep * 10000.0).round / 10000.0
       newstep = 1.mm if (newstep == 0.0)
       
-      puts "newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
+      #puts "newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
       if (newstepover > 0)
          stepOverinuse = newstep
       end
-      puts ""
+      #puts ""
       return stepOverinuse           
    end   
 
    def get_zigzag_points_x(loop)
-      puts "get X zigzag points #{@stepOver}"
+      #puts "get X zigzag points #{@stepOver}"
       dir = 1
       zigzag_points = []
       #if @keyflag == 1   # do only zigzag
@@ -483,6 +520,7 @@ end
       #   offset = @bit_diameter * 0.6
       #end
       offset =  getOffset()
+      #puts "offset #{offset.to_mm}"
 
       offset_points = get_offset_points(loop, -(offset))
       #puts "offset_points #{offset_points}"
@@ -514,11 +552,10 @@ end
          end
          #puts "@stepOver #{@stepOver}  @stepover_percent #{@stepover_percent}"
          x = x + stepOverinuse
-#         if (stepOverinuse <= 0) # prevent infinite loop
-#            puts "stepOver <= 0, #{stepOverinuse} #{@bit_diameter}"
-#            break;
-            #code
-#         end
+         if (stepOverinuse <= 0) # prevent infinite loop
+            puts "stepOver <= 0, #{stepOverinuse} #{@bit_diameter}"
+            break;
+         end
       end #while
       return zigzag_points
    end
