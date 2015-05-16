@@ -842,6 +842,11 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             } #cut_points
             idx += 1
          } # edges.each
+         
+         if (idxsave == -1) #this means that no optimized edge was found, often happens with inside cuts on circles with ramping on, the segments are too short
+            return edges
+         end
+         
          #puts "reStart from #{idxsave} of #{cnt} mindist #{mindist}"
          #puts "reverse #{reverse}"
          prev = (idxsave - 1 + cnt) % cnt
@@ -951,7 +956,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 
          #puts "  idxsave #{idxsave} reverse=#{reverse} whichend=#{@whichend} kind_of=#{ctype}"
          #idxsave = 0
-         if (idxsave != 0)
+         if (idxsave > 0)
             newedges = []
             done = false
             idx = idxsave # start here

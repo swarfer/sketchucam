@@ -54,6 +54,7 @@ module PhlatScript
          @min_z                  =   PhlatScript.conformat(phoptions.min_z)
          @max_z                  =   PhlatScript.conformat(phoptions.max_z)
          @bracket                =   (phoptions.bracket? ? '1' : '0')
+         @usecomments            =   (phoptions.usecomments? ? '1' : '0')
       #features
          @use_vtab_speed_limit   =   (phoptions.use_vtab_speed_limit? ? '1' : '0')
          @use_exact_path         =   (phoptions.use_exact_path? ? '1' : '0')
@@ -113,6 +114,7 @@ module PhlatScript
          @min_z = Min_z
          @max_z = Max_z
          @bracket = true  #default to using bracket style comments, Mach3 likes this, GRBL likes ;
+         @usecomments = true
          #features
          @use_vtab_speed_limit = Use_vtab_speed_limit
          @use_exact_path = Use_exact_path
@@ -204,6 +206,10 @@ module PhlatScript
             value = -1
             value = getvalue(optin['bracket'])                if (optin.has_key?('bracket'))
             @bracket = value > 0 ? true :  false              if (value != -1)
+            
+            value = -1
+            value = getvalue(optin['usecomments'])                if (optin.has_key?('usecomments'))
+            @usecomments = value > 0 ? true :  false              if (value != -1)
             
          #features
          # Use_vtab_speed_limit = false
@@ -554,6 +560,14 @@ module PhlatScript
       def bracket=(newstate)
          @bracket=newstate
       end   
+
+      def usecomments?
+         @usecomments
+      end
+      def usecomments=(newstate)
+         @usecomments=newstate
+      end   
+      
 #features
       def use_vtab_speed_limit?
          @use_vtab_speed_limit
@@ -873,7 +887,8 @@ end # class
             'Default_stepover % ',
             'Min_z (- total Z travel) ',
             'Max_z (+ total Z travel) ',
-            'Comments use Bracket(true) or semicolon(false)'
+            'Comments use Bracket(true) or semicolon(false)',
+            'Output Comments'
             ];
          defaults=[
             Sketchup.format_length(@options.default_safe_origin_x),
@@ -886,7 +901,8 @@ end # class
             @options.default_stepover.to_s,
             Sketchup.format_length(@options.min_z),
             Sketchup.format_length(@options.max_z),
-            @options.bracket?.inspect()
+            @options.bracket?.inspect(),
+            @options.usecomments?.inspect()
             ];
          list=[
             '',
@@ -899,6 +915,7 @@ end # class
             '',
             '',
             '',
+            'true|false',
             'true|false'
             ];
 
@@ -917,6 +934,7 @@ end # class
             @options.min_z                   = Sketchup.parse_length(input[8]);
             @options.max_z                   = Sketchup.parse_length(input[9]);
             @options.bracket                 = (input[10] == 'true');
+            @options.usecomments             = (input[11] == 'true');
 
             @options.save
          end # if input

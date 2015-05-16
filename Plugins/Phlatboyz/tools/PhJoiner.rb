@@ -4,6 +4,8 @@
 #select files
 #join them
 #output new file to new name
+#will obey phoptions.usecomments? and not output new comments if false.
+# will not remove existing comments from input files!
 
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'
@@ -30,7 +32,6 @@ module PhlatScript
        #credit this change! 13 Apr 2015
        #Lance Lefebure <lance@lefebure.com> 
        #It now handles file extensions better and keeps the user in the same directory when selecting subsequent files. 
-       #Feel free to roll this into your next release.
              
          file_ext_2 = ""							# This will be the extension of the last file the user picked
          file_ext_1 = $phoptions.default_file_ext	# Local variable so we can format it
@@ -44,7 +45,7 @@ module PhlatScript
             wildcard = ".#{file_ext_1} Files|\*.#{file_ext_1}|All Files|\*.\*||"
             result = UI.openpanel("Select first G-code file.", directory_name, wildcard)
          else
-            #for < 2014
+            #for < 2014 dialog is broken so work around it
             wildcard = "*.#{file_ext_1}"
             result = UI.openpanel("Select first G-code file.", wildcard)
          end
@@ -100,12 +101,12 @@ module PhlatScript
          
          outf.puts("%")
          idx = 0
-         outf.puts(PhlatScript.gcomment("joined files"))
+         outf.puts(PhlatScript.gcomment("joined files"))     if ($phoptions.usecomments?)
          while(idx < filenames.length)
 #            outf.puts(PhlatScript.gcomment("   #{File.basename(filenames[idx])}") )
             comms = PhlatScript.gcomments("   #{File.basename(filenames[idx])}")
             comms.each { |cm|
-               outf.puts(cm)
+               outf.puts(cm)     if ($phoptions.usecomments?)
                }
             idx += 1
          end
@@ -128,10 +129,12 @@ module PhlatScript
                   line = inf.readline
                end
                puts "header skipped #{idx}"
-               comms = PhlatScript.gcomments("Join   #{File.basename(filenames[idx])}")
-               comms.each { |cm|
-                  outf.puts(cm)
-                  }
+               if ($phoptions.usecomments?)
+                  comms = PhlatScript.gcomments("Join   #{File.basename(filenames[idx])}")
+                  comms.each { |cm|
+                     outf.puts(cm)
+                     }
+               end
                outf.puts(line)
                end
             #output till footer

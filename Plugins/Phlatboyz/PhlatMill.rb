@@ -91,17 +91,19 @@ module PhlatScript
     
     #print a commment using current comment options
    def cncPrintC(string)
-      string = string.gsub("\n","")
-      string = string.gsub(/\(|\)/,"")
-      if (string.length > 48)
-         chunks = chunk(string,45)
-         chunks.each { |bit|
-            bb = PhlatScript.gcomment(bit)
-            cncPrint(bb + "\n")
-            }
-      else
-         string = PhlatScript.gcomment(string)
-         cncPrint(string + "\n")
+      if ($phoptions.usecomments?)    # only output comments if usecomments is true
+         string = string.gsub("\n","")
+         string = string.gsub(/\(|\)/,"")
+         if (string.length > 48)
+            chunks = chunk(string,45)
+            chunks.each { |bit|
+               bb = PhlatScript.gcomment(bit)
+               cncPrint(bb + "\n")
+               }
+         else
+            string = PhlatScript.gcomment(string)
+            cncPrint(string + "\n")
+         end
       end
    end
 
@@ -1287,7 +1289,11 @@ module PhlatScript
         @no_move_count += 1
       else
         retract(@retract_depth)
-        cncPrint("G0 X0 Y0 " , PhlatScript.gcomment("home") , "\n")
+        cncPrint("G0 X0 Y0 ")
+        if ($phoptions.usecomments?)  
+           cncPrint(PhlatScript.gcomment("home") )
+        end   
+        cncPrint("\n")
         @cx = 0
         @cy = 0
         @cz = @retract_depth
