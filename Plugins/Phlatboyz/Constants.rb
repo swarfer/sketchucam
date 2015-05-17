@@ -262,6 +262,7 @@ Default_Home_Height = Default_safe_travel
   PB_MENU_TOOLBAR = 1
   PB_MENU_MENU = 2
   PB_MENU_CONTEXT = 4
+  PB_MENU_QTOOL = 8
 
 end # module PhlatScript
 

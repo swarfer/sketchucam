@@ -416,6 +416,8 @@ module PhlatScript
 
   def PhlatScript.loadTools
     @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz"))
+    @@qToolbar = UI::Toolbar.new('SketchUcam Quick Tools')
+    
     add_separator_to_menu("Tools")
     @@phlatboyz_tools_submenu = UI.menu("Tools").add_submenu(getString("Phlatboyz"))
 
@@ -500,10 +502,15 @@ module PhlatScript
     addToolItem( DisplayProfileFolderTool.new() )
     addToolItem( GroupList.new() )   # from GcodeUtil.rb but want the entry here
 
+    require 'Phlatboyz/tools/Quicktools.rb'
+    addToolItem(UseCommentsTool.new())
+    addToolItem(UseBracketsTool.new())
+    
 
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
     @@commandToolbar.show
+    @@qToolbar.show
   end
 
    def PhlatScript.addToolItem(tool, submenu=@@phlatboyz_tools_submenu)
@@ -516,6 +523,12 @@ module PhlatScript
          cmd.large_icon = tool.largeIcon  # only need these for a toolbar item
          cmd.small_icon = tool.smallIcon
          @@commandToolbar.add_item(cmd)
+      end
+      if ((tool.tooltype & PB_MENU_QTOOL) == PB_MENU_QTOOL)
+         cmd.large_icon = tool.largeIcon  # only need these for a toolbar item
+         cmd.small_icon = tool.smallIcon
+         @@qToolbar.add_item(cmd)
+         tool.cmmd = cmd
       end
       @@tools.push(tool)
       @@cuts.push(tool.cut_class) if tool.cut_class

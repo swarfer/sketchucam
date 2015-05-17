@@ -14,11 +14,19 @@ module PhlatScript
    class JoinerTool < PhlatTool
 
       def initialize
-         @tooltype=(PB_MENU_MENU)
-         @tooltip="1Gcode Joiner"
+         toolname = 'Joiner'
+         @tooltype=(PB_MENU_MENU + PB_MENU_QTOOL)
+         @tooltip="G-code Joiner"
          @statusText="2Gcode Joiner"
          @menuItem="3Gcode joiner"
          @menuText="GCode Joiner"
+         @largeIcon = "images/#{toolname.downcase}_large.png"
+         @smallIcon = "images/#{toolname.downcase}_small.png"
+         @cmmd = nil
+      end
+      
+      def cmmd=(val)
+         @cmmd = val
       end
 
       def select
