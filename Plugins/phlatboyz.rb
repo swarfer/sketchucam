@@ -68,6 +68,17 @@ module PhlatScript
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
        self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating Phlatprinter g-code.' 
        self.version = '1.3a'   #b107
+       
+       #try to find the phrev.dat file, if it exists add the version to the .version
+       #this is purely internal, an ordinary user never sees this
+       vv = Sketchup.find_support_file("phrev.dat")
+       if (vv != nil)
+          #read first line from file
+          lines=IO.readlines(vv)
+          vstring = lines[0]
+          self.version += "-" + vstring.strip
+       end
+       
        self.creator = 'Phlatboyz' 
        self.copyright = '2015, Phlatboyz' 
      end
