@@ -415,7 +415,7 @@ module PhlatScript
   private
 
   def PhlatScript.loadTools
-    @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz"))
+    @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz") + ' SketchUcam')
     @@qToolbar = UI::Toolbar.new('SketchUcam Quick Tools')
     
     add_separator_to_menu("Tools")
