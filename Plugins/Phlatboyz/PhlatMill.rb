@@ -92,7 +92,7 @@ module PhlatScript
     #print a commment using current comment options
    def cncPrintC(string)
       if ($phoptions.usecomments?)    # only output comments if usecomments is true
-         string = string.gsub("\n","")
+         string = string.strip.gsub(/\n/,"")
          string = string.gsub(/\(|\)/,"")
          if (string.length > 48)
             chunks = chunk(string,45)
@@ -183,7 +183,8 @@ module PhlatScript
 
       cncPrintC("www.PhlatBoyz.com")
       PhlatScript.checkParens(@comment, "Comment")
-      @comment.split("$/").each{|line| cncPrintC(line)} if !@comment.empty?
+      puts @comment
+      @comment.split(/\$\//).each{|line| cncPrintC(line)} if !@comment.empty?
 
       #adapted from swarfer's metric code
       #metric by SWARFER - this does the basic setting up from the drawing units

@@ -242,8 +242,8 @@ module PhlatScript
       if zigzag_points != nil
          if (zigzag_points.length >= 2)
             zedges = model.entities.add_curve(zigzag_points)
-            cuts = PocketCut.cut(zedges, compute_fold_depth_factor)
-#            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            cuts = PocketCut.cut(zedges)
+            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
          end
       end
       if (contour_points != nil)
@@ -260,8 +260,8 @@ module PhlatScript
 #               cedges = cface.edges
                cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
             end
-            cuts = PocketCut.cut(cedges,compute_fold_depth_factor)
-#            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            cuts = PocketCut.cut(cedges)
+            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
          end
       end
 
