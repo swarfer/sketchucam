@@ -430,23 +430,21 @@ module PhlatScript
     addToolItem(ProfilesDeleteTool.new() )
 
     require 'Phlatboyz/tools/PhJoiner.rb'
-    addToolItem(JoinerTool.new())
+    jcmd = addToolItem(jtool = JoinerTool.new())  # need to add it to toolbar out of order
 
     require 'Phlatboyz/tools/RampTabTool.rb'
-    addToolItem(RampTabTool.new())
+    addToolItem(RampTabTool.new())    
 	
 	
     @@phlatboyz_tools_submenu.add_separator
-    require 'PhlatBoyz/tools/PhOptions.rb'
-    $phoptions = Options.new()
-    optionssubmenu = @@phlatboyz_tools_submenu.add_submenu('Options')
-    addToolItem( OptionsToolsTool.new($phoptions) , optionssubmenu)
-    addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu)
-    addToolItem( OptionsMachTool.new($phoptions) , optionssubmenu)
-    addToolItem( OptionsFeatTool.new($phoptions) , optionssubmenu)
-    addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
-
-
+       require 'PhlatBoyz/tools/PhOptions.rb'
+       $phoptions = Options.new()
+       optionssubmenu = @@phlatboyz_tools_submenu.add_submenu('Options')
+       addToolItem( OptionsToolsTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsMachTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsFeatTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
     @@phlatboyz_tools_submenu.add_separator
 
     require 'Phlatboyz/tools/CutTool.rb'
@@ -489,6 +487,13 @@ module PhlatScript
       $PhlatScript_PlugName.add_item(label) { Sketchup.active_model.select_tool Ky_Reorder_Groups.new }
     end
 
+   @@commandToolbar.add_separator 
+
+   jcmd.large_icon = jtool.largeIcon  # only need these for a toolbar item
+   jcmd.small_icon = jtool.smallIcon
+   @@commandToolbar.add_item(jcmd)
+
+   
     require 'Phlatboyz/tools/GcodeUtil.rb'
     addToolItem(GcodeUtil.new())
 
@@ -532,6 +537,7 @@ module PhlatScript
       end
       @@tools.push(tool)
       @@cuts.push(tool.cut_class) if tool.cut_class
+      return cmd
    end
 
 end

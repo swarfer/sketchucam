@@ -15,7 +15,7 @@ module PhlatScript
 
       def initialize
          toolname = 'Joiner'
-         @tooltype=(PB_MENU_MENU + PB_MENU_QTOOL)
+         @tooltype=(PB_MENU_MENU)
          @tooltip="G-code Joiner"
          @statusText="2Gcode Joiner"
          @menuItem="3Gcode joiner"

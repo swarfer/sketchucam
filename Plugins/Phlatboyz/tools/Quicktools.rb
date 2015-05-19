@@ -9,12 +9,16 @@ module PhlatScript
          toolname = 'Use Comments?'
          @tooltype=(PB_MENU_QTOOL)
          @tooltip="Toggle Use Comments"
-         @statusText="Comments on/off"
+         @statusText= ($phoptions.usecomments?) ? "UseComments is ON" : "UseComments is OFF"
          @menuItem="Comments on/off"
          @menuText="Comments on/off"
          @largeIcon = "images/comment_large.png"
          @smallIcon = "images/comment_small.png"
          @cmmd = nil
+      end
+      
+      def statusText
+         return @statusText
       end
        
       def cmmd=(val)
@@ -35,12 +39,16 @@ class UseBracketsTool < PhlatTool
          toolname = 'Comment Style'
          @tooltype=(PB_MENU_QTOOL)
          @tooltip="Toggle Comment style"
-         @statusText="Toggle Comment Style"
+         @statusText= ($phoptions.bracket?) ? "Comment style is ()" : "Comment style is ;" 
          @menuItem="Toggle Comment Style"
          @menuText="Toggle Comment Style"
          @largeIcon = "images/bracket_large.png"
          @smallIcon = "images/bracket_small.png"
          @cmmd = nil
+      end
+      
+      def statusText
+         return @statusText
       end
        
       def cmmd=(val)
