@@ -137,6 +137,7 @@ module PhlatScript
             GCodeGen3D.new.generate
             if PhlatScript.showGplot?
                GPlot.new.plot
+               Sketchup.active_model.select_tool(nil)  #auto select the select tool to force program show
             end
          else
             return

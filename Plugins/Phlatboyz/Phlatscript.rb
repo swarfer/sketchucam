@@ -496,6 +496,7 @@ module PhlatScript
    
     require 'Phlatboyz/tools/GcodeUtil.rb'
     addToolItem(GcodeUtil.new())
+    @@commandToolbar.add_separator 
 
         @@phlatboyz_tools_submenu.add_separator
     require 'Phlatboyz/tools/HomepageTool.rb'

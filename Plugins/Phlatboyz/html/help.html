@@ -112,7 +112,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3</b><br>May 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3a</b><br>May 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -193,6 +193,7 @@
                   <Li><A href="sketchucamtoolbar.html#tooleraser">Eraser</a>
                   <Li><A href="sketchucamtoolbar.html#toolsafe">Safe Area mover</a>
                   <Li><A href="sketchucamtoolbar.html#toolreorder">Group reorder</a>
+                  <Li><A href="sketchucamtoolbar.html#tooljoiner">G-code Joiner</a>
                   <Li><A href="sketchucamtoolbar.html#toolgcode">Generate G-code</a>
                   <Li><A href="sketchucamtoolbar.html#toolgoto">Goto Phlatforum</a>
                   <Li><A href="sketchucamtoolbar.html#toolhelp">Help</a>
@@ -217,12 +218,26 @@
       <li><a href="howto_ramping.html">Ramping:</a> (option on parameters dialog) instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
       <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
       <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the G-code.
+      <li><a href="howto_options.html#comments">Use Comments</a> option allows you to generate G-code with no comments in it at all.
       <li>G-code Joiner is happy with both comment formats.
       <li>G-code Joiner file selection remembers the folder, and remembers a change in extension.   Also detects Sketchup versions
          prior to Make2014 and works around the wildcard bug
       <li>Bugfix: Polygons are now correctly identified and output as line segments instead of arc segments.
       <li>Bugfix: 'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
       <li>G-code lines have been shortened to be more GRBL friendly.
+      <li>Pocket zigzags now use fuzzy offsets.  A new stepover is calculated from the given stepover such that the zigzag always
+         starts and ends at the given offset from the edges.  This prevents leaving large gaps at the end of the zigzag which
+         might break a tool in hard materials.  Note that complicated shapes can still leave oversize (larger than stepover) nubs
+         that will be removed by the final outline pass.  To mitigate this effect, use small stepovers in hard materials.
+      <li>Pocket zigzag offset (the gap between the edge of the face and the edges of the zigzag) is now related to stepover instead
+         of being a fixed 10%.  This means that for large stepovers the cut takes less time, and for small stepovers the
+         final outline cut is 50% of the stepover value.
+      <li>G-code Joiner will not output any comments if Use Comments is false.  However, it <b>will not remove</b> comments already
+      in the files being joined.
+      <li>New 'Quick Tools' <img src="images/quicktoolbar.png">toolbar that allows you to quickly toggle the status of the 
+      'Use Comments' and 'Comment Style' options.   Using these will NOT affect the default settings set via the 
+      <i>Tools|Phlatboyz|Options|Machine Options</i>
+      menu.
       </ul>
       </div>
       
