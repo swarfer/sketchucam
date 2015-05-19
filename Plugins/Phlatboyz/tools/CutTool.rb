@@ -135,7 +135,16 @@ module PhlatScript
          phlatcuts = cut_class.cut([ne[0]])
 
          e_last = node.data.ea
-         if ((!e_last.nil?) && (!e_last.curve.nil?) && (!e_last.curve.is_polygon?) && (e_last.curve.kind_of? Sketchup::ArcCurve))
+         ispoly = false
+         #is_polygon? does not exist in Sketchup7 for arccurve object
+         if (e_last.curve.kind_of?(Sketchup::ArcCurve))
+            if (Sketchup.version.split('.')[0].to_i < 8)
+               ispoly = false
+            else
+               ispoly = e_last.curve.is_polygon?
+            end
+         end
+         if ((!e_last.nil?) && (!e_last.curve.nil?) && (!ispoly) && (e_last.curve.kind_of? Sketchup::ArcCurve))
             c = e_last.curve
 
             pt1 = c.first_edge.vertices.first.position
