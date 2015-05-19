@@ -1207,7 +1207,7 @@ puts " new #{newedges[i-1]}\n"
                                  tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                                  puts "arc ramping in tcenter #{tcenter}" if (@debug)
                                  g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                                 puts "ramping multi g3=#{g3}"
+                                 puts "ramping multi g3=#{g3}"  if (@debug)
                                  if (g3)
                                     cmnd = 'G3'
                                  else
