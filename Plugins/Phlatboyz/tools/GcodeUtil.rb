@@ -146,6 +146,7 @@ module PhlatScript
          GcodeUtil.generate_gcode
          if PhlatScript.showGplot?
             GPlot.new.plot
+            Sketchup.active_model.select_tool(nil)  #auto select the select tool to force program show
          end
       end
    end
@@ -155,10 +156,10 @@ module PhlatScript
     end
 
     def GcodeUtil.generate_gcode
-      if PSUpgrader.upgrade
-        UI.messagebox("GCode generation has been aborted due to the upgrade")
-        return
-      end
+#      if PSUpgrader.upgrade
+#        UI.messagebox("GCode generation has been aborted due to the upgrade")
+#        return
+#      end
 
             #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
       # by doing this we can have Z0 on the table surface, or at top of material
@@ -226,7 +227,11 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             end
             aMill.job_start(@optimize,ext)
 #   puts "amill jobstart done"
-            loop_root = LoopNodeFromEntities(Sketchup.active_model.active_entities, aMill, material_thickness)
+            if (Sketchup.active_model.selection.length > 0)
+               loop_root = LoopNodeFromEntities(Sketchup.active_model.selection, aMill, material_thickness)
+            else
+               loop_root = LoopNodeFromEntities(Sketchup.active_model.active_entities, aMill, material_thickness)
+            end
             loop_root.sort
             millLoopNode(aMill, loop_root, material_thickness)
 
@@ -281,10 +286,10 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 ## no Z movement
 ## allow for user specified codes prior to G0 and G1 moves, whenever it changes from G0 to G1 and back
    def GcodeUtil.generate_gcode_plasma
-      if PSUpgrader.upgrade
-        UI.messagebox("GCode generation has been aborted due to the upgrade")
-        return
-      end
+#      if PSUpgrader.upgrade
+#        UI.messagebox("GCode generation has been aborted due to the upgrade")
+#        return
+#      end
 
       #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
       # by doing this we can have Z0 on the table surface, or at top of material
@@ -401,7 +406,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
     private
 
     def GcodeUtil.LoopNodeFromEntities(entities, aMill, material_thickness)
-#      puts"loopnodefromentities"
+#      puts"loopnodefromentities #{entities.length}"
       model = Sketchup.active_model
       safe_area_points = P.get_safe_area_point3d_array()
       # find all outside loops
@@ -427,7 +432,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
               phlatcuts.push(pc) if ((pc.in_polygon?(safe_area_points)) && ((pc.kind_of? PhlatScript::PlungeCut) || (pc.kind_of? PhlatScript::CenterLineCut)))
             end
         elsif e.kind_of?(Sketchup::Group)
-          groups.push(e)
+          groups.push(e) # should only do this if it is inside safearea
         end
       }
 
