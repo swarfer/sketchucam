@@ -311,10 +311,14 @@ List of things to fix/add for next release, in no particular order
 <dl>
    <dt>lance pointed out an arc error, some arcs are output with the wrong G code making the segments curve the wrong way.
    <dd>this is because of the g3 = reverse ? !.g3? : g3  lines in milledges.
-   looks like a problem in the cut_face() routinein CutTool.rb where it checks for the center being inside or outside the face.
-   I don't think this is a sufficient test to determine direction, but what else is there?
+      looks like a problem in the cut_face() routinein CutTool.rb where it checks for the center being inside or outside the face.
+      I don't think this is a sufficient test to determine direction, but what else is there?
+   <dt>pockets
+      <dd>pocket zigzags do not always end in the right place, fix it by using fuzzy stepover similar to the hole boring
+      <dd>if stepover = 50% then fuzzy is not used
+      <dd> if stepover < 50% then stepover is rounded down
+      <dd> if stepover > 50% then stepover is rounded up
    
-   <dd>possible solution is a rightclick menu tool to reverse the g3 settings for a selected arc.
          
 <hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $

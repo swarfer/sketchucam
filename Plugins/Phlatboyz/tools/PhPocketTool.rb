@@ -33,6 +33,7 @@ require 'sketchup.rb'
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/tools/CenterLineTool.rb'
 require 'Phlatboyz/Tools/PhPocketCut.rb'
+require 'Phlatboyz/PhlatOffset.rb'
 
 module PhlatScript
 
@@ -193,6 +194,7 @@ module PhlatScript
    end
 
    def draw_geometry(view)
+puts "DRAW"   
       view.drawing_color = Color_pocket_cut
       #view.line_width = 3.0
       if (@keyflag == 1) || (@keyflag == 0)
@@ -202,7 +204,7 @@ module PhlatScript
       end
 
       if (@keyflag == 2) || (@keyflag == 0)
-         contour_points = get_contour_points(@active_face.outer_loop)
+         contour_points = get_contour_points(@active_face.outer_loop) if (!@active_face.deleted?)
       else
          contour_points = nil
       end
@@ -332,7 +334,8 @@ module PhlatScript
 
 def get_contour_points(loop)
 #               puts "get contour points"
-   return get_offset_points(loop, -(@bit_diameter * 0.5))
+#   return get_offset_points(loop, -(@bit_diameter * 0.5))
+   return Offset.vertices(@active_face.outer_loop.vertices, -(@bit_diameter * 0.5)).offsetPoints
 end
 
 #----------------------------------------------------------------------
@@ -347,12 +350,14 @@ end
          y2 = points[i].y
          # very small differences in Y values will cause the following tests to 'next' when they should not
          # ie Y might display as 2.9mm but be 1e-17 different than the point.y, and y < y1 so you get no point
-         # where you want apoint
-         #rather use signed differences
+         # where you want a point
+         # rather use signed differences
 #         next if (y1 == y2)
 #         next if ((y1 > y2) && ((y > y1) || (y < y2)))
 #         next if ((y1 < y2) && ((y < y1) || (y > y2)))
-         if (y1 - y2).abs < 0.00001   # 1/100 of a thou, small enough?
+#puts "y1 #{y1} y2 #{y2}"         
+#         dif = (y1-y2).abs
+         if ((y1 - y2).abs < 0.001)   #  small enough?
             next
          end
          d1 = y - y1
@@ -366,6 +371,9 @@ end
 
          line = [points[i-1], points[i]]
          pt = Geom::intersect_line_plane(line, plane)
+#         if ((pt.x < 237.0) || (pt.x > 366.0))
+#            puts "y1#{y1} y2#{y2} dif#{dif.to_mm} pt #{pt}  Y #{y.to_mm}  line #{line}"
+#         end
          if (pt)
             pts << pt
          end
@@ -381,10 +389,11 @@ end
       for i in 0..points.length-1 do
          x1 = points[i-1].x
          x2 = points[i].x
+
 #         next if (x1 == x2)
 #         next if ((x1 > x2) && ((x > x1) || (x < x2)))
 #         next if ((x1 < x2) && ((x < x1) || (x > x2)))
-         if (x1 - x2).abs < 0.00001
+         if ((x1 - x2).abs < 0.001)
             next
          end
          d1 = x - x1
@@ -409,7 +418,8 @@ end
    
    #get the offset from the main loop for the zigzag lines
    def getOffset
-      #as stepover get bigger, so the chance of missing bits around the edge inscreases, so make the offset smaller for large stepovers
+      #as stepover get bigger, so the chance of missing bits around the edge inscreases, 
+      #so make the offset smaller for large stepovers
       div = (@stepOver > 0.75) ? 3 : 2
       if (@stepOver > 85)
          div = 4
@@ -428,26 +438,31 @@ end
    end
 
    def get_zigzag_points_y(loop)
-      #puts "get zigzag Y points #{@stepOver}"
+      puts "get zigzag Y points #{@stepOver}"
       dir = 1
       zigzag_points = []
       offset = getOffset()
       #puts "   offset #{offset}"
 
-      offset_points = get_offset_points(loop, -(offset))
+#      offset_points = get_offset_points(loop, -(offset))
+#      puts "old offset_points #{offset_points}"
 
-      #puts "offset_points #{offset_points}"
+      offset_points = Offset.vertices(@active_face.outer_loop.vertices, -(offset)).offsetPoints
+
+#      puts "new offset_points #{offset_points}"
 
       bb = loop.face.bounds
-      y = bb.min.y + offset
+      y = bb.min.y + offset + 0.0005
       
       stepOverinuse = @bit_diameter * @stepOver
-      if (@stepOver != 0.5)
-         ylen = bb.max.y - bb.min.y - (2 * offset) - 0.1.mm
-         stepOverinuse = getfuzzystepover(ylen)
+      if ($phoptions.use_fuzzy_pockets?)
+         if (@stepOver != 0.5)
+            ylen = bb.max.y - bb.min.y - (2 * offset) - 0.002
+            stepOverinuse = getfuzzystepover(ylen)
+         end
       end
-
-      while (y < bb.max.y) do
+      yend = bb.max.y + 0.0005
+      while (y < yend) do
          pts = get_hatch_points_y(offset_points, y)
          if (pts.length >= 2)
             if (dir == 1)
@@ -470,46 +485,6 @@ end
       return zigzag_points
    end
 
-   # select between the options
-   def get_zigzag_points(loop)
-      if PhlatScript.pocketDirection?
-         return get_zigzag_points_x(loop)  # zigs along Y - suites phlatprinter
-      else
-         return get_zigzag_points_y(loop)  # zigs along x - suites gantries
-      end
-   end
-#=============================================================
-   def getfuzzystepover(len)
-      stepOverinuse = curstep = @bit_diameter * @stepOver
-      
-      steps = len / curstep
-      #puts " steps #{steps} curstep #{curstep.to_mm} len #{len.to_mm}\n"
-      if (@stepOver < 0.5)
-         newsteps = (steps + 0.5).round   # step size gets smaller  
-      else
-         newsteps = (steps - 0.5).round  # step size gets bigger
-      end   
-      newstep = len / newsteps
-      newstepover = newstep / @bit_diameter
-      
-      while (newstepover > 1.0)  #this might never happen, but justincase
-         #puts "increasing steps"
-         newsteps += 1
-         newstep = len / newsteps
-         newstepover = newstep / @bit_diameter
-      end
-      
-      newstep = (newstep * 10000.0).round / 10000.0
-      newstep = 1.mm if (newstep == 0.0)
-      
-      #puts "newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
-      if (newstepover > 0)
-         stepOverinuse = newstep
-      end
-      #puts ""
-      return stepOverinuse           
-   end   
-
    def get_zigzag_points_x(loop)
       #puts "get X zigzag points #{@stepOver}"
       dir = 1
@@ -520,25 +495,28 @@ end
       #   offset = @bit_diameter * 0.6
       #end
       offset =  getOffset()
-      #puts "offset #{offset.to_mm}"
+#      puts "offset #{offset.to_mm}"
 
-      offset_points = get_offset_points(loop, -(offset))
+      #offset_points = get_offset_points(loop, -(offset))
+      offset_points = Offset.vertices(@active_face.outer_loop.vertices, -(offset)).offsetPoints      
       #puts "offset_points #{offset_points}"
 
       bb = loop.face.bounds
-      x = bb.min.x + offset
+      x = bb.min.x + offset + 0.0005
       
       #fuzzy stepover
       stepOverinuse = @bit_diameter * @stepOver
-      if (@stepOver != 0.5)
-         xlen = bb.max.x - bb.min.x - (2 * offset) - 0.1.mm
-         stepOverinuse = getfuzzystepover(xlen)
+      if ($phoptions.use_fuzzy_pockets?)
+         if (@stepOver != 0.5)
+            xlen = bb.max.x - bb.min.x - (2 * offset) - 0.002
+            stepOverinuse = getfuzzystepover(xlen)
+         end
       end
       
-      xend = bb.max.x 
+      xend = bb.max.x + 0.0005
       while (x < xend) do
-#         puts "x #{x.to_mm}"
          pts = get_hatch_points_x(offset_points, x)
+#         puts "x #{x.to_mm} pts#{pts}"
          if (pts.length >= 2)
             if (dir == 1)
                zigzag_points << pts[0]
@@ -559,6 +537,53 @@ end
       end #while
       return zigzag_points
    end
+  
+   
+   # select between the options
+   def get_zigzag_points(loop)
+      if PhlatScript.pocketDirection?
+         return get_zigzag_points_x(loop)  # zigs along Y - suites phlatprinter
+      else
+         return get_zigzag_points_y(loop)  # zigs along x - suites gantries
+      end
+   end
+#=============================================================
+   def getfuzzystepover(len)
+      len = len.abs
+      stepOverinuse = curstep = @bit_diameter * @stepOver
+      
+      steps = len / curstep
+#      puts "steps #{steps} curstep #{curstep.to_mm} len #{len.to_mm}\n"
+      if (@stepOver < 0.5)
+         newsteps = (steps + 0.5).round   # step size gets smaller  
+      else
+         newsteps = (steps - 0.5).round  # step size gets bigger
+      end   
+      if (newsteps < 1)
+#         puts " small newsteps #{newsteps}"
+         newsteps = 2
+      end
+      newstep = len / newsteps
+      newstepover = newstep / @bit_diameter
+      
+      while (newstepover > 1.0)  #this might never happen, but justincase
+#         puts "  increasing steps #{newsteps}"
+         newsteps += 1
+         newstep = len / newsteps
+         newstepover = newstep / @bit_diameter
+      end
+#      puts "   newstep #{newstep}"
+      newstep = (newstep * 10000.0).round / 10000.0
+      newstep = 1.mm if (newstep == 0.0)
+      
+#      puts "    newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
+      if (newstepover > 0)
+         stepOverinuse = newstep
+      end
+      #puts ""
+      return stepOverinuse           
+   end   
+
 
    def toggle_direc_flag(model=Sketchup.active_model)
       val = model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)

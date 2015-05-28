@@ -516,7 +516,7 @@ module PhlatScript
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
     @@commandToolbar.show
-    @@qToolbar.show
+#    @@qToolbar.show
   end
 
    def PhlatScript.addToolItem(tool, submenu=@@phlatboyz_tools_submenu)

@@ -70,6 +70,7 @@ module PhlatScript
          @end_x                  =   PhlatScript.conformat(phoptions.end_x)   
          @end_y                  =   PhlatScript.conformat(phoptions.end_y)
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
+         @use_fuzzy_pockets      =   (phoptions.use_fuzzy_pockets? ? '1' : '0')
          @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
          @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
@@ -129,7 +130,8 @@ module PhlatScript
          @use_end_position       =  false
          @end_x                  =  0   
          @end_y                  =  0
-         @use_fuzzy_holes = true
+         @use_fuzzy_holes        = true
+         @use_fuzzy_pockets      = true
          @ramp_angle             =  0
          @must_ramp              =  false
          @quarter_arcs            =  true
@@ -270,6 +272,11 @@ module PhlatScript
             value = -1
             value = getvalue(optin['use_fuzzy_holes'])                if (optin.has_key?('use_fuzzy_holes'))
             @use_fuzzy_holes = value > 0 ? true :  false              if (value != -1)
+         #use_fuzzy_pockets
+            value = -1
+            value = getvalue(optin['use_fuzzy_pockets'])                if (optin.has_key?('use_fuzzy_pockets'))
+            @use_fuzzy_pockets = value > 0 ? true :  false              if (value != -1)
+
          #ramping
             @ramp_angle             =   getvalue(optin['ramp_angle'])    if (optin.has_key?('ramp_angle'))    
             value = -1
@@ -664,6 +671,13 @@ module PhlatScript
       def use_fuzzy_holes=(newval)
          @use_fuzzy_holes = newval
       end
+
+      def use_fuzzy_pockets?
+         @use_fuzzy_pockets
+      end
+      def use_fuzzy_pockets=(newval)
+         @use_fuzzy_pockets = newval
+      end
       
       def ramp_angle
          @ramp_angle
@@ -970,6 +984,7 @@ end # class
             'End position X ',
             'End position Y ',
             'Use fuzzy hole stepover ',
+            'Use fuzzy pocket stepover ',
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
             'Output helixes as quarter arcs '
@@ -989,6 +1004,7 @@ end # class
             Sketchup.format_length(@options.end_x),
             Sketchup.format_length(@options.end_y),
             @options.use_fuzzy_holes?.inspect(),
+            @options.use_fuzzy_pockets?.inspect(),
             @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
             @options.quarter_arcs?.inspect()
@@ -1007,6 +1023,7 @@ end # class
             'true|false',
             '',
             '',
+            'true|false',
             'true|false',
             '',
             'true|false',
@@ -1035,10 +1052,11 @@ end # class
             @options.end_y                   = Sketchup.parse_length(input[12])
 
             @options.use_fuzzy_holes         = (input[13] == 'true')
+            @options.use_fuzzy_pockets       = (input[14] == 'true')
 
-            @options.ramp_angle              = input[14].to_f
-            @options.must_ramp               = (input[15] == 'true')
-            @options.quarter_arcs            = (input[16] == 'true')
+            @options.ramp_angle              = input[15].to_f
+            @options.must_ramp               = (input[16] == 'true')
+            @options.quarter_arcs            = (input[17] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save
