@@ -194,7 +194,7 @@ module PhlatScript
    end
 
    def draw_geometry(view)
-puts "DRAW"   
+#puts "DRAW"   
       view.drawing_color = Color_pocket_cut
       #view.line_width = 3.0
       if (@keyflag == 1) || (@keyflag == 0)
@@ -438,7 +438,7 @@ end
    end
 
    def get_zigzag_points_y(loop)
-      puts "get zigzag Y points #{@stepOver}"
+#      puts "get zigzag Y points #{@stepOver}"
       dir = 1
       zigzag_points = []
       offset = getOffset()
@@ -573,7 +573,7 @@ end
          newstepover = newstep / @bit_diameter
       end
 #      puts "   newstep #{newstep}"
-      newstep = (newstep * 10000.0).round / 10000.0
+      newstep = (newstep * 10000.0).floor / 10000.0   # floor to 1/10000"
       newstep = 1.mm if (newstep == 0.0)
       
 #      puts "    newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
