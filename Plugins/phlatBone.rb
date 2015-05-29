@@ -525,85 +525,90 @@ def resume(view)
 
       if faces.length > 1
 	 # Is v inside the other poly? (no border hits)
-	 if Geom.point_in_polygon_2D(v, faces[0].outer_loop.vertices, false)==true and Geom.point_in_polygon_2D(v, faces[1].outer_loop.vertices, false)==false
-	    @@myVertices=faces[1].outer_loop.vertices
-	    theFace=faces[1]
-	 else
-	    @@myVertices=faces[0].outer_loop.vertices
-	    theFace=faces[0]
-	 end
+         if Geom.point_in_polygon_2D(v, faces[0].outer_loop.vertices, false)==true and Geom.point_in_polygon_2D(v, faces[1].outer_loop.vertices, false)==false
+            @@myVertices=faces[1].outer_loop.vertices
+            theFace=faces[1]
+         else
+            @@myVertices=faces[0].outer_loop.vertices
+            theFace=faces[0]
+         end
       else
-	 @@myVertices=faces[0].outer_loop.vertices
-	 theFace=faces[0]
+         if (faces[0] != nil)
+            @@myVertices=faces[0].outer_loop.vertices
+            theFace=faces[0]
+         else
+            theFace = nil
+         end
       end
+      if (theFace != nil)
+         @@myVertices = theFace.outer_loop.vertices
 
-      @@myVertices = theFace.outer_loop.vertices
+         # inside=reverse=true
+         if @boneDirection==true
+            @@myVertices.reverse!
+         end
 
-      # inside=reverse=true
-      if @boneDirection==true
-	 @@myVertices.reverse!
+         vLength=@@myVertices.length
+
+         for n in 1...vLength-1
+             # Edges attached to each vertex
+             e1 = @@myVertices[n].edges[0] # previous edge - CCW
+             e2 = @@myVertices[n].edges[1] # next edge - CCW
+
+             # Set unit vector
+             @@u1 = (e1.other_vertex @@myVertices[n]).position - @@myVertices[n].position
+             @@u1.normalize!
+             @@u2 = (e2.other_vertex @@myVertices[n]).position - @@myVertices[n].position
+             @@u2.normalize!
+
+             currentVertex=@@myVertices[n]
+             previousVertex=@@myVertices[n-1]
+             nextVertex=@@myVertices[n+1]
+
+             theDirection=direction(previousVertex,currentVertex,nextVertex)
+
+             @preview = savePreview
+             plotBone(n,theDirection)
+         end
+
+         # Roll-over to edges attached to first & last vertices
+
+         e1 = @@myVertices[0].edges[0] # previous edge - CCW
+         e2 = @@myVertices[0].edges[1] # next edge - CCW
+
+         # Set unit vector
+         @@u1 = (e1.other_vertex @@myVertices[0]).position - @@myVertices[0].position
+         @@u1.normalize!
+         @@u2 = (e2.other_vertex @@myVertices[0]).position - @@myVertices[0].position
+         @@u2.normalize!
+
+         currentVertex=@@myVertices[0]
+         previousVertex=@@myVertices[vLength-1]
+         nextVertex=@@myVertices[1]
+
+         theDirection=direction(previousVertex,currentVertex,nextVertex)
+
+         @preview = savePreview
+         plotBone(0,theDirection)
+
+         e1 = @@myVertices[vLength-1].edges[0] # previous edge - CCW
+         e2 = @@myVertices[vLength-1].edges[1] # next edge - CCW
+
+         # Set unit vector
+         @@u1 = (e1.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
+         @@u1.normalize!
+         @@u2 = (e2.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
+         @@u2.normalize!
+
+         currentVertex=@@myVertices[vLength-1]
+         previousVertex=@@myVertices[vLength-2]
+         nextVertex=@@myVertices[0]
+
+         theDirection=direction(previousVertex,currentVertex,nextVertex)
+
+         @preview = savePreview
+         plotBone(vLength-1,theDirection)
       end
-
-      vLength=@@myVertices.length
-
-      for n in 1...vLength-1
-	 # Edges attached to each vertex
-	 e1 = @@myVertices[n].edges[0] # previous edge - CCW
-	 e2 = @@myVertices[n].edges[1] # next edge - CCW
-
-	 # Set unit vector
-	 @@u1 = (e1.other_vertex @@myVertices[n]).position - @@myVertices[n].position
-	 @@u1.normalize!
-	 @@u2 = (e2.other_vertex @@myVertices[n]).position - @@myVertices[n].position
-	 @@u2.normalize!
-
-	 currentVertex=@@myVertices[n]
-	 previousVertex=@@myVertices[n-1]
-	 nextVertex=@@myVertices[n+1]
-
-	 theDirection=direction(previousVertex,currentVertex,nextVertex)
-
-	 @preview = savePreview
-	 plotBone(n,theDirection)
-      end
-
-      # Roll-over to edges attached to first & last vertices
-
-      e1 = @@myVertices[0].edges[0] # previous edge - CCW
-      e2 = @@myVertices[0].edges[1] # next edge - CCW
-
-      # Set unit vector
-      @@u1 = (e1.other_vertex @@myVertices[0]).position - @@myVertices[0].position
-      @@u1.normalize!
-      @@u2 = (e2.other_vertex @@myVertices[0]).position - @@myVertices[0].position
-      @@u2.normalize!
-
-      currentVertex=@@myVertices[0]
-      previousVertex=@@myVertices[vLength-1]
-      nextVertex=@@myVertices[1]
-
-      theDirection=direction(previousVertex,currentVertex,nextVertex)
-
-      @preview = savePreview
-      plotBone(0,theDirection)
-
-      e1 = @@myVertices[vLength-1].edges[0] # previous edge - CCW
-      e2 = @@myVertices[vLength-1].edges[1] # next edge - CCW
-
-      # Set unit vector
-      @@u1 = (e1.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
-      @@u1.normalize!
-      @@u2 = (e2.other_vertex @@myVertices[vLength-1]).position - @@myVertices[vLength-1].position
-      @@u2.normalize!
-
-      currentVertex=@@myVertices[vLength-1]
-      previousVertex=@@myVertices[vLength-2]
-      nextVertex=@@myVertices[0]
-
-      theDirection=direction(previousVertex,currentVertex,nextVertex)
-
-      @preview = savePreview
-      plotBone(vLength-1,theDirection)
       #-----------------------------------------------------------------------------
    end
 

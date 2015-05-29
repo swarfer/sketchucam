@@ -147,7 +147,7 @@ module PhlatScript
                end
             #output till footer
             line = inf.readline
-            while !inf.eof and (line.match('G0 X0 Y0|M30|Outfeed|EndPosition') == nil)
+            while !inf.eof and (line.match('G0 X0 Y0|G00 X0 Y0|M30|Outfeed|EndPosition') == nil)
                outf.puts(line)   if !line.match('Outfeed|EndPosition|M30|%')  #do not output leading % etc
                line = inf.readline
             end

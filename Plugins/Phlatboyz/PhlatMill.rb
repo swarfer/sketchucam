@@ -47,7 +47,7 @@ module PhlatScript
 
       @comment = PhlatScript.commentText
       @extr = "-"
-      @cmd_linear = "G1" # Linear interpolation
+      @cmd_linear = "G01" # Linear interpolation
       @cmd_rapid = "G0" # Rapid positioning - do not change this to G00 as G00 is used elsewhere for forcing mode change
       @cmd_arc = "G02" # coordinated helical motion about Z axis
       @cmd_arc_rev = "G03" # counterclockwise helical motion about Z axis
@@ -112,6 +112,7 @@ module PhlatScript
       m2 = @is_metric ? measure.to_mm : measure.to_inch
       #UI.messagebox(sprintf("  #{axis}%-10.*f", @precision, m2))
       #UI.messagebox("out mm: #{measure.to_mm} inch: #{measure.to_inch}")
+      axis.upcase!
       sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
     end
 
@@ -315,12 +316,12 @@ module PhlatScript
          command_out = ""
          if (@Limit_up_feed) && (cmd="G0") && (zo > 0) && (@cz < 0)
             cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
-            command_out += (format_measure(' G1 Z', 0))
+            command_out += (format_measure(' G01 Z', 0))
             command_out += (format_feed(@speed_plung))
             command_out += "\n"
             $cs = @speed_plung
-            #          G0 to zo
-            command_out += "G0" + (format_measure('Z', zo))
+            #          G00 to zo
+            command_out += "G00" + (format_measure('Z', zo))
          else
             #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
             command_out += cmd    if (cmd != @cc)
@@ -393,14 +394,14 @@ module PhlatScript
          end
       
          command_out = ""
-         # if above material, G0 to near surface to save time
+         # if above material, G00 to near surface to save time
          if (@cz == @retract_depth)
             if (@table_flag)
                @cz = @material_thickness + 0.1.mm
             else
                @cz = 0.0 + 0.1.mm
             end
-            command_out += "G0 " + format_measure('Z',@cz) +"\n"
+            command_out += "G00" + format_measure('Z',@cz) +"\n"
             @cc = @cmd_rapid
          end
          
@@ -521,13 +522,13 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         # if above material, G0 to surface
+         # if above material, G00 to surface
          if (@cz == @retract_depth)
             if (@table_flag)
-               command_out += "G0 Z#{@material_thickness}\n"
+               command_out += "G00 Z#{@material_thickness}\n"
                @cz = @material_thickness
             else
-               command_out += "G0 Z0\n"
+               command_out += "G00 Z0\n"
                @cz = 0
             end
             @cc = @cmd_rapid
@@ -607,14 +608,14 @@ module PhlatScript
          end
       
          command_out = ""
-         # if above material, G0 to near surface to save time
+         # if above material, G00 to near surface to save time
          if (@cz == @retract_depth)
             if (@table_flag)
                @cz = @material_thickness + 0.1.mm
             else
                @cz = 0.0 + 0.1.mm
             end
-            command_out += "G0 " + format_measure('Z',@cz) +"\n"
+            command_out += "G00" + format_measure('Z',@cz) +"\n"
             cncPrint(command_out)
             @cc = @cmd_rapid
          end
@@ -739,8 +740,7 @@ module PhlatScript
       command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
       command_out += "G00" + format_measure("Y",yo-yoff)
       command_out += "\n"
-      command_out += "G01"
-      command_out += format_measure(" Z",zstart)
+      command_out += "G01" + format_measure("Z",zstart)
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       #if ramping with limit use plunge feed rate
@@ -794,21 +794,21 @@ module PhlatScript
             end
          end
          command_out += "#{cmd} "
-         command_out += format_measure(" X",xo)
-         command_out += format_measure(" Y",yo-yoff)
-         command_out += format_measure(" Z",now)
+         command_out += format_measure("X",xo)
+         command_out += format_measure("Y",yo-yoff)
+         command_out += format_measure("Z",now)
          command_out += " I0"
-         command_out += format_measure(" J",yoff)
+         command_out += format_measure("J",yoff)
 #         command_out += format_feed(@speed_curr) if (@speed_curr != @cs)
 #         @cs = @speed_curr
          command_out += "\n"
       end # while
     # now the bottom needs to be flat at $depth
       command_out += "#{cmd} "
-      command_out += format_measure(" X",xo)
-      command_out += format_measure(" Y",yo-yoff)
+      command_out += format_measure("X",xo)
+      command_out += format_measure("Y",yo-yoff)
       command_out += " I0.0"
-      command_out += format_measure(" J",yoff)
+      command_out += format_measure("J",yoff)
       command_out += "\n";
       command_out += "   (SPIRAL END)\n" if @debug
       @precision -= 1
@@ -887,52 +887,52 @@ module PhlatScript
          if (@cw)
             #x-o y I0 Jo
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo - yoff) + format_measure(" Y",yo)
-            command_out += format_measure(" Z",prevz - zdiff)
+            command_out += format_measure("X",xo - yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - zdiff)
             command_out += " I0"  + format_measure(" J",yoff)
             command_out += "\n"
             #x y+O IOf J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff)
-            command_out += format_measure(" Z",prevz - (zdiff*2))
-            command_out += format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure(" Y",yo+yoff)
+            command_out += format_measure("Z",prevz - (zdiff*2))
+            command_out += format_measure("I",yoff)  + format_measure(" J",0)
             command_out += "\n"
             #x+of Y I0 J-of
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo+yoff) + format_measure(" Y",yo)
-            command_out += format_measure(" Z",prevz - (zdiff*3))
-            command_out += format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += format_measure("X",xo+yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - (zdiff*3))
+            command_out += format_measure("I",0)  + format_measure(" J",-yoff)
             command_out += "\n"
             #x Y-of I-of J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff)
-            command_out += format_measure(" Z",prevz - (zdiff*4))
-            command_out += format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure(" Y",yo-yoff)
+            command_out += format_measure("Z",prevz - (zdiff*4))
+            command_out += format_measure("I",-yoff)  + format_measure(" J",0)
             command_out += "\n"
          else
             #x+of Y  I0 Jof
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo + yoff) + format_measure(" Y",yo)
-            command_out += format_measure(" Z",prevz - zdiff)
-            command_out += format_measure(" I",0)  + format_measure(" J",yoff)
+            command_out += format_measure("X",xo + yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - zdiff)
+            command_out += format_measure("I",0)  + format_measure(" J",yoff)
             command_out += "\n"
             #x Yof   I-of  J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff)
-            command_out += format_measure(" Z",prevz - zdiff*2)
-            command_out += format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure(" Y",yo+yoff)
+            command_out += format_measure("Z",prevz - zdiff*2)
+            command_out += format_measure("I",-yoff)  + format_measure(" J",0)
             command_out += "\n"
             #X-of  Y  I0    J-of
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo-yoff) + format_measure(" Y",yo)
-            command_out += format_measure(" Z",prevz - zdiff*3)
-            command_out += format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += format_measure("X",xo-yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - zdiff*3)
+            command_out += format_measure("I",0)  + format_measure(" J",-yoff)
             command_out += "\n"
             #X  Y-of  Iof   J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff)
-            command_out += format_measure(" Z",now) #prevz - zdiff*4)
-            command_out += format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure(" Y",yo-yoff)
+            command_out += format_measure("Z",now) #prevz - zdiff*4)
+            command_out += format_measure("I",yoff)  + format_measure(" J",0)
             command_out += "\n"
          end
          prevz = now
@@ -942,36 +942,36 @@ module PhlatScript
       if (@cw)
             #x-o y I0 Jo
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo - yoff) + format_measure(" Y",yo) + " I0"  + format_measure(" J",yoff)
+            command_out += format_measure("X",xo - yoff) + format_measure("Y",yo) + " I0"  + format_measure("J",yoff)
             command_out += "\n"
             #x y+O IOf J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff) + format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure("Y",yo+yoff) + format_measure("I",yoff)  + format_measure("J",0)
             command_out += "\n"
             #x+of Y I0 J-of
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo+yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += format_measure("X",xo+yoff) + format_measure("Y",yo) + format_measure(" I",0)  + format_measure("J",-yoff)
             command_out += "\n"
             #x Y-of I-of J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff) + format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure("Y",yo-yoff) + format_measure("I",-yoff)  + format_measure("J",0)
             command_out += "\n"
          else
             #x+of Y  I0 Jof
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo + yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",yoff)
+            command_out += format_measure("X",xo + yoff) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",yoff)
             command_out += "\n"
             #x Yof   I-of  J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo+yoff) + format_measure(" I",-yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure("Y",yo+yoff) + format_measure("I",-yoff)  + format_measure("J",0)
             command_out += "\n"
             #X-of  Y  I0    J-of
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo-yoff) + format_measure(" Y",yo) + format_measure(" I",0)  + format_measure(" J",-yoff)
+            command_out += format_measure("X",xo-yoff) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",-yoff)
             command_out += "\n"
             #X  Y-of  Iof   J0
             command_out += "#{cmd}"
-            command_out += format_measure(" X",xo) + format_measure(" Y",yo-yoff) + format_measure(" I",yoff)  + format_measure(" J",0)
+            command_out += format_measure("X",xo) + format_measure("Y",yo-yoff) + format_measure("I",yoff)  + format_measure("J",0)
             command_out += "\n"
          end
       command_out += "   (SPIRAL END)\n" if @debug
@@ -1026,7 +1026,7 @@ module PhlatScript
                else
                   command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
-               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "G00" + format_measure("Z" , sh)
                command_out += "\n"
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
@@ -1036,7 +1036,7 @@ module PhlatScript
                   else
                      command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
-                  command_out += "G0 " + format_measure("Z" , sh)
+                  command_out += "G00" + format_measure("Z" , sh)
                   command_out += "\n"
                end
             end
@@ -1082,7 +1082,7 @@ module PhlatScript
                else
                   command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
-               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "G00" + format_measure("Z" , sh)
                command_out += "\n" 
             else
                if (PhlatScript.stepover < 50)  # act for a hard material, do initial spiral 
@@ -1093,7 +1093,7 @@ module PhlatScript
                   else
                      command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
-                  command_out += "G0 " + format_measure("Z" , sh)
+                  command_out += "G00" + format_measure("Z" , sh)
                   command_out += "\n" 
                end
             end
@@ -1120,7 +1120,7 @@ module PhlatScript
                command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
                command_out += (format_feed(so)) if (so != @cs)
                command_out += "\n"
-               command_out += "g00" + format_measure("z",sh)    # retract to reduced safe
+               command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
                command_out += "\n"
             end
             @cs = so
@@ -1197,7 +1197,7 @@ module PhlatScript
             end
 #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
-               command_out += "G0 " + format_measure("Z" , sh)
+               command_out += "G00" + format_measure("Z" , sh)
                command_out += "\n"
             end
          end # while
@@ -1290,7 +1290,7 @@ module PhlatScript
         @no_move_count += 1
       else
         retract(@retract_depth)
-        cncPrint("G0 X0 Y0 ")
+        cncPrint("G00 X0 Y0 ")
         if ($phoptions.usecomments?)  
            cncPrint(PhlatScript.gcomment("home") )
         end   
