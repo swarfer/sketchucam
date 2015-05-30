@@ -184,16 +184,16 @@ module PhlatScript
 
       cncPrintC("www.PhlatBoyz.com")
       PhlatScript.checkParens(@comment, "Comment")
-      puts @comment
+      #puts @comment
       @comment.split(/\$\//).each{|line| cncPrintC(line)} if !@comment.empty?
 
       #adapted from swarfer's metric code
       #metric by SWARFER - this does the basic setting up from the drawing units
       if PhlatScript.isMetric
         unit_cmd, @precision, @is_metric = ["G21", 3, true]
-        else
+      else
         unit_cmd, @precision, @is_metric = ["G20", 4, false]
-        end
+      end
 
       stop_code = $phoptions.use_exact_path? ? "G61" : "" # G61 - Exact Path Mode
       cncPrint("G90 #{unit_cmd} G49 #{stop_code} G17\n") # G90 - Absolute programming (type B and C systems)
@@ -471,7 +471,7 @@ module PhlatScript
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
             command_out += format_measure('x',op.x)
             command_out += format_measure('y',op.y)
-# for the last pass, make sure we do equal legs - this is mostyl circumvented by the passes adjustment
+# for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
             if (zo-curdepth).abs < (bz*2)
                puts "last pass smaller bz"               if(@debugramp)
                bz = (zo-curdepth).abs / 2
@@ -539,8 +539,7 @@ module PhlatScript
          point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
          point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
          distance = point1.distance(point2)   # this is 'adjacent' edge in the triangle, bz is opposite
-         #40 thou, about 1mm, less than that = just plunge
-         if (distance < 0.04)  # dont need to ramp really since not going anywhere far, just plunge
+         if (distance < @tooshorttoramp)  # dont need to ramp really since not going anywhere far, just plunge
             puts "distance=#{distance.to_mm} so just plunging"  if(@debugramp)
             plung(zo, so, @cmd_linear)
             @cz = zo
@@ -586,7 +585,7 @@ module PhlatScript
    end
    
 ## this arc ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
-## not going to write an unlimited version, always limited to at least 45 degrees
+## not going to write an unlimited version, always limited to at most 45 degrees
 ## though some of these arguments are defaulted, they must always all be given by the caller
    def ramplimitArc(limitangle, op, rad, cent, zo, so=@speed_plung, cmd=@cmd_linear)
       if (limitangle == 0)
@@ -628,9 +627,9 @@ module PhlatScript
 #angle*radius   (radians)
          
          if (cmd.include?('3'))  # find the 'other' command for the return stroke
-            ocmd = 'G2'
+            ocmd = 'G02'
          else
-            ocmd = 'G3'
+            ocmd = 'G03'
          end
          # find halfway point
          # is the angle exceeded?
@@ -725,7 +724,7 @@ module PhlatScript
          cncPrintC("(ramplimitarc end)\n")             if(@debugramp)
          @cz = zo
          @cs = so
-         @cc = cmd
+         @cc = ocmd #ocmd is the last command output
       end
    end
    
