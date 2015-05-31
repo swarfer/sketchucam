@@ -112,7 +112,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3a</b><br>May 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3a</b><br>June 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -180,7 +180,7 @@
                <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
                <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
                <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
-               <li><a class="index" href="#toolbar">Toolbar Icons</a>
+               <li><a class="index" href="sketchucamtoolbar.html">Toolbar Icons</a>
                <ul>
                   <li><a href="sketchucamtoolbar.html#toolparameters">Parameters</a>
                   <Li><A href="sketchucamtoolbar.html#tooloutside">Outside cut</a>
@@ -211,9 +211,33 @@
 <tr>
    <td width="90%">
    
+      <div class="intro">
+      <h4>New in V1.3a (June 2015)</h4>
+      <ul>
+      <li>Bugfix: concave arcs on the edge of rectangle were not cut in the correct direction, causing scalloped edges.
+      <li>Pocket zigzags now use <i>fuzzy stepover</i>.  A new stepover is calculated from the given stepover such that the zigzag always
+         starts and ends at the given offset from the edges.  This prevents leaving large gaps at the end of the zigzag which
+         might break a tool in hard materials.  Note that complicated shapes can still leave oversize (larger than stepover) nubs
+         that will be removed by the final outline pass.  To mitigate this effect, use small stepovers in hard materials.
+      <li>Pocket zigzag <i>offset</i> (the gap between the edge of the face and the edges of the zigzag) is now related to stepover instead
+         of being a fixed 10%.  This means that for large stepovers the cut takes less time, and for small stepovers the
+         final outline cut is <=50% of the stepover value.  <a href="sketchucamtoolbar.html#toolpocket">Read here for details</a>
+      <li>Pocket tool now uses the same offset routine as the inside and outside cut tools making it much less prone to folded corners
+         and other artifacts.
+      <li>G-code Joiner will not output any comments if <I>Use Comments</I> is false.  However, it <b>will not remove</b> comments already
+         in the files being joined.
+      <li>G-code Joiner now has an icon <img src="../images/joiner_large.png"> on the toolbar.
+      <li>New 'Quick Tools' toolbar that allows you to quickly toggle the status of the <img src="images/quicktoolbar.png" align=right>
+         'Use Comments' and 'Comment Style' options.   Using these will NOT affect the default settings set via the 
+      <i>Tools|Phlatboyz|Options|Machine Options</i>
+         menu.  Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      <li>Bug fixes that prevented Gcode generation in Sketchup v7.
+      <li> All Gcodes and axis letters are uppercased in accordance with the RS-274 standard.
+      </ul>
+      </div>
       
       <div class="intro">
-      <h4>New in V1.3a (May 2015)</h4>
+      <h4>New in V1.3 (May 2015)</h4>
       <ul>
       <li><a href="howto_ramping.html">Ramping:</a> (option on parameters dialog) instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
       <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
@@ -225,19 +249,6 @@
       <li>Bugfix: Polygons are now correctly identified and output as line segments instead of arc segments.
       <li>Bugfix: 'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
       <li>G-code lines have been shortened to be more GRBL friendly.
-      <li>Pocket zigzags now use fuzzy offsets.  A new stepover is calculated from the given stepover such that the zigzag always
-         starts and ends at the given offset from the edges.  This prevents leaving large gaps at the end of the zigzag which
-         might break a tool in hard materials.  Note that complicated shapes can still leave oversize (larger than stepover) nubs
-         that will be removed by the final outline pass.  To mitigate this effect, use small stepovers in hard materials.
-      <li>Pocket zigzag offset (the gap between the edge of the face and the edges of the zigzag) is now related to stepover instead
-         of being a fixed 10%.  This means that for large stepovers the cut takes less time, and for small stepovers the
-         final outline cut is 50% of the stepover value.
-      <li>G-code Joiner will not output any comments if Use Comments is false.  However, it <b>will not remove</b> comments already
-      in the files being joined.
-      <li>New 'Quick Tools' <img src="images/quicktoolbar.png">toolbar that allows you to quickly toggle the status of the 
-      'Use Comments' and 'Comment Style' options.   Using these will NOT affect the default settings set via the 
-      <i>Tools|Phlatboyz|Options|Machine Options</i>
-      menu.
       </ul>
       </div>
       

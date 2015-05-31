@@ -420,8 +420,8 @@ end
    def getOffset
       #as stepover get bigger, so the chance of missing bits around the edge inscreases, 
       #so make the offset smaller for large stepovers
-      div = (@stepOver > 0.75) ? 3 : 2
-      if (@stepOver > 85)
+      div = (@stepOver >= 0.75) ? 3 : 2
+      if (@stepOver >= 0.85)
          div = 4
       end
       if @keyflag == 1

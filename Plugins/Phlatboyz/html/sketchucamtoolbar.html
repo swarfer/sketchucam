@@ -490,6 +490,7 @@
          <li>hold down SHIFT to draw only the zigzag.  If there are errors or missing portions, do this:
             <ol>
             <li>simplify the shape by drawing one or more lines across it to split it up into simple convex shapes.</li>
+            <li>optionally change the direction of the zigzag by pressing the END key
             <li>Hold SHIFT and zigzag the resulting subshapes</li>
             <li>Remove the lines you added</li>
             </ol>
@@ -500,6 +501,34 @@
          <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
          is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 99%.
          &nbsp;</p>
+         <p><b>New in 1.3a - fuzzy stepover.</b><br>
+         The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
+         
+         <p>Using the exact stepover may result in a gap at the end of the zigzag that is much larger than the stepover%, causing the
+         final outline cut to remove a chunk of material that is near to bit diameter.  This could break the bit in harder materials.</p>
+         
+         <p>The option 'Use fuzzy pockets' defaults to ON since this results in a safer, optimal, zigzag spacing. You can change this
+         setting on the Tools|Phlatboyz|Options|Features menu</p>
+         
+         <p>The stepover is recalculated such that there is no remainder at the end of the zigzag, making the final cut the same width as the first cut.
+         (This may vary for complex shapes, use a smaller stepover for complex shapes, and change zigzag direction to find the best fill).</p>
+         
+         <p>The stepover is calculated as a SMALLER value if stepover% is less than 50%.
+         It is calculated as a larger value if stepover% is LARGER than 50%.
+         if stepover% is exactly 50% is uses that value.   According to tool manufacturers using a 50% tool stepover will significantly shorten tool life so
+         you should never use this anyway.  </p>
+         
+         <p>The <b>offset</b> from the bounding rectangle to the zigzag edges is calculated from the stepover% as follows:</p>
+         <pre>stepover% < 75%
+   offset = stepover% / 2
+stepover% < 85%
+   offset =  stepover% / 3 
+stepover% <= 100%
+   offset =  stepover% / 4</pre><br>
+         <p>This means that the offset is adjusted smaller as the stepover increases.  This is done to prevent leaving large wedges for the final
+            cut to handle, this happens especially on curved or sloped edges.</p>
+            
+       
       </td>
    </tr>
 

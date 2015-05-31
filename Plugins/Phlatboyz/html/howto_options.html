@@ -355,11 +355,15 @@ cuts = 3.3</pre>
          If stepover% is less than 50% then the number of steps will be rounded UP to give a smaller stepover, for hard materials.<br>
          If stepover% is greater than 50% then the number of steps will be rounded DOWN, for soft materials.<br>
          If stepover% is 50%, then no stepover rounding will be performed.
-   
+
+   <dt>Use fuzzy pocket stepover
+      <dd>TRUE = recalculate the zigzag stepover to prevent remainders at the end of the cut. <a href="sketchucamtoolbar.html#toolpocket">Read here for details</a>
+      <DD>FALSE = use the exact stepover% given in the paramemeters dialog.
+      
    <dt>Limit Ramping Angle to (degrees)
       <dd>0 = no limit on ramping angle
-      <dd>1 = limit ramping angle to this value.  This means it will never be more than this angle, but may be less.
-   
+      <dd>1..45 = limit ramping angle to this value.  This means it will never be more than this angle, but may be less.
+      <dd><a href="howto_ramping.html">Read more about ramping</a>
    <dt>Use Ramping
       <dd>Set this to have the default for new drawings to use ramping for plunge moves.
    </dl>
