@@ -79,7 +79,7 @@ module PhlatScript
     def cncPrint(*args)
       if(@mill_out_file)
         args.each {|string| 
-           string = string.to_s.sub('G0 ','G00 ')
+           string = string.to_s.sub(/G0 /,'G00 ')  #changing G0 to G00 everywhere else is tricky, just do it here
            @mill_out_file.print(string)
            }
       else
@@ -318,9 +318,9 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         if (@Limit_up_feed) && (cmd="G0") && (zo > 0) && (@cz < 0)
+         if (@Limit_up_feed) && (cmd=="G0") && (zo > 0) && (@cz < 0)
             cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
-            command_out += (format_measure(' G01 Z', 0))
+            command_out += 'G01' + (format_measure('Z', 0))
             command_out += (format_feed(@speed_plung))
             command_out += "\n"
             $cs = @speed_plung
@@ -473,6 +473,7 @@ module PhlatScript
             puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
             command_out += cmd      if ((cmd != @cc) || @gforce)
+            @cc = cmd
             command_out += format_measure('x',op.x)
             command_out += format_measure('y',op.y)
 # for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
@@ -530,16 +531,14 @@ module PhlatScript
          # if above material, G00 to surface
          if (@cz == @retract_depth)
             if (@table_flag)
-               command_out += "G00 Z#{@material_thickness}\n"
-               @cz = @material_thickness
+               @cz = @material_thickness + 0.1.mm
             else
-               command_out += "G00 Z0\n"
-               @cz = 0
+               @cz = 0.0 + 0.1.mm
             end
+            command_out += "G00" + format_measure('Z',@cz) +"\n"
             @cc = @cmd_rapid
          end
          
-         command_out += cmd   if ((cmd != @cc) || @gforce)
 # check the distance         
          point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
          point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
@@ -555,6 +554,8 @@ module PhlatScript
          end
          
          # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
+         command_out += cmd   if ((cmd != @cc) || @gforce)
+         @cc = cmd
          command_out += format_measure('x',op.x)
          command_out += format_measure('y',op.y)
          bz = (zo-@cz)/2 + @cz
@@ -562,6 +563,7 @@ module PhlatScript
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n";
          # cut to @cx,@cy,zo
+         command_out += cmd   if ((cmd != @cc) || @gforce)
          command_out += format_measure('X',@cx)
          command_out += format_measure('y',@cy)
          command_out += format_measure('z',zo)
