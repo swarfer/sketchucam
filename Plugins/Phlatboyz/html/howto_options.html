@@ -366,6 +366,15 @@ cuts = 3.3</pre>
       <dd><a href="howto_ramping.html">Read more about ramping</a>
    <dt>Use Ramping
       <dd>Set this to have the default for new drawings to use ramping for plunge moves.
+      
+   <dt>Output helixes as quarter arcs
+         <dd>TRUE (default) = output spiral boring helixes as quarter arcs, 4 arc segments per revolution.  This prevents
+         controllers getting confused about doing a full circle.
+         <dd>FALSE = output helixes as a full circle code.  Do not use this with LinuxCNC and test carefully before trusting.
+
+   <dt>Force all Gcodes on for Marlin         
+      <dd>FALSE (default) = use optimized Gcode output that does not repeat G commands if they are not needed
+      <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
    </dl>
    
 <h2><a id="a5">File Options</a></h2>

@@ -74,6 +74,7 @@ module PhlatScript
          @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
          @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
+         @gforce                 =   (phoptions.gforce? ? '1' : '0')
       end
    end
 
@@ -134,7 +135,8 @@ module PhlatScript
          @use_fuzzy_pockets      = true
          @ramp_angle             =  0
          @must_ramp              =  false
-         @quarter_arcs            =  true
+         @quarter_arcs           =  true
+         @gforce                 =false
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -286,6 +288,12 @@ module PhlatScript
             value = -1
             value = getvalue(optin['quarter_arcs'])             if (optin.has_key?('quarter_arcs'))
             @quarter_arcs = value > 0 ? true :  false            if (value != -1)
+         
+         #gforce  = always output Gcodes for Marlin
+            value = -1
+            value = getvalue(optin['gforce'])             if (optin.has_key?('gforce'))
+            @gforce = value > 0 ? true :  false            if (value != -1)
+            
             
 
          end
@@ -699,6 +707,13 @@ module PhlatScript
       def quarter_arcs=(newval)
          @quarter_arcs = newval
       end
+
+      def gforce?
+         @gforce
+      end
+      def gforce=(newval)
+         @gforce = newval
+      end
       
       
    end # class Options
@@ -987,7 +1002,8 @@ end # class
             'Use fuzzy pocket stepover ',
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
-            'Output helixes as quarter arcs '
+            'Output helixes as quarter arcs ',
+            'Force all Gcodes on for Marlin '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -1007,7 +1023,8 @@ end # class
             @options.use_fuzzy_pockets?.inspect(),
             @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
-            @options.quarter_arcs?.inspect()
+            @options.quarter_arcs?.inspect(),
+            @options.gforce?.inspect()            
             ];
          list=[
             'true|false',
@@ -1026,6 +1043,7 @@ end # class
             'true|false',
             'true|false',
             '',
+            'true|false',
             'true|false',
             'true|false'
             ];
@@ -1057,6 +1075,7 @@ end # class
             @options.ramp_angle              = input[15].to_f
             @options.must_ramp               = (input[16] == 'true')
             @options.quarter_arcs            = (input[17] == 'true')
+            @options.gforce                  = (input[18] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save

@@ -33,6 +33,7 @@ module PhlatScript
         @max_z = min_max_array[5]
       end
       @no_move_count = 0
+      @gforce = $phoptions.gforce?    # always output all Gcodes, for Marlin firmware, if true
       @spindle_speed = PhlatScript.spindleSpeed
       @retract_depth = PhlatScript.safeTravel.to_f
       @table_flag = false # true if tabletop is zZero
@@ -77,7 +78,10 @@ module PhlatScript
 
     def cncPrint(*args)
       if(@mill_out_file)
-        args.each {|string| @mill_out_file.print(string)}
+        args.each {|string| 
+           string = string.to_s.sub('G0 ','G00 ')
+           @mill_out_file.print(string)
+           }
       else
         args.each {|string| print string}
         #print arg
@@ -265,7 +269,7 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         command_out += cmd if (cmd != @cc)
+         command_out += cmd if ((cmd != @cc) || @gforce)
          hasz = hasx = hasy = false
          if (xo != @cx)
             command_out += (format_measure('X', xo))
@@ -324,7 +328,7 @@ module PhlatScript
             command_out += "G00" + (format_measure('Z', zo))
          else
             #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
-            command_out += cmd    if (cmd != @cc)
+            command_out += cmd    if ((cmd != @cc) || @gforce)
             command_out += (format_measure('Z', zo))
          end
          command_out += "\n"
@@ -347,7 +351,7 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         command_out += cmd if (cmd != @cc)
+         command_out += cmd if ((cmd != @cc) || @gforce)
          command_out += (format_measure('Z', zo))
          so = @speed_plung  # force using plunge rate for vertical moves
          #        sox = @is_metric ? so.to_mm : so.to_inch
@@ -405,7 +409,6 @@ module PhlatScript
             @cc = @cmd_rapid
          end
          
-         command_out += cmd if (cmd != @cc)
          # find halfway point
          # is the angle exceeded?
          point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
@@ -469,6 +472,7 @@ module PhlatScript
             end
             puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
+            command_out += cmd      if ((cmd != @cc) || @gforce)
             command_out += format_measure('x',op.x)
             command_out += format_measure('y',op.y)
 # for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
@@ -491,6 +495,7 @@ module PhlatScript
             if (curdepth < zo)
                curdepth = zo
             end   
+            command_out += cmd      if ((cmd != @cc) || @gforce)
             command_out += format_measure('X',@cx)
             command_out += format_measure('y',@cy)
             command_out += format_measure('z',curdepth)
@@ -534,7 +539,7 @@ module PhlatScript
             @cc = @cmd_rapid
          end
          
-         command_out += cmd if (cmd != @cc)
+         command_out += cmd   if ((cmd != @cc) || @gforce)
 # check the distance         
          point1 = Geom::Point3d.new(@cx,@cy,0)  # current point
          point2 = Geom::Point3d.new(op.x,op.y,0) # the other point
@@ -1239,7 +1244,7 @@ module PhlatScript
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
-      command_out += cmd if (cmd != @cc)
+      command_out += cmd if ((cmd != @cc) || @gforce)
       @precision +=1  # circles like a bit of extra precision so output an extra digit
       command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
       command_out += (format_measure("Y", yo)) #if (yo != @cy)
@@ -1263,7 +1268,7 @@ module PhlatScript
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
-      command_out += cmd if (cmd != @cc)
+      command_out += cmd   if ((cmd != @cc) || @gforce)
       @precision +=1  # circles like a bit of extra precision so output an extra digit
       command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
       command_out += (format_measure("Y", yo)) #if (yo != @cy)
