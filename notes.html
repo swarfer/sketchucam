@@ -306,8 +306,8 @@ List of things to fix/add for next release, in no particular order
       <dd>Options|Machine|Comment option, true outputs () format comments, false outputs ; format comments for GRBL
 <dt>Set Vtab ramping
          <dd>a tools menu item to use the current ramp settings to calculate Vtab size to conform to the angle limit.
-         
-<h2>1.3a unreleased</h2>
+</dl>         
+<h2>1.3a released 1 MAy 2015</h2>
 <dl>
    <dt>lance pointed out an arc error, some arcs are output with the wrong G code making the segments curve the wrong way.
    <dd>this is because of the g3 = reverse ? !.g3? : g3  lines in milledges.
@@ -320,7 +320,23 @@ List of things to fix/add for next release, in no particular order
       <dd> if stepover > 50% then stepover is rounded up
    <dt>'use fuzzy stepover' option on Features menu
    <dt>fix to phlatbones to prevent face missing errors
-   <dt>upcase all axis words and change G1 to G01.   G0 cannot be set to G00 in aMill at this time, but all specific G0 are not G00.
+   <dt>upcase all axis words and change G1 to G01.   G0 cannot be set to G00 in aMill at this time, but all specific G0 are not G00. (G0 is changed to G00 in the cncprint routine)
+</dl>
+
+<h2>1.3b unreleased</h2>
+<dl>
+   <dt>multiselect pockets
+      <dd>if multiple faces are selected when the pocket tool is selected, all the faces will be pocketed
+      <dd>all selected entities will be UNselected after this process
+      <dd>if only one thing is selected, nothing is done, process is ignored
+      <dd> make sure you have the correct pocket parameters before doing the multiselect!
+   <dt>holes in a grid
+      <dd>select the plunge hole tool
+      <dd>hold down ALT and select the point for the bottom left hole
+      <dd>you will be prompted for the spacing and number of holes
+      <dd>grid of holes created
+      <dd>You can hold SHIFT at the same time and give a size for the gridded holes
+</dl>
          
 <hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
