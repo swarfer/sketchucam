@@ -6,10 +6,15 @@ require 'Phlatboyz/Phlatscript.rb'
 class GPlot
 
   def initialize
-    @exe = Sketchup.find_support_file("GPlot.exe", "/Plugins")
-    if (!@exe)
-      UI.messagebox('Could not locate GPlot.exe in Sketchup Plugins folder.')
-    end
+      if ($phoptions.gplotter == 'default') 
+         @exe = Sketchup.find_support_file("GPlot.exe", "/Plugins")
+      else
+         @exe = $phoptions.gplotter
+      end
+      if (!@exe) || (!File.exist?(@exe))
+         UI.messagebox('Could not locate GPlotter.  Check Tools|Phlatboyz|Options|File Options|Gplotter')
+         @exe = Sketchup.find_support_file("GPlot.exe", "/Plugins")
+      end
   end
 
   def plot(filename=nil)   #swarfer: allow overriding filename
@@ -17,6 +22,7 @@ class GPlot
        filename = PhlatScript.cncFileDir  + PhlatScript.cncFileName
     end
     if (filename) && (File.exist?(filename)) then
+       #puts "#{@exe} #{filename}"
       Thread.new{system(@exe, filename)}
     else
       UI.messagebox("Could not locate a gcode file to plot. Try using the generate gcode button.")

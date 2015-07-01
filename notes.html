@@ -307,7 +307,7 @@ List of things to fix/add for next release, in no particular order
 <dt>Set Vtab ramping
          <dd>a tools menu item to use the current ramp settings to calculate Vtab size to conform to the angle limit.
          
-<h2>1.3a unreleased</h2>
+<h2>1.3a released, hash 97c2 on 1 jun 2015</h2>
 <dl>
    <dt>lance pointed out an arc error, some arcs are output with the wrong G code making the segments curve the wrong way.
    <dd>this is because of the g3 = reverse ? !.g3? : g3  lines in milledges.
@@ -321,7 +321,14 @@ List of things to fix/add for next release, in no particular order
    <dt>'use fuzzy stepover' option on Features menu
    <dt>fix to phlatbones to prevent face missing errors
    <dt>upcase all axis words and change G1 to G01.   G0 cannot be set to G00 in aMill at this time, but all specific G0 are not G00.
-         
+</dl> 
+
+<h2>1.3b</h2>
+<dl>
+   <dt>make the path to the gplot program a string in options so it is preserved between versions
+   
+
+        
 <hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $
 </pre>

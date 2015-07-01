@@ -20,6 +20,7 @@ module PhlatScript
          @default_file_name = phoptions.default_file_name.to_s
          @default_file_ext = phoptions.default_file_ext.to_s
          @default_directory_name = phoptions.default_directory_name.to_s
+         @gplotter = phoptions.gplotter
 
          #misc
          @default_comment_remark = phoptions.default_comment_remark.to_s
@@ -84,6 +85,7 @@ module PhlatScript
          @default_file_name = Default_file_name
          @default_file_ext = Default_file_ext
          @default_directory_name = Default_directory_name
+         @gplotter = 'default'
          #misc
          @default_comment_remark = Default_comment_remark
          @default_gen3d = Default_gen3d
@@ -151,6 +153,8 @@ module PhlatScript
             @default_file_name = optin['default_file_name']            if (optin.has_key?('default_file_name'))
             @default_file_ext  = optin['default_file_ext']             if (optin.has_key?('default_file_ext'))
             @default_directory_name  = optin['default_directory_name'] if (optin.has_key?('default_directory_name'))
+            @gplotter = optin['gplotter'] if (optin.has_key?('gplotter'))
+
          #misc
             @default_comment_remark = optin['default_comment_remark']  if (optin.has_key?('default_comment_remark'))
             value = -1
@@ -369,6 +373,13 @@ module PhlatScript
          @default_directory_name = newname
       end
 
+      def gplotter
+         @gplotter
+      end
+      def gplotter=(newname)
+         @gplotter = newname
+      end
+      
       def default_comment_remark
          @default_comment_remark
       end
@@ -732,12 +743,13 @@ module PhlatScript
       model=Sketchup.active_model
 
       # prompts
-      prompts=['Default_file_name','Default_file_ext', 'Default_directory_name']
+      prompts=['Default_file_name','Default_file_ext', 'Default_directory_name','G-code plotter program']
 
       defaults=[
          @options.default_file_name,
          @options.default_file_ext,
-         @options.default_directory_name
+         @options.default_directory_name,
+         @options.gplotter
          ]
       # dropdown options can be added here
       #         list=["henry|bob|susan"] #should give list of existing?
@@ -748,7 +760,8 @@ module PhlatScript
          @options.default_file_name = input[0].to_s
          @options.default_file_ext = input[1].to_s
          @options.default_directory_name = input[2].to_s
-
+         @options.gplotter = input[3].to_s
+         
          @options.save
       end # if input
    end # def select
