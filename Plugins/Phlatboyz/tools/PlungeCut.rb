@@ -54,7 +54,7 @@ module PhlatScript
       Sketchup.active_model.start_operation "Cutting Plunge", true
       rad = PlungeCut.radius
       if (diam > 0)
-         puts "PlungeCut cutting #{diam}"
+         #puts "PlungeCut cutting #{diam}"
          rad = diam / 2
       end
       entities = Sketchup.active_model.entities

@@ -26,6 +26,8 @@
 #                       for larger offsets this does not make the best use of time.  now uses half the stepover for the offset
 #                       up to 75%, then 1/3 up to 85%, then 1/4 - the offset cannot be allowed to grow too large, if it does
 #                       you get pins left behind in the pocket, especially on curved edges.
+#
+#  swarfer Jul 2015 - apply pocket to all selected pockets if multiselected
 # $Id$
 
 require 'sketchup.rb'
@@ -187,10 +189,29 @@ module PhlatScript
          @stepover_percent = 50.to_f
          @stepOver = 0.5.to_f
       end
-      #puts "activate stepOver = #{@stepOver}  @stepover_percent #{@stepover_percent}"
-      @statusmsg = @statusmsgBase + "StepOver is #{@stepover_percent}%"
-      Sketchup::set_status_text(@statusmsg, SB_PROMPT)
-      self.reset(nil)
+      #if things are selected, try to pocket the faces then deselect
+      if (Sketchup.active_model.selection.count > 1)
+         view = Sketchup.active_model.active_view       
+         sel = Sketchup.active_model.selection
+         didit = false
+         sel.each { |thing|
+             if (thing.typename == 'Face') 
+                #puts "#{thing}"
+                @active_face = thing
+                self.create_geometry(@active_face, view)
+                didit = true
+             end
+             }
+         sel.clear    if (didit)
+         self.reset(view)    
+         Sketchup.active_model.select_tool(nil) # select select tool since we have already pocketed all selected faces
+      else  #if nothign selected, just get ready to pocket the clicked face
+         @ip = Sketchup::InputPoint.new
+         #puts "activate stepOver = #{@stepOver}  @stepover_percent #{@stepover_percent}"
+         @statusmsg = @statusmsgBase + "StepOver is #{@stepover_percent}%"
+         Sketchup::set_status_text(@statusmsg, SB_PROMPT)
+         self.reset(nil)
+      end
    end
 
    def draw_geometry(view)
