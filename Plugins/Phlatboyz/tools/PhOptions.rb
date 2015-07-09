@@ -138,7 +138,13 @@ module PhlatScript
          @ramp_angle             =  0
          @must_ramp              =  false
          @quarter_arcs           =  true
-         @gforce                 =false
+         @gforce                 = false
+         @useA                   = false  # these are not saved, just adjustable via the quicktools menu
+         @useB                   = false
+         @useC                   = false
+         @posA                   = 0.0
+         @posB                   = 0.0
+         @posC                   = 0.0
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -726,6 +732,43 @@ module PhlatScript
          @gforce = newval
       end
       
+      def useA?
+         @useA
+      end
+      def useA=(newval)
+         @useA = (newval == true)
+      end
+      def useB?
+         @useB
+      end
+      def useB=(newval)
+         @useB = (newval == true)
+      end
+      def useC?
+         @useC
+      end
+      def useC=(newval)
+         @useC = (newval == true)
+      end
+
+      def posA
+         @posA
+      end
+      def posA=(newval)   #todo - range check?
+         @posA = newval
+      end
+      def posB
+         @posB
+      end
+      def posB=(newval)
+         @posB = newval
+      end
+      def posC
+         @posC
+      end
+      def posC=(newval)
+         @posC = newval
+      end
       
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
