@@ -34,7 +34,7 @@ rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
    git describe --abbrev=4 --dirty --always --tags > phrev.dat
-   php move.php plugins\tp.zip SketchUcam-1_3a.rbz
+   php move.php plugins\tp.zip SketchUcam-1_3b.rbz
 
 goto end
 
