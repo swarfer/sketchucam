@@ -112,7 +112,15 @@ module PhlatScript
       @@y_save = nil
       @@cut_depth_save = nil
       @g_save_point = Geom::Point3d.new(0, 0, 0) #swarfer: after a millEdges call, this will have the last point cut
-      @optimize = true  #set to true to try find the closest point on the next group
+
+      #experimental - turn off for distribution
+      @fakeorigin = false
+      if (@fakeorigin)
+         @optimize = false  #set to true to try find the closest point on the next group
+      else
+         @optimize = false
+      end
+      
       @current_bit_diameter = 0
       @tabletop = false
       @must_ramp = false    # make this an option!
@@ -211,6 +219,15 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             max_x = safe_array[2]
             max_y = safe_array[3]
             safe_area_points = P.get_safe_area_point3d_array()
+            
+            if (@fakeorigin)
+               w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
+               h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
+               min_x -= w/2
+               min_y -= h/2
+               max_x -= w/2
+               max_y -= h/2
+            end
 
             min_max_array = [min_x, max_x, min_y, max_y, $phoptions.min_z, $phoptions.max_z]
             #aMill = CNCMill.new(nil, nil, absolute_File_name, min_max_array)
@@ -1408,6 +1425,15 @@ puts " new #{newedges[i-1]}\n"
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
       trans = trans * mirror if Reflection_output
+# experiment in virtual o,o point      
+      if (@fakeorigin)
+         model = Sketchup.active_model
+         w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
+         h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
+         vc = Geom::Transformation.translation(Geom::Vector3d.new(-(w/2), -(h/2), 0))
+         vc = vc * mirror if Reflection_output
+      end
+      #use vc as an additional transform
 
       aMill.retract(@safeHeight)
 
@@ -1467,6 +1493,9 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
+               if (@fakeorigin)
+                  point = (vc ? (cp.transform(vc)) : cp)
+               end
 #               puts "#{phlatcut.edge.end}\n"
 
                # retract if this cut does not start where the last one ended
