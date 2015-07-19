@@ -115,11 +115,7 @@ module PhlatScript
 
       #experimental - turn off for distribution
       @fakeorigin = false
-      if (@fakeorigin)
-         @optimize = false  #set to true to try find the closest point on the next group
-      else
-         @optimize = false
-      end
+      @optimize = true
       
       @current_bit_diameter = 0
       @tabletop = false
@@ -220,13 +216,14 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             max_y = safe_array[3]
             safe_area_points = P.get_safe_area_point3d_array()
             
-            if (@fakeorigin)
-               w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
-               h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
-               min_x -= w/2
-               min_y -= h/2
-               max_x -= w/2
-               max_y -= h/2
+            if ((PhlatScript.zerooffsetx > 0) || (PhlatScript.zerooffsety > 0))
+               @fakeorigin = true
+               puts " fakeorigin true"
+               # offset the safe area
+               min_x -= PhlatScript.zerooffsetx
+               min_y -= PhlatScript.zerooffsety
+               max_x -= PhlatScript.zerooffsetx
+               max_y -= PhlatScript.zerooffsety
             end
 
             min_max_array = [min_x, max_x, min_y, max_y, $phoptions.min_z, $phoptions.max_z]
@@ -242,7 +239,18 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             else
                ext = "-"
             end
+            if (@fakeorigin)
+               x =  Sketchup.format_length(PhlatScript.zerooffsetx)
+               y =  Sketchup.format_length(PhlatScript.zerooffsety)
+               fo = "Origin offset #{x}, #{y}"
+               if (ext == '-')
+                  ext = fo
+               else
+                  ext += "\n" + fo
+               end
+            end
             aMill.job_start(@optimize,ext)
+            
 #   puts "amill jobstart done"
             if (Sketchup.active_model.selection.length > 0)
                loop_root = LoopNodeFromEntities(Sketchup.active_model.selection, aMill, material_thickness)
@@ -1425,13 +1433,13 @@ puts " new #{newedges[i-1]}\n"
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
       trans = trans * mirror if Reflection_output
-# experiment in virtual o,o point      
+      # virtual o,o point      
       if (@fakeorigin)
-         model = Sketchup.active_model
-         w = model.get_attribute(Dict_name, Dict_safe_width, $phoptions.default_safe_width)
-         h = model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
-         vc = Geom::Transformation.translation(Geom::Vector3d.new(-(w/2), -(h/2), 0))
+         x = PhlatScript.zerooffsetx
+         y = PhlatScript.zerooffsety
+         vc = Geom::Transformation.translation(Geom::Vector3d.new(-x, -y, 0))
          vc = vc * mirror if Reflection_output
+         trans = trans * vc  # apply both translations
       end
       #use vc as an additional transform
 
@@ -1493,9 +1501,7 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
-               if (@fakeorigin)
-                  point = (vc ? (cp.transform(vc)) : cp)
-               end
+               
 #               puts "#{phlatcut.edge.end}\n"
 
                # retract if this cut does not start where the last one ended

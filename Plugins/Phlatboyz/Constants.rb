@@ -133,6 +133,8 @@ Dict_show_gplot = "show_gplot"
 Dict_tabletop = "table_top"
 Dict_rampangle = "ramp_angle"
 Dict_mustramp = "must_ramp"
+Dict_zerooffsetx = "offset_x"
+Dict_zerooffsety = "offset_y"
 
 # - - - - - - - - - - - - - - - - - do not edit this
 #           Cut Keys

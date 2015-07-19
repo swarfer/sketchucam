@@ -128,7 +128,7 @@ module PhlatScript
                PlungeCut.cut(@ip.position, @depth, @dia)
                @dia = 0
             else
-               puts "Ignored dia < bitdiameter"
+               puts "Ignored dia <= bitdiameter"
             end
          else
            PlungeCut.cut(@ip.position, @depth, 0)

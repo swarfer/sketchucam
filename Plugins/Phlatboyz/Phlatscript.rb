@@ -260,12 +260,17 @@ module PhlatScript
     Sketchup.active_model.get_attribute(Dict_name, Dict_safe_height, $phoptions.default_safe_height)
   end
 
-  def PhlatScript.safeHeight=(sheight)
-                if sheight != PhlatScript.safeHeight then changed = true end
-    Sketchup.active_model.set_attribute(Dict_name, Dict_safe_height, sheight)
-                if $phoptions.always_show_safearea? then draw_safe_area(Sketchup.active_model)
-                elsif changed == true then draw_safe_area(Sketchup.active_model) end
-  end
+   def PhlatScript.safeHeight=(sheight)
+      if sheight != PhlatScript.safeHeight then 
+         changed = true 
+      end
+      Sketchup.active_model.set_attribute(Dict_name, Dict_safe_height, sheight)
+      if $phoptions.always_show_safearea? then 
+         draw_safe_area(Sketchup.active_model)
+      elsif changed == true then 
+         draw_safe_area(Sketchup.active_model) 
+      end
+   end
 
   def PhlatScript.useOverheadGantry?
     Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?)
@@ -389,7 +394,24 @@ module PhlatScript
   def PhlatScript.stepover=(stepover)
                 Sketchup.active_model.set_attribute(Dict_name, Dict_stepover, stepover.to_f)
   end
+#===== zero offset
+   def PhlatScript.zerooffsetx
+      Sketchup.active_model.get_attribute(Dict_name, Dict_zerooffsetx, 0).to_f
+   end
 
+   def PhlatScript.zerooffsetx=(offset)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_zerooffsetx, offset.to_f)
+   end
+   
+   def PhlatScript.zerooffsety
+      Sketchup.active_model.get_attribute(Dict_name, Dict_zerooffsety, 0).to_f
+   end
+
+   def PhlatScript.zerooffsety=(offset)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_zerooffsety, offset.to_f)
+   end
+  
+  #vtabs
   def PhlatScript.vtabs?
     return model.get_attribute(Dict_name, Dict_vtabs, $phoptions.default_vtabs?)
   end
@@ -489,6 +511,9 @@ module PhlatScript
 
    @@commandToolbar.add_separator 
 
+   require 'Phlatboyz/tools/ZeroTool.rb'
+   addToolItem(ZeroTool.new())
+   
    jcmd.large_icon = jtool.largeIcon  # only need these for a toolbar item
    jcmd.small_icon = jtool.smallIcon
    @@commandToolbar.add_item(jcmd)

@@ -183,7 +183,8 @@ module PhlatScript
         cncPrintC("Optimization is OFF")
       end
       if (extra != "-")
-         cncPrintC("#{extra}")
+         puts extra
+         extra.split(/\n/).each {|bit|  cncPrintC(bit) }
       end
 
       cncPrintC("www.PhlatBoyz.com")

@@ -341,7 +341,21 @@ def PhlatScript.draw_safe_area(model=Sketchup.active_model)
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[1]))
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[2]))
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[3]))
-
+         if ((PhlatScript.zerooffsetx > 0) || (PhlatScript.zerooffsety > 0))
+            pts = Array.new
+            x = PhlatScript.zerooffsetx + safe_point3d_array[0].x
+            y = PhlatScript.zerooffsety + safe_point3d_array[0].y
+            pts << Geom::Point3d.new(x + 0.1 , y + 0.1, 0)
+            pts << Geom::Point3d.new(x - 0.1 , y + 0.1, 0)
+            pts << Geom::Point3d.new(x + 0.1 , y - 0.1, 0)
+            pts << Geom::Point3d.new(x - 0.1 , y - 0.1, 0)
+            pts << Geom::Point3d.new(x + 0.1 , y + 0.1, 0)
+            mark_construction_object(entities.add_cline(pts[0], pts[1]))
+            mark_construction_object(entities.add_cline(pts[1], pts[2]))
+            mark_construction_object(entities.add_cline(pts[2], pts[3]))
+            mark_construction_object(entities.add_cline(pts[3], pts[4]))
+         end 
+         
          mark_construction_object(add_point_label(entities, safe_point3d_array[0], Construction_font_height, 0))
 			mark_construction_object(add_point_label(entities, safe_point3d_array[2], Construction_font_height, 1))
 		rescue
