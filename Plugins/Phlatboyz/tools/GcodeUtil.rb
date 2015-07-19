@@ -1100,7 +1100,14 @@ puts " new #{newedges[i-1]}\n"
       mirror = P.get_safe_reflection_translation()
       trans = P.get_safe_origin_translation()
       trans = trans * mirror if Reflection_output
-
+      # virtual o,o point      
+      if (@fakeorigin)
+         x = PhlatScript.zerooffsetx
+         y = PhlatScript.zerooffsety
+         vc = Geom::Transformation.translation(Geom::Vector3d.new(-x, -y, 0))
+         vc = vc * mirror if Reflection_output
+         trans = trans * vc  # apply both translations
+      end
       aMill.retract(@safeHeight)
 
       save_point = nil

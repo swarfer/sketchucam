@@ -219,19 +219,21 @@ module PhlatScript
       cncPrint("M3 S", @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
     end
 
-    def job_finish
-      cncPrint("G00")
-      if ($phoptions.useA?)
-         cncPrint(" A0.0")
+   def job_finish
+      if ($phoptions.useA? || $phoptions.useB? || $phoptions.useC?)
+         cncPrint("G00")
+         if ($phoptions.useA?)
+            cncPrint(" A0.0")
+         end
+         if ($phoptions.useB?)
+            cncPrint(" B0.0")
+         end
+         if ($phoptions.useC?)
+            cncPrint(" C0.0")
+         end
+         cncPrint("\n")
       end
-      if ($phoptions.useB?)
-         cncPrint(" B0.0")
-      end
-      if ($phoptions.useC?)
-         cncPrint(" C0.0")
-      end
-      cncPrint("\n")
-      
+         
       cncPrint("M05\n") # M05 - Spindle off
       cncPrint("M30\n") # M30 - End of program/rewind tape
       cncPrint("%\n")
