@@ -224,6 +224,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                min_y -= PhlatScript.zerooffsety
                max_x -= PhlatScript.zerooffsetx
                max_y -= PhlatScript.zerooffsety
+            else
+               @fakeorigin = false
             end
 
             min_max_array = [min_x, max_x, min_y, max_y, $phoptions.min_z, $phoptions.max_z]
