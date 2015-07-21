@@ -42,3 +42,4 @@ CenterPointAll.rb
 ChrisP_RadialMove_EN.rb
 deBabelizer.rb
 2D*
+!auto*
