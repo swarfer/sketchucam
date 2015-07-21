@@ -17,7 +17,10 @@ module PhlatScript
       @debugramp = false
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
       @quarters = $phoptions.quarter_arcs?  # use quarter circles in plunge bores?  defaults to true
+#manual user options - if they find this they can use it (-:
+      @quickpeck = true   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
       @canneddrill = false
+#
       @max_x = 48.0
       @min_x = -48.0
       @max_y = 22.0
@@ -890,6 +893,11 @@ module PhlatScript
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
+            c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take
+            if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
+               c = c.ceil
+               step = -(zstart - zend) / c
+            end
          else
             s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
             step = -(zstart-zend) / s     # ensures every step down is the same size
@@ -901,17 +909,18 @@ module PhlatScript
       now = zstart
       prevz = now
       while now > zend do
-         now += step
+         now += step  #step is negative!
          if (now < zend)
             now = zend
          else
-            if ( (zend - now).abs < (@bit_diameter / 8) )
-               df = zend - now;
-               if (df.abs > 0)
-                  command_out += "   (SpiralAt: forced depth as very close " if @debug
-                  command_out += format_measure("",df) + ")\n"                if @debug
+            df = zend - now # must prevent this missing the last spiral on small mpass depths, ie when mpass < bit/8
+            if ( (df.abs < (@bit_diameter / 8) ) && (df.abs < PhlatScript.multipassDepth) )
+               if ((df.abs > 0) && (df.abs < 0.1.mm))
+                  command_out += "   (SpiralAt: forced depth as very close now #{now.to_mm} zend #{zend.to_mm}" if @debug
+                  command_out += format_measure("df",df) + ")\n"                if @debug
+                  now = zend
                end
-               now = zend
+               
             end
          end
          zdiff = (prevz - now) /4   # how much to feed on each quarter circle
@@ -1074,7 +1083,7 @@ module PhlatScript
                end
             end
             
-         else
+         else  # diam = biadiam OR not ramping
             zonow = PhlatScript.tabletop? ? @material_thickness : 0
             if (@canneddrill)
                command_out += (diam > @bit_diameter) ? "G99" : "G98"
@@ -1088,7 +1097,7 @@ module PhlatScript
                command_out += (format_feed(so)) if (so != @cs)
                command_out += "\n"               
                command_out += "G80\n";
-            else
+            else # manual peck drill cycle
                while (zonow - zo).abs > 0.0001 do
                   zonow -= PhlatScript.multipassDepth
                   if zonow < zo
@@ -1098,8 +1107,19 @@ module PhlatScript
                   command_out += (format_feed(so)) if (so != @cs)
                   command_out += "\n"
                   @cs = so
-                  command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
-                  command_out += "\n"
+                  if (zonow - zo).abs < 0.0001
+                     command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
+                  else
+                     if (@quickpeck)
+                        raise = (PhlatScript.multipassDepth <= 0.5.mm) ? PhlatScript.multipassDepth / 2 : 0.5.mm
+                        if (raise < 0.1.mm)
+                           raise = 0.1.mm
+                        end
+                        command_out += "G00" + format_measure("z",zonow + raise) + " ; quickpeck\n"   
+                     else
+                        command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
+                     end
+                  end
                end #while
             end # else canneddrill
          end
