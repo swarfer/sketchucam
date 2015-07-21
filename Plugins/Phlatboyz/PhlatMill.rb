@@ -774,7 +774,7 @@ module PhlatScript
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
       command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
-      command_out += "G00" + format_measure("Y",yo-yoff)
+      command_out += "G00" + format_measure("Y",yo-yoff)  + format_measure("Z",zstart + 0.5.mm)
       command_out += "\n"
       command_out += "G01" + format_measure("Z",zstart)
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
@@ -806,11 +806,17 @@ module PhlatScript
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
+            c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take?
+            if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
+               c = c.ceil
+               step = -(zstart - zend) / c           
+            end
          else
             s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
             step = -(zstart-zend) / s     # ensures every step down is the same size
          end
       end
+      mpass = -step
       d = zstart-zend
       puts("Spiralat: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
       command_out += "   (Z step #{step.to_mm})\n"          if @debug
@@ -820,13 +826,17 @@ module PhlatScript
          if (now < zend)
             now = zend
          else
-            if ( (zend - now).abs < (@bit_diameter / 8) )
-               df = zend - now;
-               if (df.abs > 0)
-                  command_out += "   (SpiralAt: forced depth as very close " if @debug
-                  command_out += format_measure("",df) + ")\n"                if @debug
-               end
+            df = zend - now # must prevent this missing the last spiral on small mpass depths, ie when mpass < bit/8
+            if (df.abs < 0.001) #make sure we do not repeat the last pass
                now = zend
+            else
+               if ( df.abs < (mpass / 4) )
+                  if (df < 0) 
+                     command_out += "   (SpiralAt: forced depth as very close now #{now.to_mm} zend #{zend.to_mm}" if @debug
+                     command_out += format_measure("df",df) + ")\n"                if @debug
+                     now = zend
+                  end
+               end
             end
          end
          command_out += "#{cmd} "
@@ -860,10 +870,9 @@ module PhlatScript
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
       command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
-      command_out += "G00" + format_measure("Y",yo-yoff)
+      command_out += "G00" + format_measure("Y",yo-yoff)  + format_measure("Z",zstart + 0.5.mm)
       command_out += "\n"
-      command_out += "G01"
-      command_out += format_measure("Z",zstart)
+      command_out += "G01" + format_measure("Z",zstart)
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       #if ramping with limit use plunge feed rate
@@ -893,16 +902,17 @@ module PhlatScript
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
-            c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take
+            c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take?
             if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
                c = c.ceil
-               step = -(zstart - zend) / c
+               step = -(zstart - zend) / c           
             end
          else
             s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
             step = -(zstart-zend) / s     # ensures every step down is the same size
          end
       end
+      mpass = -step
       d = zstart-zend
       puts("SpiralatQ: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
       command_out += "   (Z step #{step.to_mm})\n"          if @debug
@@ -914,13 +924,16 @@ module PhlatScript
             now = zend
          else
             df = zend - now # must prevent this missing the last spiral on small mpass depths, ie when mpass < bit/8
-            if ( (df.abs < (@bit_diameter / 8) ) && (df.abs < PhlatScript.multipassDepth) )
-               if ((df.abs > 0) && (df.abs < 0.1.mm))
-                  command_out += "   (SpiralAt: forced depth as very close now #{now.to_mm} zend #{zend.to_mm}" if @debug
-                  command_out += format_measure("df",df) + ")\n"                if @debug
-                  now = zend
+            if (df.abs < 0.001) #make sure we do not repeat the last pass
+               now = zend
+            else
+               if ( df.abs < (mpass / 4) )
+                  if (df < 0) #sign is important
+                     command_out += "   (SpiralAt: forced depth as very close now #{now.to_mm} zend #{zend.to_mm}" if @debug
+                     command_out += format_measure("df",df) + ")\n"                if @debug
+                     now = zend
+                  end
                end
-               
             end
          end
          zdiff = (prevz - now) /4   # how much to feed on each quarter circle
@@ -1115,7 +1128,7 @@ module PhlatScript
                         if (raise < 0.1.mm)
                            raise = 0.1.mm
                         end
-                        command_out += "G00" + format_measure("z",zonow + raise) + " ; quickpeck\n"   
+                        command_out += "G00" + format_measure("z",zonow + raise) + "\n" # raise just a smidge  
                      else
                         command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
                      end
