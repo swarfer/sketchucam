@@ -186,7 +186,7 @@ module PhlatScript
         cncPrintC("Optimization is OFF")
       end
       if (extra != "-")
-         puts extra
+         #puts extra
          extra.split(/\n/).each {|bit|  cncPrintC(bit) }
       end
 
@@ -431,9 +431,9 @@ module PhlatScript
          # if above material, G00 to near surface to save time
          if (@cz == @retract_depth)
             if (@table_flag)
-               @cz = @material_thickness + 0.1.mm
+               @cz = @material_thickness + 0.2.mm
             else
-               @cz = 0.0 + 0.1.mm
+               @cz = 0.0 + 0.2.mm
             end
             command_out += "G00" + format_measure('Z',@cz) +"\n"
             @cc = @cmd_rapid
@@ -493,11 +493,13 @@ module PhlatScript
          
          curdepth = @cz
          cnt = 0
+         errmsg = ''
          while ( (curdepth - zo).abs > 0.0001) do
             cnt += 1
             if cnt > 100
                puts "high count break #{curdepth.to_mm}  #{zo.to_mm}" 
                command_out += "ramp loop high count break, do not cut this code\n"
+               errmsg = "ramp loop high count break, do not cut this code"
                break
             end
             puts "curdepth #{curdepth.to_mm}"            if(@debugramp)
@@ -532,6 +534,9 @@ module PhlatScript
             command_out += format_measure('z',curdepth)
             command_out += "\n"
          end  # while
+         if (errmsg != '')
+            UI.messagebox(errmsg)
+         end
          
          cncPrint(command_out)
          cncPrintC("(ramplimit end)\n")             if(@debugramp)
@@ -561,9 +566,9 @@ module PhlatScript
          # if above material, G00 to surface
          if (@cz == @retract_depth)
             if (@table_flag)
-               @cz = @material_thickness + 0.1.mm
+               @cz = @material_thickness + 0.2.mm
             else
-               @cz = 0.0 + 0.1.mm
+               @cz = 0.0 + 0.2.mm
             end
             command_out += "G00" + format_measure('Z',@cz) +"\n"
             @cc = @cmd_rapid
@@ -647,9 +652,9 @@ module PhlatScript
          # if above material, G00 to near surface to save time
          if (@cz == @retract_depth)
             if (@table_flag)
-               @cz = @material_thickness + 0.1.mm
+               @cz = @material_thickness + 0.2.mm
             else
-               @cz = 0.0 + 0.1.mm
+               @cz = 0.0 + 0.2.mm
             end
             command_out += "G00" + format_measure('Z',@cz) +"\n"
             cncPrint(command_out)
@@ -774,9 +779,9 @@ module PhlatScript
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
       command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
-      command_out += "G00" + format_measure("Y",yo-yoff)
-      command_out += "\n"
-      command_out += "G01" + format_measure("Z",zstart)
+      command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
+      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"  # rapid to near surface
+      command_out += "G01" + format_measure("Z",zstart)        # feed to surface
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       #if ramping with limit use plunge feed rate
@@ -794,21 +799,25 @@ module PhlatScript
          if PhlatScript.useMultipass?
             if step.abs > PhlatScript.multipassDepth
                step = -PhlatScript.multipassDepth
+               step = StepFromMpass(zstart,zend,step)
                puts " step #{step.to_mm} limited to multipass"       if (@debugramp)
             end
          else
             if step.abs > (@bit_diameter/2)
-               s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-               step = -(zstart-zend) / s
+#               s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+#               step = -(zstart-zend) / s
+               step = StepFromBit(zstart,zend)
                puts " step #{step.to_mm} limited to fuzzybitdiam/2"       if (@debugramp)
             end
          end
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
+            step = StepFromMpass(zstart,zend,step)
          else
-            s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-            step = -(zstart-zend) / s     # ensures every step down is the same size
+#            s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+#            step = -(zstart-zend) / s     # ensures every step down is the same size
+            step = StepFromBit(zstart,zend)
          end
       end
       d = zstart-zend
@@ -850,6 +859,20 @@ module PhlatScript
       @precision -= 1
       return command_out
     end # SpiralAt
+    
+   def StepFromBit(zstart, zend)
+      s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
+      step = -(zstart-zend) / s
+   end
+   
+   def StepFromMpass(zstart,zend,step)
+      c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take
+      if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
+         c = c.ceil
+         step = -(zstart - zend) / c
+      end
+      return step
+   end
 
 # generate code for a spiral bore and return the command string, using quadrants
 # if ramping is on, lead angle will be limited to rampangle
@@ -860,10 +883,9 @@ module PhlatScript
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
       command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
-      command_out += "G00" + format_measure("Y",yo-yoff)
-      command_out += "\n"
-      command_out += "G01"
-      command_out += format_measure("Z",zstart)
+      command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
+      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"   # rapid to near surface
+      command_out += "G01" + format_measure("Z",zstart) # feed to surface
       command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
       command_out += "\n"
       #if ramping with limit use plunge feed rate
@@ -881,26 +903,23 @@ module PhlatScript
          if PhlatScript.useMultipass?
             if step.abs > PhlatScript.multipassDepth
                step = -PhlatScript.multipassDepth
-               puts " step #{step.to_mm} limited to multipass"       if (@debugramp)
+               step = StepFromMpass(zstart,zend,step)
+               puts " ramp step #{step.to_mm} limited to multipass"       if (@debugramp)
             end
          else
             if step.abs > (@bit_diameter/2)
-               s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-               step = -(zstart-zend) / s
-               puts " step #{step.to_mm} limited to fuzzybitdiam/2"       if (@debugramp)
+   #            s = ((zstart-zend) / (@bit_diameter/2)).ceil   
+   #            step = -(zstart-zend) / s
+               step = StepFromBit(zstart,zend)                    # each spiral Z feed will be bit diameter/2 or slightly less
+               puts " ramp step #{step.to_mm} limited to fuzzybitdiam/2"       if (@debugramp)
             end
          end
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
-            c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take
-            if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
-               c = c.ceil
-               step = -(zstart - zend) / c
-            end
+            step = StepFromMpass(zstart,zend,step)                      # possibly recalculate step to have equal sized steps
          else
-            s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
-            step = -(zstart-zend) / s     # ensures every step down is the same size
+            step = StepFromBit(zstart,zend)                       # each spiral Z feed will be bit diameter/2 or slightly less
          end
       end
       d = zstart-zend
@@ -1021,7 +1040,51 @@ module PhlatScript
 #   @debugramp = false
       return command_out
     end # SpiralAtQ
-    
+
+# take the existing diam and ystep and possibly modify the ystep to get an exact number of steps
+# if stepover is 50% then do nothing
+# if ystep will use up all the remainder space, do not change
+# if stepover < 50 then make ystep smaller
+# if stepover > 50% make ystep larger
+   def GetFuzzyYstep(diam,ystep)
+      if (PhlatScript.mustramp?)
+         rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
+      else
+         rem = (diam / 2) - (@bit_diameter/2) # have drilled a bit diam hole
+      end
+      temp = rem / ystep   # number of steps to do it
+      puts " temp steps = #{temp}  ystep old #{ystep.to_mm} remainder #{rem.to_mm}\n" if @debug
+      if (temp < 1.0)
+         puts "   not going to bother making it smaller"  if @debug
+         return ystep
+      end
+      oldystep = ystep  
+      flag = false
+      if (PhlatScript.stepover < 50)               #round temp up to create more steps
+         temp = (temp + 0.5).round
+         flag = true
+      else
+         if (PhlatScript.stepover > 50)            #round temp down to create fewer steps
+            temp = (temp - 0.5).round
+            flag = true
+         end
+      end
+      if (flag)                                    # only adjust if we need to
+         temp = (temp < 1) ? 1 : temp
+         puts "   new temp steps = #{temp}\n" if @debug
+         #   calc new ystep
+         ystep = rem / temp
+         if (ystep > @bit_diameter ) # limit to stepover
+            ystep = PhlatScript.stepover * @bit_diameter / 100
+            puts "    ystep was > bit, limited to stepover\n"         if @debug
+         end
+         puts " ystep new #{ystep.to_mm}\n" if @debug
+         if oldystep != ystep
+            cncPrintC("OLD STEP #{oldystep.to_mm} new step #{ystep.to_mm}")  if (@debug)
+         end
+      end
+      return ystep
+   end
     
 #swarfer: instead of a plunged hole, spiral bore to depth
 #handles multipass by itself, also handles ramping
@@ -1091,8 +1154,8 @@ module PhlatScript
                command_out += format_measure("X",xo)
                command_out += format_measure("Y",yo )
                command_out += format_measure("Z",zo )
-               command_out += format_measure("R",sh )
-               command_out += format_measure("Q",PhlatScript.multipassDepth)
+               command_out += format_measure("R",sh )                         # retract height
+               command_out += format_measure("Q",PhlatScript.multipassDepth)  # peck depth
                
                command_out += (format_feed(so)) if (so != @cs)
                command_out += "\n"               
@@ -1107,7 +1170,7 @@ module PhlatScript
                   command_out += (format_feed(so)) if (so != @cs)
                   command_out += "\n"
                   @cs = so
-                  if (zonow - zo).abs < 0.0001
+                  if (zonow - zo).abs < 0.0001  # if at bottom, then retract
                      command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
                   else
                      if (@quickpeck)
@@ -1115,7 +1178,7 @@ module PhlatScript
                         if (raise < 0.1.mm)
                            raise = 0.1.mm
                         end
-                        command_out += "G00" + format_measure("z",zonow + raise) + " ; quickpeck\n"   
+                        command_out += "G00" + format_measure("z",zonow + raise) + "\n"   
                      else
                         command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
                      end
@@ -1194,39 +1257,7 @@ module PhlatScript
 # if fuzzy stepping, calc new ystep from optimized step count
 # find number of steps to complete hole
          if ($phoptions.use_fuzzy_holes?)
-            if (PhlatScript.mustramp?)
-               rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
-            else
-               rem = (diam / 2) - (@bit_diameter/2) # have drilled a bit diam hole
-            end
-            temp = rem / ystep   # number of steps to do it
-            puts " temp steps = #{temp}\n" if @debug
-            puts " ystep old #{ystep.to_mm}\n" if @debug
-            oldystep = ystep  
-            flag = false
-            if (PhlatScript.stepover < 50)               #round temp up to create more steps
-               temp = (temp + 0.5).round
-               flag = true
-            else
-               if (PhlatScript.stepover > 50)            #round temp down to create fewer steps
-                  temp = (temp - 0.5).round
-                  flag = true
-               end
-            end
-            if (flag)                                    # only adjust if we need to
-               temp = (temp < 1) ? 1 : temp
-               puts "   new temp steps = #{temp}\n" if @debug
-               #   calc new ystep
-               ystep = rem / temp
-               if (ystep > @bit_diameter ) # limit to stepover
-                  ystep = PhlatScript.stepover * @bit_diameter / 100
-                  puts " ystep was > bit, limited to stepover\n"         if @debug
-               end
-               puts " ystep new #{ystep.to_mm}\n" if @debug
-               if oldystep != ystep
-                  cncPrintC("old step #{oldystep.to_mm} new step #{ystep.to_mm}")  if (@debug)
-               end
-            end
+            ystep = GetFuzzyYstep(diam,ystep)
          end
 #######################
 
