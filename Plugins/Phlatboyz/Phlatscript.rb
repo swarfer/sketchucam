@@ -52,6 +52,20 @@ module PhlatScript
       UI.add_context_menu_handler do | menu | contextMenuHandler(menu) end
     setModelOptions(Sketchup.active_model)
     @@Loaded = true
+    
+   # try to warn the user about not having a . as decimal seperator
+   length = (4/3).to_l.to_s     # generate a string with a decimal seperator
+   if (length.count(',') > 0)   # if it is a comma, warn user
+      UI.messagebox('Warning: you have the comma defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
+   else
+      if (length.count('.') != 1)   # if it is not a point, warn user
+         UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
+      end
+   end
+   
+   #https://github.com/thomthom/SketchUp-Units-and-Locale-Helper
+   #http://sketchucation.com/forums/viewtopic.php?f=180&t=28346
+    
   end
 
   def PhlatScript.contextMenuHandler(menu)
