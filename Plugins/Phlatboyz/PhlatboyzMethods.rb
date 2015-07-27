@@ -332,10 +332,10 @@ def PhlatScript.draw_safe_area(model=Sketchup.active_model)
 		begin
 			entities = model.active_entities
 
-			mark_construction_object(entities.add_cline(safe_point3d_array[0], safe_point3d_array[1]))
-			mark_construction_object(entities.add_cline(safe_point3d_array[1], safe_point3d_array[2]))
-			mark_construction_object(entities.add_cline(safe_point3d_array[2], safe_point3d_array[3]))
-			mark_construction_object(entities.add_cline(safe_point3d_array[3], safe_point3d_array[0]))
+			mark_construction_object(entities.add_cline(safe_point3d_array[0], safe_point3d_array[1],'-'))
+			mark_construction_object(entities.add_cline(safe_point3d_array[1], safe_point3d_array[2],'-'))
+			mark_construction_object(entities.add_cline(safe_point3d_array[2], safe_point3d_array[3],'-'))
+			mark_construction_object(entities.add_cline(safe_point3d_array[3], safe_point3d_array[0],'-'))
 
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[0]))
 			mark_construction_object(entities.add_cpoint(safe_point3d_array[1]))
@@ -350,10 +350,10 @@ def PhlatScript.draw_safe_area(model=Sketchup.active_model)
             pts << Geom::Point3d.new(x + 0.1 , y - 0.1, 0)
             pts << Geom::Point3d.new(x - 0.1 , y - 0.1, 0)
             pts << Geom::Point3d.new(x + 0.1 , y + 0.1, 0)
-            mark_construction_object(entities.add_cline(pts[0], pts[1]))
-            mark_construction_object(entities.add_cline(pts[1], pts[2]))
-            mark_construction_object(entities.add_cline(pts[2], pts[3]))
-            mark_construction_object(entities.add_cline(pts[3], pts[4]))
+            mark_construction_object(entities.add_cline(pts[0], pts[1],'-'))
+            mark_construction_object(entities.add_cline(pts[1], pts[2],'-'))
+            mark_construction_object(entities.add_cline(pts[2], pts[3],'-'))
+            mark_construction_object(entities.add_cline(pts[3], pts[4],'-'))
          end 
          
          mark_construction_object(add_point_label(entities, safe_point3d_array[0], Construction_font_height, 0))
