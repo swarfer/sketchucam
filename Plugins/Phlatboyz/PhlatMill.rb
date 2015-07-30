@@ -20,6 +20,7 @@ module PhlatScript
 #manual user options - if they find this they can use it (-:
       @quickpeck = true   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
       @canneddrill = false
+      @depthfirst = false
 #
       @max_x = 48.0
       @min_x = -48.0
@@ -1050,6 +1051,68 @@ module PhlatScript
       return command_out
     end # SpiralAtQ
 
+# generate code for a spiral bore and return the command string, using quadrants
+# this one does center out to diameter, an outward spiral at zo depth
+#must give it the final yoff, call it after doing the initial 2D bore.
+# if ramping is on, lead angle will be limited to rampangle
+   def SpiralOut(xo,yo,zstart,zend,yoff)
+   @debugramp = true
+      @precision += 1
+#      cwstr = @cw ? 'CW' : 'CCW';
+#      cmd =   @cw ? 'G02': 'G03';
+      cwstr = 'CCW'
+      cmd = 'G03'   # spiral out can only do this
+      command_out = ""
+      command_out += "   (SPIRALOUT #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
+      
+#cutpoint is 1/2 bit out from the center, at zo depth
+      
+#      command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
+#      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"   # rapid to near surface
+#      command_out += "G01" + format_measure("Z",zstart) # feed to surface
+#      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
+#      command_out += "\n"
+      
+      #if ramping with limit use plunge feed rate
+      @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
+      
+      #we are at zend depth
+      #we need to spiral out to yoff
+      
+      calc fuzzy ystep!
+
+            #x+of Y  I0 Jof
+            command_out += "#{cmd}"
+            command_out += format_measure("X",xo + yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - zdiff)
+            command_out += format_measure("I",0)  + format_measure(" J",yoff)
+            command_out += "\n"
+            #x Yof   I-of  J0
+            command_out += "#{cmd}"
+            command_out += format_measure("X",xo) + format_measure(" Y",yo+yoff)
+            command_out += format_measure("Z",prevz - zdiff*2)
+            command_out += format_measure("I",-yoff)  + format_measure(" J",0)
+            command_out += "\n"
+            #X-of  Y  I0    J-of
+            command_out += "#{cmd}"
+            command_out += format_measure("X",xo-yoff) + format_measure(" Y",yo)
+            command_out += format_measure("Z",prevz - zdiff*3)
+            command_out += format_measure("I",0)  + format_measure(" J",-yoff)
+            command_out += "\n"
+            #X  Y-of  Iof   J0
+            command_out += "#{cmd}"
+            command_out += format_measure("X",xo) + format_measure(" Y",yo-yoff)
+            command_out += format_measure("Z",now) #prevz - zdiff*4)
+            command_out += format_measure("I",yoff)  + format_measure(" J",0)
+            command_out += "\n"
+         end
+      command_out += "   (SPIRAL END)\n" if @debug
+      @precision -= 1
+   @debugramp = false
+      return command_out
+   end # SpiralOut
+    
+    
 # take the existing diam and ystep and possibly modify the ystep to get an exact number of steps
 # if stepover is 50% then do nothing
 # if ystep will use up all the remainder space, do not change
@@ -1094,10 +1157,19 @@ module PhlatScript
       end
       return ystep
    end
-    
-#swarfer: instead of a plunged hole, spiral bore to depth
+   
+   #select between the plungebore options and call the correct method
+   def plungebore(xo,yo,zStart,zo,diam)   
+      if @depthfirst then
+         plungeboredepth(xo,yo,zStart,zo,diam)
+      else
+         plungeborediam(xo,yo,zStart,zo,diam)
+      end
+   end
+   
+#swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
 #handles multipass by itself, also handles ramping
-   def plungebore(xo,yo,zStart,zo,diam)
+   def plungeboredepth(xo,yo,zStart,zo,diam)
 #   @debug = true
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
@@ -1324,6 +1396,111 @@ module PhlatScript
       @cs = so
       @cc = '' #resetting command here so next one is forced to be correct
    #@debug = false   
+   end
+   
+#swarfer: instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral
+#handles multipass by itself, also handles ramping
+# this is different enough from the old plunge bore that making it conditional within 'plungebore' would make it too complicated
+   def plungeborediam(xo,yo,zStart,zo,diam)
+   @debug = true
+      zos = format_measure("depth=",(zStart-zo))
+      ds = format_measure(" diam=", diam)
+      cncPrintC("(plungeborediam #{zos} #{ds})\n")
+      if (zo > @max_z)
+        zo = @max_z
+      elsif (zo < @min_z)
+        zo = @min_z
+      end
+      command_out = ""
+
+      cncPrintC("HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
+
+#      xs = format_measure('X', xo)
+#      ys = format_measure('Y', yo)
+#      command_out += "G00 #{xs} #{ys}\n";
+#swarfer: a little optimization, approach the surface faster
+      if ($phoptions.use_reduced_safe_height?) 
+         sh = (@retract_depth - zStart) / 3 # use reduced safe height
+         if zStart > 0
+            sh += zStart.to_f
+         end
+         if (!@canneddrill) || (PhlatScript.mustramp?) 
+            puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
+            command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+            command_out += "\n"
+         end
+      else
+         sh = @retract_depth
+      end
+
+      so = @speed_plung                     # force using plunge rate for vertical moves
+      
+      if (diam <= (2*@bit_diameter))   #just do the ordinary plunge, no need to handle it here
+         return plungeboredepth(xo,yo,zStart,zo,diam)
+      end
+      #SO IF WE ARE HERE WE KNOW DIAM > 2*BIT_DIAMETER
+      #bore the center out now
+      yoff = @bit_diameter / 2
+      command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo, yoff ) : SpiralAt(xo,yo,zStart,zo, yoff )
+#      command_out += "G00" + format_measure("Z" , sh)
+#     command_out += "\n"
+      
+
+    # if DIA is > 2*BITDIA then we need multiple cuts
+      yoff = (diam/2 - @bit_diameter/2)      # offset to start point for final cut
+
+      command_out += "  (spiral out)\n"            if @debug
+      ystep = PhlatScript.stepover * @bit_diameter / 100
+
+#########################
+# if fuzzy stepping, calc new ystep from optimized step count
+# find number of steps to complete hole
+#      if ($phoptions.use_fuzzy_holes?)
+#for outward spirals we are ALWAYS using fuzzy step so each spiral is the same size
+         ystep = GetFuzzyYstep(diam,ystep)
+#      end
+#######################
+
+      puts "Ystep #{ystep.to_mm}\n" if @debug
+      
+      nowyoffset = @bit_diameter/2
+      
+      if PhlatScript.useMultipass?
+         command_out += "G00" + format_measure("Z" , sh)
+         command_out += "\n"
+         zstep = PhlatScript.multipassDepth
+      else
+         zstep = (zStart-zo)
+         
+      zonow = PhlatScript.tabletop? ? @material_thickness : 0
+      while (zonow - zo).abs > 0.0001 do
+         zonow -= zstep
+         if zonow < zo
+            zonow = zo
+         end
+         command_out += "G01" + format_measure("Z",zonow)  
+         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n"
+         @cs = so
+         SpiralOut(xo,yo,zStart,zonow,yoff)
+      end #while      
+
+
+      # return to center at safe height
+      command_out += "G00" + format_measure("Y",yo)      # back to circle center
+      command_out += format_measure(" Z",@retract_depth) # retract to real safe height
+      command_out += "\n"
+      cncPrint(command_out)
+      
+      cncPrintC("plungeborediam end")
+
+      @cx = xo
+      @cy = yo
+      @cz = @retract_depth
+      @cs = so
+      @cc = '' #resetting command here so next one is forced to be correct
+@debug = false   
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
