@@ -1054,8 +1054,7 @@ module PhlatScript
 # generate code for a spiral bore and return the command string, using quadrants
 # this one does center out to diameter, an outward spiral at zo depth
 #must give it the final yoff, call it after doing the initial 2D bore.
-# if ramping is on, lead angle will be limited to rampangle
-   def SpiralOut(xo,yo,zstart,zend,yoff)
+   def SpiralOut(xo,yo,zstart,zend,yoff,ystep)
    @debugramp = true
       @precision += 1
 #      cwstr = @cw ? 'CW' : 'CCW';
@@ -1065,7 +1064,7 @@ module PhlatScript
       command_out = ""
       command_out += "   (SPIRALOUT #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
       
-#cutpoint is 1/2 bit out from the center, at zo depth
+#cutpoint is 1/2 bit out from the center, at zend depth
       
 #      command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
 #      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"   # rapid to near surface
@@ -1078,34 +1077,54 @@ module PhlatScript
       
       #we are at zend depth
       #we need to spiral out to yoff
-      
-      calc fuzzy ystep!
-
-            #x+of Y  I0 Jof
-            command_out += "#{cmd}"
-            command_out += format_measure("X",xo + yoff) + format_measure(" Y",yo)
-            command_out += format_measure("Z",prevz - zdiff)
-            command_out += format_measure("I",0)  + format_measure(" J",yoff)
-            command_out += "\n"
-            #x Yof   I-of  J0
-            command_out += "#{cmd}"
-            command_out += format_measure("X",xo) + format_measure(" Y",yo+yoff)
-            command_out += format_measure("Z",prevz - zdiff*2)
-            command_out += format_measure("I",-yoff)  + format_measure(" J",0)
-            command_out += "\n"
-            #X-of  Y  I0    J-of
-            command_out += "#{cmd}"
-            command_out += format_measure("X",xo-yoff) + format_measure(" Y",yo)
-            command_out += format_measure("Z",prevz - zdiff*3)
-            command_out += format_measure("I",0)  + format_measure(" J",-yoff)
-            command_out += "\n"
-            #X  Y-of  Iof   J0
-            command_out += "#{cmd}"
-            command_out += format_measure("X",xo) + format_measure(" Y",yo-yoff)
-            command_out += format_measure("Z",now) #prevz - zdiff*4)
-            command_out += format_measure("I",yoff)  + format_measure(" J",0)
-            command_out += "\n"
+      yfinal = yo - yoff
+      ynow = yo - @bit_diameter / 2
+      puts "  yo #{yo.to_mm} (yfinal #{yfinal.to_mm} ynow #{ynow.to_mm} ystep #{ystep.to_mm})"
+      cnt = 0
+      while ((ynow - yfinal).abs > 0.0001)
+         
+         # spiral from ynow to ynow-ystep
+         yother = yo + (yo-ynow) + ystep/2
+         puts "   ynow #{ynow.to_mm}    yother #{yother.to_mm}"
+         ynew = ynow - ystep
+         if (ynew < (yo-yoff)  ) 
+            command_out += "(ynew clamped)\n"
+            puts "ynew clamped"
+            ynew = yo - yoff 
          end
+         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
+         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
+         ynow = ynow - ystep
+         if (ynow < (yo-yoff)  ) 
+            command_out += "(ynow clamped)\n"
+            ynow = yo - yoff 
+         end
+         cnt += 1
+         if (cnt > 21)
+            puts "SpiralOut high count break"
+            break
+         end
+      end
+      puts "   final ynow #{ynow.to_mm}"
+      
+      #now make it full diameter
+      #x+of Y  I0 Jof
+      command_out += "#{cmd}"
+      command_out += format_measure("X",xo + yoff) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",yoff)
+      command_out += "\n"
+      #x Yof   I-of  J0
+      command_out += "#{cmd}"
+      command_out += format_measure("X",xo) + format_measure("Y",yo+yoff) + format_measure("I",-yoff)  + format_measure("J",0)
+      command_out += "\n"
+      #X-of  Y  I0    J-of
+      command_out += "#{cmd}"
+      command_out += format_measure("X",xo-yoff) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",-yoff)
+      command_out += "\n"
+      #X  Y-of  Iof   J0
+      command_out += "#{cmd}"
+      command_out += format_measure("X",xo) + format_measure("Y",yo-yoff) + format_measure("I",yoff)  + format_measure("J",0)
+      command_out += "\n"
+      @cc = cmd
       command_out += "   (SPIRAL END)\n" if @debug
       @precision -= 1
    @debugramp = false
@@ -1118,8 +1137,8 @@ module PhlatScript
 # if ystep will use up all the remainder space, do not change
 # if stepover < 50 then make ystep smaller
 # if stepover > 50% make ystep larger
-   def GetFuzzyYstep(diam,ystep)
-      if (PhlatScript.mustramp?)
+   def GetFuzzyYstep(diam,ystep, mustramp, force)
+      if (mustramp)
          rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
       else
          rem = (diam / 2) - (@bit_diameter/2) # have drilled a bit diam hole
@@ -1128,17 +1147,25 @@ module PhlatScript
       puts " temp steps = #{temp}  ystep old #{ystep.to_mm} remainder #{rem.to_mm}\n" if @debug
       if (temp < 1.0)
          puts "   not going to bother making it smaller"  if @debug
+         if (ystep  > rem)
+            ystep = rem
+         end
          return ystep
       end
       oldystep = ystep  
       flag = false
-      if (PhlatScript.stepover < 50)               #round temp up to create more steps
+      if ((PhlatScript.stepover < 50) || force)               #round temp up to create more steps-
          temp = (temp + 0.5).round
          flag = true
       else
          if (PhlatScript.stepover > 50)            #round temp down to create fewer steps
             temp = (temp - 0.5).round
             flag = true
+         else
+            if (force)
+               temp = (temp + 0.5).round
+               flag = true
+            end
          end
       end
       if (flag)                                    # only adjust if we need to
@@ -1146,14 +1173,27 @@ module PhlatScript
          puts "   new temp steps = #{temp}\n" if @debug
          #   calc new ystep
          ystep = rem / temp
+         
          if (ystep > @bit_diameter ) # limit to stepover
-            ystep = PhlatScript.stepover * @bit_diameter / 100
-            puts "    ystep was > bit, limited to stepover\n"         if @debug
+            if (force)
+               while (ystep > @bit_diameter)
+                  temp += 1
+                  ystep = rem /temp
+                  puts "    ystep was > bit, recalculated with force #{temp}\n"         if @debug
+               end
+            else   
+               ystep = PhlatScript.stepover * @bit_diameter / 100
+               puts "    ystep was > bit, limited to stepover\n"         if @debug
+            end
+            
          end
          puts " ystep new #{ystep.to_mm}\n" if @debug
          if oldystep != ystep
             cncPrintC("OLD STEP #{oldystep.to_mm} new step #{ystep.to_mm}")  if (@debug)
          end
+      end
+      if (ystep > rem)
+         ystep =  rem
       end
       return ystep
    end
@@ -1338,7 +1378,7 @@ module PhlatScript
 # if fuzzy stepping, calc new ystep from optimized step count
 # find number of steps to complete hole
          if ($phoptions.use_fuzzy_holes?)
-            ystep = GetFuzzyYstep(diam,ystep)
+            ystep = GetFuzzyYstep(diam,ystep, PhlatScript.mustramp?, false)
          end
 #######################
 
@@ -1402,10 +1442,10 @@ module PhlatScript
 #handles multipass by itself, also handles ramping
 # this is different enough from the old plunge bore that making it conditional within 'plungebore' would make it too complicated
    def plungeborediam(xo,yo,zStart,zo,diam)
-   @debug = true
+   @debug = false
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
-      cncPrintC("(plungeborediam #{zos} #{ds})\n")
+      cncPrintC("(plungeboreDiam #{zos} #{ds})\n")
       if (zo > @max_z)
         zo = @max_z
       elsif (zo < @min_z)
@@ -1437,12 +1477,14 @@ module PhlatScript
       so = @speed_plung                     # force using plunge rate for vertical moves
       
       if (diam <= (2*@bit_diameter))   #just do the ordinary plunge, no need to handle it here
+         puts "diam < 2bit - reverting to depth"      if @debug
          return plungeboredepth(xo,yo,zStart,zo,diam)
       end
       #SO IF WE ARE HERE WE KNOW DIAM > 2*BIT_DIAMETER
       #bore the center out now
       yoff = @bit_diameter / 2
       command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo, yoff ) : SpiralAt(xo,yo,zStart,zo, yoff )
+      command_out += "(center bore complete)\n"       if @debug
 #      command_out += "G00" + format_measure("Z" , sh)
 #     command_out += "\n"
       
@@ -1452,15 +1494,9 @@ module PhlatScript
 
       command_out += "  (spiral out)\n"            if @debug
       ystep = PhlatScript.stepover * @bit_diameter / 100
-
-#########################
-# if fuzzy stepping, calc new ystep from optimized step count
-# find number of steps to complete hole
-#      if ($phoptions.use_fuzzy_holes?)
+      puts "Ystep #{ystep.to_mm}\n" if @debug
 #for outward spirals we are ALWAYS using fuzzy step so each spiral is the same size
-         ystep = GetFuzzyYstep(diam,ystep)
-#      end
-#######################
+      ystep = GetFuzzyYstep(diam,ystep, true, true)   # force mustramp true to get correct result
 
       puts "Ystep #{ystep.to_mm}\n" if @debug
       
@@ -1472,22 +1508,34 @@ module PhlatScript
          zstep = PhlatScript.multipassDepth
       else
          zstep = (zStart-zo)
-         
+      end   
+      #puts "zstep = #{zstep.to_mm}"
+      cnt = 0 
       zonow = PhlatScript.tabletop? ? @material_thickness : 0
       while (zonow - zo).abs > 0.0001 do
          zonow -= zstep
          if zonow < zo
             zonow = zo
          end
+         #puts "   zonow #{zonow.to_mm}"
          command_out += "G01" + format_measure("Z",zonow)  
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          @cs = so
-         SpiralOut(xo,yo,zStart,zonow,yoff)
+         command_out += SpiralOut(xo,yo,zStart,zonow,yoff,ystep)
+         if PhlatScript.useMultipass?
+            command_out += "G00" + format_measure('Z',zonow + 0.02) + "\n"
+            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2) + "\n"
+         end
+         cnt += 1
+         if cnt > 1000
+            break
+         end
       end #while      
 
 
       # return to center at safe height
+      command_out += "(return to safe center)\n" if @debug
       command_out += "G00" + format_measure("Y",yo)      # back to circle center
       command_out += format_measure(" Z",@retract_depth) # retract to real safe height
       command_out += "\n"
