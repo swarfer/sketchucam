@@ -497,7 +497,7 @@ module PhlatScript
          errmsg = ''
          while ( (curdepth - zo).abs > 0.0001) do
             cnt += 1
-            if cnt > 100
+            if cnt > 1000
                puts "high count break #{curdepth.to_mm}  #{zo.to_mm}" 
                command_out += "ramp loop high count break, do not cut this code\n"
                errmsg = "ramp loop high count break, do not cut this code"
@@ -725,7 +725,7 @@ module PhlatScript
          while ( (curdepth - zo).abs > 0.0001) do
             command_out += cmd
             cnt += 1
-            if cnt > 200
+            if cnt > 1000
                puts "high count break" 
                command_out += "ramp arc loop high count break, do not cut this code\n"
                break
@@ -1092,15 +1092,20 @@ module PhlatScript
             puts "ynew clamped"
             ynew = yo - yoff 
          end
-         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
-         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
+         #R format - cuts correctly but does not display correctly in OpenSCAM, nor Gplot
+#         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
+#         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
+         #IJ format - displays correctly in OpenSCAM, not Gplot
+         command_out += 'G03' + format_measure('Y',yother) + " I0" + format_measure('J', (yother-ynow)/2) +"\n"
+         command_out += 'G03' + format_measure('Y',ynew)   + " I0" + format_measure('J', -(yother-ynew)/2 ) +"\n"
+
          ynow = ynow - ystep
          if (ynow < (yo-yoff)  ) 
             command_out += "(ynow clamped)\n"
             ynow = yo - yoff 
          end
          cnt += 1
-         if (cnt > 21)
+         if (cnt > 1000)
             puts "SpiralOut high count break"
             break
          end
@@ -1484,6 +1489,7 @@ module PhlatScript
       #bore the center out now
       yoff = @bit_diameter / 2
       command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo, yoff ) : SpiralAt(xo,yo,zStart,zo, yoff )
+      command_out += 'G00' + format_measure('Y', yo) + " (back to center)\n"
       command_out += "(center bore complete)\n"       if @debug
 #      command_out += "G00" + format_measure("Z" , sh)
 #     command_out += "\n"
@@ -1503,8 +1509,8 @@ module PhlatScript
       nowyoffset = @bit_diameter/2
       
       if PhlatScript.useMultipass?
-         command_out += "G00" + format_measure("Z" , sh)
-         command_out += "\n"
+         #command_out += "G00" + format_measure("Z" , sh)
+         #command_out += "\n"
          zstep = PhlatScript.multipassDepth
       else
          zstep = (zStart-zo)
@@ -1518,14 +1524,19 @@ module PhlatScript
             zonow = zo
          end
          #puts "   zonow #{zonow.to_mm}"
-         command_out += "G01" + format_measure("Z",zonow)  
+#         command_out += "G01"  + format_measure('Y', yo - @bit_diameter/2) + format_measure("Z",zonow)
+         command_out += "G00"  + format_measure('Z', zonow) + "\n"
+         command_out += "G03" +  format_measure('Y', yo - @bit_diameter/2) + format_measure('I0.0 J', -@bit_diameter/4)
+         
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          @cs = so
          command_out += SpiralOut(xo,yo,zStart,zonow,yoff,ystep)
-         if PhlatScript.useMultipass?
+         if PhlatScript.useMultipass? &&  ((zonow - zo) > 0)
             command_out += "G00" + format_measure('Z',zonow + 0.02) + "\n"
-            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2) + "\n"
+#            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2 + 0.005) + "\n"
+            command_out += "G00" + format_measure('Y', yo) + "\n"
+#            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2+ 0.005) + format_measure('Z',zonow + 0.02) + "\n"
          end
          cnt += 1
          if cnt > 1000
