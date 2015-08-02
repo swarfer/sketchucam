@@ -1053,9 +1053,9 @@ module PhlatScript
 
 # generate code for a spiral bore and return the command string, using quadrants
 # this one does center out to diameter, an outward spiral at zo depth
-#must give it the final yoff, call it after doing the initial 2D bore.
+# must give it the final yoff, call it after doing the initial 2D bore.
    def SpiralOut(xo,yo,zstart,zend,yoff,ystep)
-   @debugramp = true
+   #@debugramp = true
       @precision += 1
 #      cwstr = @cw ? 'CW' : 'CCW';
 #      cmd =   @cw ? 'G02': 'G03';
@@ -1079,17 +1079,17 @@ module PhlatScript
       #we need to spiral out to yoff
       yfinal = yo - yoff
       ynow = yo - @bit_diameter / 2
-      puts "  yo #{yo.to_mm} (yfinal #{yfinal.to_mm} ynow #{ynow.to_mm} ystep #{ystep.to_mm})"
+      puts "  yo #{yo.to_mm} (yfinal #{yfinal.to_mm} ynow #{ynow.to_mm} ystep #{ystep.to_mm})"        if @debug
       cnt = 0
       while ((ynow - yfinal).abs > 0.0001)
          
          # spiral from ynow to ynow-ystep
          yother = yo + (yo-ynow) + ystep/2
-         puts "   ynow #{ynow.to_mm}    yother #{yother.to_mm}"
+         puts "   ynow #{ynow.to_mm}    yother #{yother.to_mm}" if @debug
          ynew = ynow - ystep
          if (ynew < (yo-yoff)  ) 
-            command_out += "(ynew clamped)\n"
-            puts "ynew clamped"
+            command_out += "(ynew clamped)\n"   if @debug
+            puts "ynew clamped"                 if @debug
             ynew = yo - yoff 
          end
          #R format - cuts correctly but does not display correctly in OpenSCAM, nor Gplot
@@ -1101,16 +1101,17 @@ module PhlatScript
 
          ynow = ynow - ystep
          if (ynow < (yo-yoff)  ) 
-            command_out += "(ynow clamped)\n"
+            command_out += "(ynow clamped)\n"         if @debug
             ynow = yo - yoff 
          end
          cnt += 1
          if (cnt > 1000)
             puts "SpiralOut high count break"
+            cncPrint("Error: spiralout high coutn break")
             break
          end
       end
-      puts "   final ynow #{ynow.to_mm}"
+      puts "   final ynow #{ynow.to_mm}"        if @debug
       
       #now make it full diameter
       #x+of Y  I0 Jof
@@ -1132,7 +1133,7 @@ module PhlatScript
       @cc = cmd
       command_out += "   (SPIRAL END)\n" if @debug
       @precision -= 1
-   @debugramp = false
+   #@debugramp = false
       return command_out
    end # SpiralOut
     
@@ -1250,28 +1251,29 @@ module PhlatScript
       so = @speed_plung                     # force using plunge rate for vertical moves
       if PhlatScript.useMultipass?
          if ( (PhlatScript.mustramp?) && (diam > @bit_diameter) )
+            flag = false
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
+               flag = true
                if (@quarters)
                   command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                else
                   command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
-               command_out += "G00" + format_measure("Z" , sh)
-               command_out += "\n"
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
+                  flag = true
                   if (@quarters)
                      command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                   else
                      command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
-                  command_out += "G00" + format_measure("Z" , sh)
-                  command_out += "\n"
                end
             end
-            
+            if flag
+               command_out += "G00" + format_measure("Y" , yo - yoff/2) + format_measure("Z" , sh) + " (hard)\n"
+            end
          else  # diam = biadiam OR not ramping
             zonow = PhlatScript.tabletop? ? @material_thickness : 0
             if (@canneddrill)
@@ -1316,29 +1318,29 @@ module PhlatScript
 #todo - if ramping, then do not plunge this, rather do a spiralat with yoff = bit/2      
 #more optimizing, only bore the center if the hole is big, assuming soft material anyway
          if ((diam > @bit_diameter) && (PhlatScript.mustramp?))
+            flag = false
             if (diam > (@bit_diameter*2))
                yoff = @bit_diameter / 2
+               flag = true
                cncPrintC("!multi && ramp yoff #{yoff.to_mm}")  if (@debug)
                if (@quarters)
                   command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                else
                   command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
-               command_out += "G00" + format_measure("Z" , sh)
-               command_out += "\n" 
             else
                if (PhlatScript.stepover < 50)  # act for a hard material, do initial spiral 
                   yoff = (diam/2 - @bit_diameter/2) * 0.7
+                  flag = true
                   cncPrintC("!multi && ramp 0.7 Yoff #{yoff.to_mm}")  if (@debug)
                   if (@quarters)
                      command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                   else
                      command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
-                  command_out += "G00" + format_measure("Z" , sh)
-                  command_out += "\n" 
                end
             end
+            command_out += "G00" + format_measure("Y" , yo - yoff/2) + format_measure("Z" , sh) + "\n"         if flag
          else
             if (@canneddrill)
                if (diam > @bit_diameter)  # then prepare for multi spirals by retracting to reduced height
@@ -1407,7 +1409,7 @@ module PhlatScript
             end
 #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
-               command_out += "G00" + format_measure("Z" , sh)
+               command_out += "G00" + format_measure("Y" , yo - nowyoffset + ystep/2) + format_measure("Z" , sh)
                command_out += "\n"
             end
          end # while
@@ -1450,7 +1452,9 @@ module PhlatScript
    @debug = false
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
-      cncPrintC("(plungeboreDiam #{zos} #{ds})\n")
+      if (diam > (2*@bit_diameter))
+         cncPrintC("(plungeboreDiam #{zos} #{ds})\n")
+      end
       if (zo > @max_z)
         zo = @max_z
       elsif (zo < @min_z)
@@ -1489,7 +1493,7 @@ module PhlatScript
       #bore the center out now
       yoff = @bit_diameter / 2
       command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo, yoff ) : SpiralAt(xo,yo,zStart,zo, yoff )
-      command_out += 'G00' + format_measure('Y', yo) + " (back to center)\n"
+      command_out += 'G00' + format_measure('Y', yo) + "\n"
       command_out += "(center bore complete)\n"       if @debug
 #      command_out += "G00" + format_measure("Z" , sh)
 #     command_out += "\n"
@@ -1540,10 +1544,10 @@ module PhlatScript
          end
          cnt += 1
          if cnt > 1000
+            cncPrint("error high count break in plungeborediam")
             break
          end
       end #while      
-
 
       # return to center at safe height
       command_out += "(return to safe center)\n" if @debug
