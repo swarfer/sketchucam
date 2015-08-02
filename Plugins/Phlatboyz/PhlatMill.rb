@@ -18,9 +18,9 @@ module PhlatScript
       puts "debug true in PhlatMill.rb\n" if (@debug || @debugramp)
       @quarters = $phoptions.quarter_arcs?  # use quarter circles in plunge bores?  defaults to true
 #manual user options - if they find this they can use it (-:
-      @quickpeck = true   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
+      @quickpeck = $phoptions.quick_peck?   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
       @canneddrill = false
-      @depthfirst = false
+      @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
 #
       @max_x = 48.0
       @min_x = -48.0

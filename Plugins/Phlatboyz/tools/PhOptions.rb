@@ -76,6 +76,8 @@ module PhlatScript
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
          @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
          @gforce                 =   (phoptions.gforce? ? '1' : '0')
+         @quick_peck             =   (phoptions.quick_peck? ? '1' : '0')
+         @depth_first            =   (phoptions.depth_first? ? '1' : '0')
       end
    end
 
@@ -145,6 +147,8 @@ module PhlatScript
          @posA                   = 0.0
          @posB                   = 0.0
          @posC                   = 0.0
+         @quick_peck             = false
+         @depth_first            = true
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -303,9 +307,14 @@ module PhlatScript
             value = -1
             value = getvalue(optin['gforce'])             if (optin.has_key?('gforce'))
             @gforce = value > 0 ? true :  false            if (value != -1)
-            
-            
-
+         #quick peck drill cycle   
+            value = -1
+            value = getvalue(optin['quick_peck'])             if (optin.has_key?('quick_peck'))
+            @quick_peck = value > 0 ? true :  false            if (value != -1)
+         # use depth first or diam first for large holes
+            value = -1
+            value = getvalue(optin['depth_first'])             if (optin.has_key?('depth_first'))
+            @depth_first = value > 0 ? true :  false            if (value != -1)
          end
 
       end #initialize
@@ -770,6 +779,20 @@ module PhlatScript
          @posC = newval
       end
       
+      def depth_first?
+         @depth_first
+      end
+      def depth_first=(newval)
+         @depth_first = newval == true
+      end
+      
+      def quick_peck?
+         @quick_peck
+      end
+      def quick_peck=(newval)
+         @quick_peck = newval == true
+      end
+      
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    class OptionsFilesTool < PhlatTool
@@ -1059,7 +1082,9 @@ end # class
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
             'Output helixes as quarter arcs ',
-            'Force all Gcodes on for Marlin '
+            'Force all Gcodes on for Marlin ',
+            'Use QuickPeck drill cycle ',
+            'Use Depth first(true) or Diam first(false) '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -1080,7 +1105,9 @@ end # class
             @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
             @options.quarter_arcs?.inspect(),
-            @options.gforce?.inspect()            
+            @options.gforce?.inspect(),
+            @options.quick_peck?.inspect(),
+            @options.depth_first?.inspect()
             ];
          list=[
             'true|false',
@@ -1099,6 +1126,8 @@ end # class
             'true|false',
             'true|false',
             '',
+            'true|false',
+            'true|false',
             'true|false',
             'true|false',
             'true|false'
@@ -1133,6 +1162,8 @@ end # class
             @options.quarter_arcs            = (input[17] == 'true')
             @options.gforce                  = (input[18] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
+            @options.quick_peck              = (input[19] == 'true')
+            @options.depth_first             = (input[20] == 'true')
             
             @options.save
          end # if input
