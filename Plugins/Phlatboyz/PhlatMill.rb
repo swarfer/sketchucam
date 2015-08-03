@@ -1515,32 +1515,37 @@ module PhlatScript
       if PhlatScript.useMultipass?
          #command_out += "G00" + format_measure("Z" , sh)
          #command_out += "\n"
-         zstep = PhlatScript.multipassDepth
+         zstep = -PhlatScript.multipassDepth
+         zstep = StepFromMpass(zStart,zo,zstep)
       else
-         zstep = (zStart-zo)
+         zstep = -(zStart-zo)
       end   
-      #puts "zstep = #{zstep.to_mm}"
+      
+      puts "zstep = #{zstep.to_mm}"
       cnt = 0 
       zonow = PhlatScript.tabletop? ? @material_thickness : 0
       while (zonow - zo).abs > 0.0001 do
-         zonow -= zstep
+         zonow += zstep  # zstep is negative
          if zonow < zo
             zonow = zo
          end
          #puts "   zonow #{zonow.to_mm}"
 #         command_out += "G01"  + format_measure('Y', yo - @bit_diameter/2) + format_measure("Z",zonow)
          command_out += "G00"  + format_measure('Z', zonow) + "\n"
+         @precision += 1
+         #arc from center to start point
          command_out += "G03" +  format_measure('Y', yo - @bit_diameter/2) + format_measure('I0.0 J', -@bit_diameter/4)
+         @precision -= 1
          
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          @cs = so
          command_out += SpiralOut(xo,yo,zStart,zonow,yoff,ystep)
-         if PhlatScript.useMultipass? &&  ((zonow - zo) > 0)
-            command_out += "G00" + format_measure('Z',zonow + 0.02) + "\n"
+         if PhlatScript.useMultipass? &&  ((zonow - zo).abs > 0.0001)
 #            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2 + 0.005) + "\n"
-            command_out += "G00" + format_measure('Y', yo) + "\n"
 #            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2+ 0.005) + format_measure('Z',zonow + 0.02) + "\n"
+            command_out += "G00" + format_measure('Z',zonow + 0.02) + "\n"    # raise
+            command_out += "G00" + format_measure('Y', yo) + "\n"             # back to hole center
          end
          cnt += 1
          if cnt > 1000
