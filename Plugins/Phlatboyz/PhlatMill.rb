@@ -1521,7 +1521,7 @@ module PhlatScript
          zstep = -(zStart-zo)
       end   
       
-      puts "zstep = #{zstep.to_mm}"
+      puts "zstep = #{zstep.to_mm}"  if @debug
       cnt = 0 
       zonow = PhlatScript.tabletop? ? @material_thickness : 0
       while (zonow - zo).abs > 0.0001 do

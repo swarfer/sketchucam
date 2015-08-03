@@ -1152,7 +1152,7 @@ puts " new #{newedges[i-1]}\n"
 
                #                  cut_depth = -1.0 * material_thickness * (cut_factor.to_f/100).to_f
                prev_cut_depth = cut_depth
-               cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+               real_cut_depth = cut_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                # store the max depth encountered to determine if another pass is needed
                max_depth = [max_depth, cut_depth].min
                #puts "max_depth #{max_depth.to_mm}"   if (pass == 1)
@@ -1208,6 +1208,7 @@ puts " new #{newedges[i-1]}\n"
                               # for these cuts we must retract else we get collisions with existing material
                               # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
                               # for pockets.
+=begin                              
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
                                  aMill.retract(@safeHeight)
                               else
@@ -1238,6 +1239,33 @@ puts " new #{newedges[i-1]}\n"
                                  end
                               end
                               aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+=end
+
+                              if (points > 1) #if cutting more than 1 edge at a time, must retract
+                                 aMill.cncPrintC("points > 1")
+                                 aMill.retract(@safeHeight)
+                                 aMill.move(point.x, point.y)
+                                 if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
+                                    aMill.cncPrintC("plunging to previous pass")    if (@debug)
+                                    aMill.plung(prev_pass_depth,1,'G0')
+                                 end
+                                 aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                              else
+                                 aMill.cncPrintC("points = 1")
+                                 if PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
+                                    aMill.move(point.x, point.y)        if (pass == 1)
+                                    aMill.cncPrintC("RAMP")
+                                    aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 else
+                                    aMill.cncPrintC(" normal move and ramp to cut_depth")
+                                    aMill.move(point.x, point.y)
+                                    if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
+                                       aMill.cncPrintC("plunging to previous pass")    if (@debug)
+                                       aMill.plung(prev_pass_depth,1,'G0')
+                                    end
+                                    aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 end
+                              end
                            else
                               # If it's not a peck drilling we don't need retract
                               aMill.move(point.x, point.y)
@@ -1394,12 +1422,23 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, cut_depth)
                                  @ramp_next = false
                               else
+                                 if (points == 1) && PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
+                                    aMill.cncPrintC("if last pass, do move")
+                                    if ((real_cut_depth - cut_depth).abs < 0.0001)
+                                       aMill.cncPrintC("doing move")
+                                       aMill.move(point.x, point.y, cut_depth)
+                                    end
+                                    #aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
+                                 else
                                  #puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
-                                 aMill.move(point.x, point.y, cut_depth)
+                                    aMill.cncPrintC("plain move")  if phlatcut.kind_of?(CenterLineCut)
+                                    aMill.move(point.x, point.y, cut_depth)
+                                 end
                               end
                            end
                         else  # just move
                            puts "just move" if (@debug)
+                           aMill.cncPrintC("just move in ramp")
                            aMill.move(point.x, point.y, cut_depth)
                         end # if must_ramp
                      end
