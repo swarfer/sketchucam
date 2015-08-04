@@ -1242,7 +1242,7 @@ puts " new #{newedges[i-1]}\n"
 =end
 
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
-                                 aMill.cncPrintC("points > 1")
+                                 aMill.cncPrintC("points > 1")       if @debug
                                  aMill.retract(@safeHeight)
                                  aMill.move(point.x, point.y)
                                  if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
@@ -1251,13 +1251,13 @@ puts " new #{newedges[i-1]}\n"
                                  end
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                               else
-                                 aMill.cncPrintC("points = 1")
+                                 aMill.cncPrintC("points = 1")          if @debug
                                  if PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
                                     aMill.move(point.x, point.y)        if (pass == 1)
-                                    aMill.cncPrintC("RAMP")
+                                    aMill.cncPrintC("RAMP")             if @debug
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  else
-                                    aMill.cncPrintC(" normal move and ramp to cut_depth")
+                                    aMill.cncPrintC(" normal move and ramp to cut_depth")    if @debug
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
                                        aMill.cncPrintC("plunging to previous pass")    if (@debug)
@@ -1272,9 +1272,9 @@ puts " new #{newedges[i-1]}\n"
                               if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) )
                                  center = phlatcut.center
                                  tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
-                                 puts "arc ramping in tcenter #{tcenter}" if (@debug)
+                                 puts "arc ramping in tcenter #{tcenter}"           if (@debug)
                                  g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                                 puts "ramping multi g3=#{g3}"  if (@debug)
+                                 puts "ramping multi g3=#{g3}"                      if (@debug)
                                  if (g3)
                                     cmnd = 'G03'
                                  else
@@ -1423,22 +1423,22 @@ puts " new #{newedges[i-1]}\n"
                                  @ramp_next = false
                               else
                                  if (points == 1) && PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
-                                    aMill.cncPrintC("if last pass, do move")
+                                    aMill.cncPrintC("if last pass, do move")        if @debug
                                     if ((real_cut_depth - cut_depth).abs < 0.0001)
-                                       aMill.cncPrintC("doing move")
+                                       aMill.cncPrintC("doing move")                if @debug
                                        aMill.move(point.x, point.y, cut_depth)
                                     end
                                     #aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  else
                                  #puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
-                                    aMill.cncPrintC("plain move")  if phlatcut.kind_of?(CenterLineCut)
+                                    aMill.cncPrintC("plain move")  if (phlatcut.kind_of?(CenterLineCut) && @debug)
                                     aMill.move(point.x, point.y, cut_depth)
                                  end
                               end
                            end
                         else  # just move
                            puts "just move" if (@debug)
-                           aMill.cncPrintC("just move in ramp")
+                           aMill.cncPrintC("just move in ramp") if @debug
                            aMill.move(point.x, point.y, cut_depth)
                         end # if must_ramp
                      end

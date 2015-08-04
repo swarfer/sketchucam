@@ -1272,7 +1272,7 @@ module PhlatScript
                end
             end
             if flag
-               command_out += "G00" + format_measure("Y" , yo - yoff/2) + format_measure("Z" , sh) + " (hard)\n"
+               command_out += "G00" + format_measure("Y" , yo - yoff/2) + format_measure("Z" , sh) + "\n"
             end
          else  # diam = biadiam OR not ramping
             zonow = PhlatScript.tabletop? ? @material_thickness : 0
