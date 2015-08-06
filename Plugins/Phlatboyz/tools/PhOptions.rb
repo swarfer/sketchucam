@@ -70,12 +70,13 @@ module PhlatScript
          @use_end_position       =   (phoptions.use_end_position? ? '1' : '0')
          @end_x                  =   PhlatScript.conformat(phoptions.end_x)   
          @end_y                  =   PhlatScript.conformat(phoptions.end_y)
-         @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
          @use_fuzzy_pockets      =   (phoptions.use_fuzzy_pockets? ? '1' : '0')
          @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
-         @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
          @gforce                 =   (phoptions.gforce? ? '1' : '0')
+      #featuresforholes
+         @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
+         @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
          @quick_peck             =   (phoptions.quick_peck? ? '1' : '0')
          @depth_first            =   (phoptions.depth_first? ? '1' : '0')
       end
@@ -1077,14 +1078,10 @@ end # class
             'Use_End_Position ',
             'End position X ',
             'End position Y ',
-            'Use fuzzy hole stepover ',
             'Use fuzzy pocket stepover ',
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
-            'Output helixes as quarter arcs ',
             'Force all Gcodes on for Marlin ',
-            'Use QuickPeck drill cycle ',
-            'Use Depth first(true) or Diam first(false) '
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -1100,14 +1097,10 @@ end # class
             @options.use_end_position?.inspect(),
             Sketchup.format_length(@options.end_x),
             Sketchup.format_length(@options.end_y),
-            @options.use_fuzzy_holes?.inspect(),
             @options.use_fuzzy_pockets?.inspect(),
             @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
-            @options.quarter_arcs?.inspect(),
             @options.gforce?.inspect(),
-            @options.quick_peck?.inspect(),
-            @options.depth_first?.inspect()
             ];
          list=[
             'true|false',
@@ -1124,11 +1117,7 @@ end # class
             '',
             '',
             'true|false',
-            'true|false',
             '',
-            'true|false',
-            'true|false',
-            'true|false',
             'true|false',
             'true|false'
             ];
@@ -1154,22 +1143,66 @@ end # class
             @options.end_x                   = Sketchup.parse_length(input[11])
             @options.end_y                   = Sketchup.parse_length(input[12])
 
-            @options.use_fuzzy_holes         = (input[13] == 'true')
-            @options.use_fuzzy_pockets       = (input[14] == 'true')
+            @options.use_fuzzy_pockets       = (input[13] == 'true')
 
-            @options.ramp_angle              = input[15].to_f
-            @options.must_ramp               = (input[16] == 'true')
-            @options.quarter_arcs            = (input[17] == 'true')
-            @options.gforce                  = (input[18] == 'true')
+            @options.ramp_angle              = input[14].to_f
+            @options.must_ramp               = (input[15] == 'true')
+            @options.gforce                  = (input[16] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
-            @options.quick_peck              = (input[19] == 'true')
-            @options.depth_first             = (input[20] == 'true')
             
             @options.save
          end # if input
       end # def select
    end # class
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#just for hole options
+   class OptionsFeat2Tool < PhlatTool
+      def initialize(opt)   #give it the options instance
+         @options = opt  # store the options instance so we can manipulate it without a global
+         @tooltype=(PB_MENU_MENU)
+         @tooltip="Default Hole FeatOptions"
+         @statusText="Hole Feature Options1"
+         @menuItem="Hole Feature Options2"
+         @menuText="Hole Feature Options"
+      end
+
+      def select
+         model=Sketchup.active_model
+
+         # prompts
+         prompts=[
+            'Use fuzzy hole stepover ',
+            'Output helixes as quarter arcs ',
+            'Use QuickPeck drill cycle ',
+            'Use Depth first(true) or Diam first(false) '
+            ];
+         defaults=[
+            @options.use_fuzzy_holes?.inspect(),
+            @options.quarter_arcs?.inspect(),
+            @options.quick_peck?.inspect(),
+            @options.depth_first?.inspect()
+            ];
+         list=[
+            'true|false',
+            'true|false',
+            'true|false',
+            'true|false'
+            ];
+
+         input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
+         # input is nil if user cancelled
+         if (input)
+            @options.use_fuzzy_holes         = (input[0] == 'true')
+            @options.quarter_arcs            = (input[1] == 'true')
+            @options.quick_peck              = (input[2] == 'true')
+            @options.depth_first             = (input[3] == 'true')
+            
+            @options.save
+         end # if input
+      end # def select
+   end # class
+   
 
 
 end # module PhlatScript

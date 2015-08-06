@@ -781,9 +781,10 @@ module PhlatScript
       command_out = ""
       command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
       command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
-      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"  # rapid to near surface
+      command_out += "   " + format_measure("Z",zstart+0.03) + "\n"  # rapid to near surface
       command_out += "G01" + format_measure("Z",zstart)        # feed to surface
-      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
+      feed = @speed_plung
+      command_out += format_feed(feed)   #always feed at plunge rate
       command_out += "\n"
       #if ramping with limit use plunge feed rate
       @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
@@ -850,8 +851,10 @@ module PhlatScript
          command_out += format_measure("Z",now)
          command_out += " I0"
          command_out += format_measure("J",yoff)
-#         command_out += format_feed(@speed_curr) if (@speed_curr != @cs)
-#         @cs = @speed_curr
+         if (feed != @cs)
+            command_out += format_feed(@cs)  
+            feed = @cs
+         end         
          command_out += "\n"
       end # while
     # now the bottom needs to be flat at $depth
@@ -888,11 +891,12 @@ module PhlatScript
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
-      command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
+      command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debug
       command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
-      command_out += "   " + format_measure("Z",zstart+0.5.mm) + "\n"   # rapid to near surface
+      command_out += "   " + format_measure("Z",zstart+0.03) + "\n"   # rapid to near surface
       command_out += "G01" + format_measure("Z",zstart) # feed to surface
-      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
+      feed = @speed_plung
+      command_out += format_feed(feed)   #always feed at plunge rate
       command_out += "\n"
       #if ramping with limit use plunge feed rate
       @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
@@ -961,6 +965,10 @@ module PhlatScript
             command_out += format_measure("X",xo - yoff) + format_measure(" Y",yo)
             command_out += format_measure("Z",prevz - zdiff)
             command_out += " I0"  + format_measure(" J",yoff)
+            if (feed != @cs)
+               command_out += format_feed(@cs)  
+               feed = @cs
+            end
             command_out += "\n"
             #x y+O IOf J0
             command_out += "#{cmd}"
@@ -986,6 +994,10 @@ module PhlatScript
             command_out += format_measure("X",xo + yoff) + format_measure(" Y",yo)
             command_out += format_measure("Z",prevz - zdiff)
             command_out += format_measure("I",0)  + format_measure(" J",yoff)
+            if (feed != @cs)
+               command_out += format_feed(@cs)  
+               feed = @cs
+            end
             command_out += "\n"
             #x Yof   I-of  J0
             command_out += "#{cmd}"
@@ -1045,7 +1057,7 @@ module PhlatScript
             command_out += format_measure("X",xo) + format_measure("Y",yo-yoff) + format_measure("I",yoff)  + format_measure("J",0)
             command_out += "\n"
          end
-      command_out += "   (SPIRAL END)\n" if @debug
+      command_out += "   (SPIRALatQ END)\n" if @debug
       @precision -= 1
 #   @debugramp = false
       return command_out
@@ -1071,9 +1083,6 @@ module PhlatScript
 #      command_out += "G01" + format_measure("Z",zstart) # feed to surface
 #      command_out += format_feed(@speed_curr)    if (@speed_curr != @cs)
 #      command_out += "\n"
-      
-      #if ramping with limit use plunge feed rate
-      @cs = (PhlatScript.mustramp? && (PhlatScript.rampangle > 0)) ? @speed_plung : @speed_curr
       
       #we are at zend depth
       #we need to spiral out to yoff
@@ -1227,8 +1236,8 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrintC("HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
-      puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
+      cncPrintC("HOLEdepth #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      puts     " (HOLEdepth #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
 #      ys = format_measure('Y', yo)
@@ -1284,8 +1293,10 @@ module PhlatScript
                command_out += format_measure("Z",zo )
                command_out += format_measure("R",sh )                         # retract height
                command_out += format_measure("Q",PhlatScript.multipassDepth)  # peck depth
-               
-               command_out += (format_feed(so)) if (so != @cs)
+               if (so != @cs)
+                  command_out += (format_feed(so))
+                  @cs = so
+               end
                command_out += "\n"               
                command_out += "G80\n";
             else # manual peck drill cycle
@@ -1295,9 +1306,12 @@ module PhlatScript
                      zonow = zo
                   end
                   command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
-                  command_out += (format_feed(so)) if (so != @cs)
+                  if (so != @cs)
+                     command_out += (format_feed(so)) 
+                     @cs = so
+                  end
                   command_out += "\n"
-                  @cs = so
+                  
                   if (zonow - zo).abs < 0.0001  # if at bottom, then retract
                      command_out += "G00" + format_measure("z",sh) + "\n"    # retract to reduced safe
                   else
@@ -1356,13 +1370,18 @@ module PhlatScript
                command_out += format_measure("R",sh )
 #               command_out += format_measure("P",0.2/25.4)               # dwell 1/5 second
 #               command_out += format_measure("Q",PhlatScript.multipassDepth)
-               
-               command_out += (format_feed(so)) if (so != @cs)
+               if (so != @cs)
+                  command_out += (format_feed(so)) 
+                  @cs = so
+               end
                command_out += "\n"               
                command_out += "G80\n";
             else
                command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-               command_out += (format_feed(so)) if (so != @cs)
+               if (so != @cs)
+                  command_out += format_feed(so)
+                  @cs = so
+               end
                command_out += "\n"
                command_out += "G00" + format_measure("z",sh)    # retract to reduced safe
                command_out += "\n"
@@ -1402,12 +1421,10 @@ module PhlatScript
             else
                puts "   nowyoffset #{nowyoffset.to_mm}\n"            if @debug
             end
-            if (@quarters)
-               command_out += SpiralAtQ(xo,yo,zStart,zo,nowyoffset)
-            else
-               command_out += SpiralAt(xo,yo,zStart,zo,nowyoffset)
-            end
-#            if (nowyoffset != yoff) # then retract to reduced safe
+            
+            command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,nowyoffset) : SpiralAt(xo,yo,zStart,zo,nowyoffset)
+
+            #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
                command_out += "G00" + format_measure("Y" , yo - nowyoffset + ystep/2) + format_measure("Z" , sh)
                command_out += "\n"
@@ -1416,11 +1433,7 @@ module PhlatScript
       else
          if (diam > @bit_diameter) # only need a spiral bore if desired hole is bigger than the drill bit
             puts " (SINGLE spiral)\n"                    if @debug
-            if (@quarters)
-               command_out += SpiralAtQ(xo,yo,zStart,zo,yoff);
-            else
-               command_out += SpiralAt(xo,yo,zStart,zo,yoff);
-            end
+            command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,yoff) : SpiralAt(xo,yo,zStart,zo,yoff)
          end
          if (diam < @bit_diameter)
             cncPrintC("NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter}")
@@ -1449,7 +1462,7 @@ module PhlatScript
 #handles multipass by itself, also handles ramping
 # this is different enough from the old plunge bore that making it conditional within 'plungebore' would make it too complicated
    def plungeborediam(xo,yo,zStart,zo,diam)
-   @debug = false
+   #@debug = false
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
       if (diam > (2*@bit_diameter))
@@ -1462,8 +1475,8 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrintC("HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
-      puts     " (HOLE #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
+      cncPrintC("HOLEdiam #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      puts     " (HOLEdiam #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
 #      ys = format_measure('Y', yo)
@@ -1483,7 +1496,7 @@ module PhlatScript
          sh = @retract_depth
       end
 
-      so = @speed_plung                     # force using plunge rate for vertical moves
+      so = @speed_curr     #spiral at normal feed speed
       
       if (diam <= (2*@bit_diameter))   #just do the ordinary plunge, no need to handle it here
          puts "diam < 2bit - reverting to depth"      if @debug
@@ -1492,9 +1505,10 @@ module PhlatScript
       #SO IF WE ARE HERE WE KNOW DIAM > 2*BIT_DIAMETER
       #bore the center out now
       yoff = @bit_diameter / 2
+      command_out += "(plungediam: do center)\n" if @debug
       command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo, yoff ) : SpiralAt(xo,yo,zStart,zo, yoff )
       command_out += 'G00' + format_measure('Y', yo) + "\n"
-      command_out += "(center bore complete)\n"       if @debug
+      command_out += "(plungediam: center bore complete)\n"       if @debug
 #      command_out += "G00" + format_measure("Z" , sh)
 #     command_out += "\n"
       
@@ -1508,7 +1522,7 @@ module PhlatScript
 #for outward spirals we are ALWAYS using fuzzy step so each spiral is the same size
       ystep = GetFuzzyYstep(diam,ystep, true, true)   # force mustramp true to get correct result
 
-      puts "Ystep #{ystep.to_mm}\n" if @debug
+      puts "Ystep fuzzy #{ystep.to_mm}\n" if @debug
       
       nowyoffset = @bit_diameter/2
       
@@ -1536,10 +1550,14 @@ module PhlatScript
          #arc from center to start point
          command_out += "G03" +  format_measure('Y', yo - @bit_diameter/2) + format_measure('I0.0 J', -@bit_diameter/4)
          @precision -= 1
-         
-         command_out += (format_feed(so)) if (so != @cs)
+         if (so != @cs)
+            puts "so #{so}  @cs #{@cs}"
+            command_out += format_feed(so)
+            @cs = so
+            puts "   so #{so}  @cs #{@cs}"
+         end
          command_out += "\n"
-         @cs = so
+         
          command_out += SpiralOut(xo,yo,zStart,zonow,yoff,ystep)
          if PhlatScript.useMultipass? &&  ((zonow - zo).abs > 0.0001)
 #            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2 + 0.005) + "\n"
@@ -1568,7 +1586,7 @@ module PhlatScript
       @cz = @retract_depth
       @cs = so
       @cc = '' #resetting command here so next one is forced to be correct
-@debug = false   
+#@debug = false   
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers

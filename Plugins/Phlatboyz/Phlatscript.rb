@@ -480,6 +480,7 @@ module PhlatScript
        addToolItem( OptionsMiscTool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsMachTool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsFeatTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsFeat2Tool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
     @@phlatboyz_tools_submenu.add_separator
 
