@@ -1,11 +1,11 @@
 require 'Phlatboyz/PhlatCut.rb'
 
 module PhlatScript
-
+  @sqnc = 1
   class PlungeCut < PhlatCut
 
     attr_accessor :edge
-
+    
     def PlungeCut.radius
 #      return (Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter) / 2.0
       return (PhlatScript.bitDiameter) / 2.0
@@ -19,9 +19,9 @@ module PhlatScript
       return self.new(edge)
     end
 
-    def PlungeCut.cut(pt, dfact, diam)
+    def PlungeCut.cut(pt, dfact, diam, knt = 0)
       plungecut = PlungeCut.new
-      plungecut.cut(pt, dfact, diam.to_f)
+      plungecut.cut(pt, dfact, diam.to_f, knt)
       return plungecut
     end
 
@@ -50,7 +50,7 @@ module PhlatScript
       @edge = edge
     end
 
-    def cut(pt, dfactor, diam)
+    def cut(pt, dfactor, diam, cnt = 0)
       Sketchup.active_model.start_operation "Cutting Plunge", true
       rad = PlungeCut.radius
       if (diam > 0)
@@ -67,6 +67,9 @@ module PhlatScript
 #      end
       
 #      group.name = "";
+      if (cnt > 0)
+         group.name = "PB" + cnt.to_s
+      end
       
       end_pt = Geom::Point3d.new(pt.x + rad, pt.y, 0)
       newedges = group.entities.add_edges(pt, end_pt)
@@ -95,6 +98,7 @@ module PhlatScript
       else
         newedges[0].material = Color_plunge_cut
       end
+      
       @edge = newedges[0]
       Sketchup.active_model.commit_operation
     end

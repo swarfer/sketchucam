@@ -108,6 +108,7 @@ module PhlatScript
             #place hole pattern, bottom left is clicked point
 #            puts "#{@ip.position} #{@hspace}"
             np = @ip.position
+            ccnt = 1
             for v in 0..(@vcount - 1)
 #               puts "v #{v}"
                for h in 0..(@hcount - 1)
@@ -115,7 +116,8 @@ module PhlatScript
                   np.x = @ip.position.x + h * @hspace
                   np.y = @ip.position.y + v * @vspace
 #                  puts "#{np}"
-                  PlungeCut.cut(np, @depth, @dia)
+                  PlungeCut.cut(np, @depth, @dia, ccnt)
+                  ccnt += 1
                end
             end
          end
