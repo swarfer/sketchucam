@@ -96,7 +96,7 @@ module PhlatScript
     def onLButtonDown(flags, x, y, view)
 #      puts "#{flags}"
 #      if (@keyflag == 2)
-      if ((flags & 32) == 32)  # ALT button
+      if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
 #         puts "placing hole pattern"
          @dia = 0
          if ((flags & 4) == 4)  # want big hole too, SHIFT button down
