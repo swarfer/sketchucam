@@ -45,6 +45,13 @@ module PhlatScript
     return @@phlatboyzStrings.GetString(s)
   end
 
+  def PhlatScript.decimal_separator
+      '1.0'.to_l
+      return '.'
+    rescue ArgumentError
+      return ','
+    end
+    
   def PhlatScript.load
     Sketchup.active_model.add_observer(PhlatScript.modelChangeObserver)
     return if @@Loaded
@@ -54,15 +61,24 @@ module PhlatScript
     @@Loaded = true
     
    # try to warn the user about not having a . as decimal seperator
-   length = (4/3).to_l.to_s     # generate a string with a decimal seperator
-   if (length.count(',') > 0)   # if it is a comma, warn user
-      UI.messagebox('Warning: you have the comma defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
-   else
-      if (length.count('.') != 1)   # if it is not a point, warn user
-         UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
-      end
+   
+   if (decimal_separator() == ',')
+      UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
    end
    
+#   length = (4.0/3.0).to_l.to_s     # generate a string with a decimal seperator
+#   UI.messagebox(length)
+#   if (length.count('/') > 0)  # then using fractional and we don't know anything new
+#      #UI.messagebox('fractional')
+#   else
+#      if (length.count(',') > 0) && (length.count('.') == 0)  # if it is a comma, warn user
+#         UI.messagebox('Warning: you have the comma defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
+#      else
+#         if (length.count('.') != 1)   # if it is not a point, warn user
+#            UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
+#         end
+#      end
+#   end   
    #https://github.com/thomthom/SketchUp-Units-and-Locale-Helper
    #http://sketchucation.com/forums/viewtopic.php?f=180&t=28346
     
