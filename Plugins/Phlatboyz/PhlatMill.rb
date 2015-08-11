@@ -1214,12 +1214,20 @@ module PhlatScript
    end
    
    #select between the plungebore options and call the correct method
-   def plungebore(xo,yo,zStart,zo,diam)   
-      if @depthfirst then
-         plungeboredepth(xo,yo,zStart,zo,diam)
+   def plungebore(xo,yo,zStart,zo,diam, ang=0)   
+      if (ang > 0)
+         plungecsink(xo,yo,zStart,zo,diam, ang)
       else
-         plungeborediam(xo,yo,zStart,zo,diam)
+         if @depthfirst then
+            plungeboredepth(xo,yo,zStart,zo,diam)
+         else
+            plungeborediam(xo,yo,zStart,zo,diam)
+         end
       end
+   end
+   
+   def plungecsink(xo,yo,zStart,zo,diam, ang)
+      cncPrintC("plungeCSINK #{xo},#{yo},#{zStart},#{zo},#{diam}, #{ang}")
    end
    
 #swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)

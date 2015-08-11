@@ -9,6 +9,7 @@ module PhlatScript
     @depth = 100
     @dia = 0
     @keyflag = 0
+    @cdia = 0.0
     
     def initialize
        super()
@@ -25,6 +26,7 @@ module PhlatScript
       Sketchup.vcb_value = PhlatScript.cutFactor
       @depth = PhlatScript.cutFactor
       @dia = 0.0
+      @cdia = 0.0
       super
     end
 
@@ -91,10 +93,35 @@ module PhlatScript
       end         
       return dia
     end
-    
+
+   def onRButtonDown(flags, x, y, view)
+      if (@cdia == 0)
+         puts "forcing cdia"
+         @cdia = PhlatScript.bitDiameter * 2
+      end
+ 
+      puts "onRButtonDown: flags = #{flags}"
+      puts "                    x = #{x}"
+      puts "                    y = #{y}"
+      puts "                 view = #{view}"
+      puts "                 cdia = #{@cdia}"
+      if ((flags & 4) == 4) # shift
+         #prompt for diameter
+         @cdia = getDia()
+         if (@cdia > PhlatScript.bitDiameter)
+            PlungeCut.cut(@ip.position, @depth, @cdia, 0, 90)
+         else
+            puts "Ignored cdia <= bitdiameter"
+            @cdia = PhlatScript.bitDiameter * 2
+         end
+      else
+         PlungeCut.cut(@ip.position, @depth, @cdia, 0, 90)
+      end
+      
+   end    
 
     def onLButtonDown(flags, x, y, view)
-#      puts "#{flags}"
+#      puts "flags " + sprintf('%08b',flags)
 #      if (@keyflag == 2)
       if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
 #         puts "placing hole pattern"
