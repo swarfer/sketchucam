@@ -1153,6 +1153,7 @@ module PhlatScript
 # if stepover < 50 then make ystep smaller
 # if stepover > 50% make ystep larger
    def GetFuzzyYstep(diam,ystep, mustramp, force)
+   @debug = true
       if (mustramp)
          rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
       else
@@ -1210,6 +1211,7 @@ module PhlatScript
       if (ystep > rem)
          ystep =  rem
       end
+   @debug = false         
       return ystep
    end
    
@@ -1226,8 +1228,123 @@ module PhlatScript
       end
    end
    
+   #circles for plingecsink
+   def circle(xo,yo, znow, rnow, complete=true)
+      out = 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
+      rad = rnow - @bit_diameter / 2.0
+      if (rad <= 0.1.mm)
+         return ''
+      end
+      #arc into the cut
+      if complete
+         out += 'G03' + format_measure('X', xo-rad) + format_measure('Y',yo) +format_measure('Z',znow) + format_measure('I',-rad/2.0)+ format_measure('J',0)
+         if (@cs != @speed_plung)
+            out += format_feed(@speed_plung)
+            @cs = @speed_plung
+         end
+         out += "\n"
+      else
+         out += 'G01' + format_measure('X', xo-rad) + "\n"
+      end
+#      out += 'G03' + format_measure('X', xo-rad) + format_measure('Y',yo) + format_measure('R',rad) + "\n"
+      #cut a full circle in quadrants
+      out += "G03" + format_measure("X",xo) + format_measure("Y",yo-rad) + format_measure("I",rad)  + format_measure("J",0) 
+      if (@cs != @speed_curr)
+         out += format_feed(@speed_curr)
+         @cs = @speed_curr
+      end
+      out += "\n"      
+      out += "G03" + format_measure("X",xo + rad) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",rad) + "\n"
+      out += "G03" + format_measure("X",xo) + format_measure("Y",yo+rad) + format_measure("I",-rad)  + format_measure("J",0) + "\n"
+      out += "G03" + format_measure("X",xo-rad) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",-rad) + "\n"
+      return out
+   end
+   
    def plungecsink(xo,yo,zStart,zo,diam, ang)
-      cncPrintC("plungeCSINK #{xo},#{yo},#{zStart},#{zo},#{diam}, #{ang}")
+      cncPrintC("plungeCSINK #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, #{ang}")
+      outR = diam / 2.0 # radius to cut to
+      puts "outR #{outR.to_mm}"
+      downS = 0.25.mm  # step down for each layer
+      puts "downS #{downS.to_mm}"
+      alpha = ang / 2.0 # side wall angle - in degrees
+      puts "alpha #{alpha}"
+      xf = Math::tan(torad(alpha)) * downS   # x step to reduce radius by each step
+      puts "xf #{xf.to_mm}"
+      if (xf > @bit_diameter)
+         xf = @bit_diameter / 2
+      end
+      hbd = @bit_diameter / 2
+      rNow = outR # starting radius
+      rEnd = @bit_diameter / 2.0 # stop when less than this
+      zNow = zStart
+      output = "G00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
+      output += "G01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"
+      
+      #@speed_curr  = PhlatScript.feedRate
+      #@speed_plung = PhlatScript.plungeRate      
+      @cs = @speed_plung
+      
+      zEnd =  zStart - @material_thickness
+      puts "zEnd #{zEnd}"
+=begin
+      places = Array.new
+      while rNow > rEnd do
+         zNow -= downS
+         if (zNow - zEnd) <= 0.001
+            puts "not going deeper than material"
+            break
+         end
+         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         #output += circle(xo,yo,zNow,rNow)
+         places.push(zNow,rNow)
+         rNow -= xf
+      end # while
+
+      while places.length > 0 do
+         rNow = places.pop
+         zNow = places.pop
+         puts "places znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         #output += circle(xo,yo,zNow,rNow)
+         output += SpiralAtQ(xo,yo,zStart,zNow,rNow)
+         output += "g00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
+         output += "g01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"
+      end # while places
+=end      
+
+      while rNow > rEnd do
+         zNow -= downS
+         
+         if (zNow - zEnd) <= 0.001
+            puts "not going deeper than material"
+            break
+         end
+         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         
+         ynow = 0
+         cnt = 0
+         if (hbd +rNow) <= (@bit_diameter * 2)
+            output += "(plain)\n"
+            output += circle(xo,yo,zNow,rNow)
+            output += "(plain done)\n"
+         else
+            
+            output += "(stepped for #{rNow.to_mm} )\n"
+            output += circle(xo,yo,zNow,@bit_diameter)  # first cut 2xbit hole
+            output += "(spiral rNow #{rNow.to_mm})\n"
+            output += 'g0' + format_measure('X',xo) + format_measure('Y',yo - hbd) + "\n"
+            ystep = PhlatScript.stepover * @bit_diameter / 100
+            ystep = GetFuzzyYstep(rNow,ystep, true, true).abs   # force mustramp true to get correct result
+            puts "ystep #{ystep.to_mm}"
+            output += SpiralOut(xo,yo,zStart,zNow,rNow-hbd,ystep)  # now spiralout from there
+            output += "(spiral rNow #{rNow.to_mm} done)\n"
+         end
+         rNow -= xf
+      end # while
+
+      output += "G00" + format_measure("X",xo)      # back to circle center
+      output += format_measure(" Z",@retract_depth) # retract to real safe height
+      output += "\n"
+      cncPrint(output)
    end
    
 #swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
