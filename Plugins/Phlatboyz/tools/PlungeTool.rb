@@ -109,13 +109,13 @@ module PhlatScript
          #prompt for diameter
          @cdia = getDia()
          if (@cdia > PhlatScript.bitDiameter)
-            PlungeCut.cut(@ip.position, @depth, @cdia, 0, 90)
+            PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 82)   #depth is always 100%
          else
             puts "Ignored cdia <= bitdiameter"
             @cdia = PhlatScript.bitDiameter * 2
          end
       else
-         PlungeCut.cut(@ip.position, @depth, @cdia, 0, 90)
+         PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 90)
       end
       
    end    

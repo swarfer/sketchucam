@@ -1153,18 +1153,19 @@ module PhlatScript
 # if stepover < 50 then make ystep smaller
 # if stepover > 50% make ystep larger
    def GetFuzzyYstep(diam,ystep, mustramp, force)
-   @debug = true
+#   @debug = true
       if (mustramp)
          rem = (diam / 2) - (@bit_diameter)  # still to be cut, we have already cut a 2*bit hole
       else
          rem = (diam / 2) - (@bit_diameter/2) # have drilled a bit diam hole
       end
       temp = rem / ystep   # number of steps to do it
-      puts " temp steps = #{temp}  ystep old #{ystep.to_mm} remainder #{rem.to_mm}\n" if @debug
+      puts "   getfuzzystep diam #{diam.to_mm} temp steps = #{temp}  ystep old #{ystep.to_mm} remainder #{rem.to_mm}\n" if @debug
       if (temp < 1.0)
-         puts "   not going to bother making it smaller"  if @debug
+         puts "   getfuzzystep   not going to bother making it smaller"  if @debug
          if (ystep  > rem)
             ystep = rem
+            puts "   getfuzzystep    ystep set to remainder" if @debug
          end
          return ystep
       end
@@ -1186,7 +1187,7 @@ module PhlatScript
       end
       if (flag)                                    # only adjust if we need to
          temp = (temp < 1) ? 1 : temp
-         puts "   new temp steps = #{temp}\n" if @debug
+         puts "   getfuzzystep   new temp steps = #{temp}\n" if @debug
          #   calc new ystep
          ystep = rem / temp
          
@@ -1195,15 +1196,15 @@ module PhlatScript
                while (ystep > @bit_diameter)
                   temp += 1
                   ystep = rem /temp
-                  puts "    ystep was > bit, recalculated with force #{temp}\n"         if @debug
+                  puts "   getfuzzystep    ystep was > bit, recalculated with force #{temp}\n"         if @debug
                end
             else   
                ystep = PhlatScript.stepover * @bit_diameter / 100
-               puts "    ystep was > bit, limited to stepover\n"         if @debug
+               puts "   getfuzzystep    ystep was > bit, limited to stepover\n"         if @debug
             end
             
          end
-         puts " ystep new #{ystep.to_mm}\n" if @debug
+         puts "   getfuzzystep ystep new #{ystep.to_mm}\n" if @debug
          if oldystep != ystep
             cncPrintC("OLD STEP #{oldystep.to_mm} new step #{ystep.to_mm}")  if (@debug)
          end
@@ -1211,7 +1212,7 @@ module PhlatScript
       if (ystep > rem)
          ystep =  rem
       end
-   @debug = false         
+#   @debug = false         
       return ystep
    end
    
@@ -1228,48 +1229,49 @@ module PhlatScript
       end
    end
    
-   #circles for plingecsink
+   #circles for plingecsink - use for <= 2*bitdiam
    def circle(xo,yo, znow, rnow, complete=true)
-      out = 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
+      out = '' # 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
       rad = rnow - @bit_diameter / 2.0
       if (rad <= 0.1.mm)
          return ''
       end
       #arc into the cut
       if complete
-         out += 'G03' + format_measure('X', xo-rad) + format_measure('Y',yo) +format_measure('Z',znow) + format_measure('I',-rad/2.0)+ format_measure('J',0)
+         out += 'G03' + format_measure('X', xo) + format_measure('Y',yo-rad) +format_measure('Z',znow) + format_measure('I',0)+ format_measure('J',-rad/2.0)
          if (@cs != @speed_plung)
             out += format_feed(@speed_plung)
             @cs = @speed_plung
          end
          out += "\n"
       else
-         out += 'G01' + format_measure('X', xo-rad) + "\n"
+         out += 'G01' + format_measure('Y', yo-rad) + "\n"
       end
 #      out += 'G03' + format_measure('X', xo-rad) + format_measure('Y',yo) + format_measure('R',rad) + "\n"
       #cut a full circle in quadrants
-      out += "G03" + format_measure("X",xo) + format_measure("Y",yo-rad) + format_measure("I",rad)  + format_measure("J",0) 
+      out += "G03" + format_measure("X",xo + rad) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",rad)
       if (@cs != @speed_curr)
          out += format_feed(@speed_curr)
          @cs = @speed_curr
       end
       out += "\n"      
-      out += "G03" + format_measure("X",xo + rad) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",rad) + "\n"
       out += "G03" + format_measure("X",xo) + format_measure("Y",yo+rad) + format_measure("I",-rad)  + format_measure("J",0) + "\n"
       out += "G03" + format_measure("X",xo-rad) + format_measure("Y",yo) + format_measure("I",0)  + format_measure("J",-rad) + "\n"
+      out += "G03" + format_measure("X",xo) + format_measure("Y",yo-rad) + format_measure("I",rad)  + format_measure("J",0) + "\n"
       return out
    end
    
    def plungecsink(xo,yo,zStart,zo,diam, ang)
+#      @debug = true
       cncPrintC("plungeCSINK #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, #{ang}")
       outR = diam / 2.0 # radius to cut to
-      puts "outR #{outR.to_mm}"
+      puts "outR #{outR.to_mm}"     if @debug
       downS = 0.25.mm  # step down for each layer
-      puts "downS #{downS.to_mm}"
+      puts "downS #{downS.to_mm}"   if @debug
       alpha = ang / 2.0 # side wall angle - in degrees
-      puts "alpha #{alpha}"
+      puts "alpha #{alpha}"         if @debug
       xf = Math::tan(torad(alpha)) * downS   # x step to reduce radius by each step
-      puts "xf #{xf.to_mm}"
+      puts "xf #{xf.to_mm}"         if @debug
       if (xf > @bit_diameter)
          xf = @bit_diameter / 2
       end
@@ -1285,66 +1287,50 @@ module PhlatScript
       @cs = @speed_plung
       
       zEnd =  zStart - @material_thickness
-      puts "zEnd #{zEnd}"
-=begin
-      places = Array.new
-      while rNow > rEnd do
-         zNow -= downS
-         if (zNow - zEnd) <= 0.001
-            puts "not going deeper than material"
-            break
-         end
-         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
-         #output += circle(xo,yo,zNow,rNow)
-         places.push(zNow,rNow)
-         rNow -= xf
-      end # while
-
-      while places.length > 0 do
-         rNow = places.pop
-         zNow = places.pop
-         puts "places znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
-         #output += circle(xo,yo,zNow,rNow)
-         output += SpiralAtQ(xo,yo,zStart,zNow,rNow)
-         output += "g00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
-         output += "g01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"
-      end # while places
-=end      
+      puts "zEnd #{zEnd}"                                                              if @debug
 
       while rNow > rEnd do
          zNow -= downS
          
          if (zNow - zEnd) <= 0.001
-            puts "not going deeper than material"
+            puts "not going deeper than material"                                      if @debug
             break
          end
-         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"                           if @debug
          
          ynow = 0
          cnt = 0
-         if (hbd +rNow) <= (@bit_diameter * 2)
-            output += "(plain)\n"
-            output += circle(xo,yo,zNow,rNow)
-            output += "(plain done)\n"
+         if (rNow) <= (@bit_diameter) # radius less than bitdiam === diam < 2*bitdiam
+            output += "(plain)\n"                                                      if @debug
+            output += 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
+            output += 'G00' + format_measure('Z',zNow + downS) + "\n"      if (cnt != 0)
+            circ = circle(xo,yo,zNow,rNow)
+            if (circ != "")
+               output += circ
+               output += 'G00' + format_measure('Z',zNow + 0.002) + "\n"
+            end
+            output += "(plain done)\n"                                                 if @debug
          else
-            
-            output += "(stepped for #{rNow.to_mm} )\n"
+            output += "(stepped for #{rNow.to_mm} )\n"                                 if @debug
+            output += 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
             output += circle(xo,yo,zNow,@bit_diameter)  # first cut 2xbit hole
-            output += "(spiral rNow #{rNow.to_mm})\n"
-            output += 'g0' + format_measure('X',xo) + format_measure('Y',yo - hbd) + "\n"
+            output += "(spiral rNow #{rNow.to_mm})\n"                                  if @debug
             ystep = PhlatScript.stepover * @bit_diameter / 100
-            ystep = GetFuzzyYstep(rNow,ystep, true, true).abs   # force mustramp true to get correct result
-            puts "ystep #{ystep.to_mm}"
+            ystep = GetFuzzyYstep(rNow*2,ystep, true, true).abs   # mustramp false to start from bitdiam hole
+            puts "ystep #{ystep.to_mm}"                                                if @debug
             output += SpiralOut(xo,yo,zStart,zNow,rNow-hbd,ystep)  # now spiralout from there
-            output += "(spiral rNow #{rNow.to_mm} done)\n"
+            output += 'G00' + format_measure('Z',zNow + 0.002) + "\n"
+            output += "(spiral rNow #{rNow.to_mm} done)\n"                             if @debug
          end
          rNow -= xf
+         cnt += 1
       end # while
 
-      output += "G00" + format_measure("X",xo)      # back to circle center
+      output += "G00" + format_measure("Y",yo)      # back to circle center
       output += format_measure(" Z",@retract_depth) # retract to real safe height
       output += "\n"
       cncPrint(output)
+      @debug = false
    end
    
 #swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
@@ -1793,3 +1779,28 @@ end # module PhlatScript
 # all upward Z moves are at fullspeed, only downward cuts are at plunge speed
 # Vtabs are at full speed as usual.
 # $Id$
+
+=begin
+      places = Array.new
+      while rNow > rEnd do
+         zNow -= downS
+         if (zNow - zEnd) <= 0.001
+            puts "not going deeper than material"
+            break
+         end
+         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         #output += circle(xo,yo,zNow,rNow)
+         places.push(zNow,rNow)
+         rNow -= xf
+      end # while
+
+      while places.length > 0 do
+         rNow = places.pop
+         zNow = places.pop
+         puts "places znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
+         #output += circle(xo,yo,zNow,rNow)
+         output += SpiralAtQ(xo,yo,zStart,zNow,rNow)
+         output += "g00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
+         output += "g01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"
+      end # while places
+=end      
