@@ -1195,12 +1195,12 @@ puts " new #{newedges[i-1]}\n"
                               #puts "plunge multi #{phlatcut}"
                               aMill.retract(@safeHeight)
                               aMill.move(point.x, point.y)
+                              diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                               if (phlatcut.angle > 0)
                                  ang = phlatcut.angle
-                                 diam = phlatcut.diameter
-                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang)
+                                 cdia = phlatcut.cdiameter
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdia)
                               else
-                                 diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                                  c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                                  #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
                                  aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
@@ -1292,12 +1292,12 @@ puts " new #{newedges[i-1]}\n"
                         if (phlatcut.kind_of? PlungeCut)
                            #puts "plunge #{phlatcut}"
                            #puts "   plunge dia #{phlatcut.diameter}"
+                           diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                            if (phlatcut.angle > 0)
                               ang = phlatcut.angle
-                              diam = phlatcut.diameter
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang)
+                              cdia = phlatcut.cdiameter
+                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdia)
                            else
-                              diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                               aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
                            end
 #                           else
@@ -1565,14 +1565,13 @@ puts " new #{newedges[i-1]}\n"
                               aMill.retract(@safeHeight)
                               aMill.move(point.x, point.y)
                               #aMill.plung(cut_depth)
-                              
+                              diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                               
                               if (phlatcut.angle > 0)
                                  ang = phlatcut.angle
-                                 diam = phlatcut.diameter
-                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang)
+                                 cdiam = phlatcut.cdiameter
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam)
                               else
-                                 diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                                  c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                                  aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
                               end
@@ -1617,16 +1616,12 @@ puts " new #{newedges[i-1]}\n"
                         if (phlatcut.kind_of? PlungeCut)
                            #puts "plunge #{phlatcut}"
                            #puts "   plunge dia #{phlatcut.diameter}"
+                           diam = (phlatcut.diameter > 0) ? phlatcut.diameter : @current_bit_diameter
                            if (phlatcut.angle > 0)
                               ang = phlatcut.angle
-                              diam = phlatcut.diameter
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang)
+                              cdiam = phlatcut.cdiameter
+                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam)
                            else
-                              if (phlatcut.diameter > 0)
-                                 diam = phlatcut.diameter
-                              else
-                                 diam = @current_bit_diameter
-                              end
                               aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
                            end
                         else

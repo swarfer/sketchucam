@@ -1217,9 +1217,9 @@ module PhlatScript
    end
    
    #select between the plungebore options and call the correct method
-   def plungebore(xo,yo,zStart,zo,diam, ang=0)   
+   def plungebore(xo,yo,zStart,zo,diam, ang=0, cdiam = 0)   
       if (ang > 0)
-         plungecsink(xo,yo,zStart,zo,diam, ang)
+         plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)
       else
          if @depthfirst then
             plungeboredepth(xo,yo,zStart,zo,diam)
@@ -1261,23 +1261,31 @@ module PhlatScript
       return out
    end
    
-   def plungecsink(xo,yo,zStart,zo,diam, ang)
-#      @debug = true
-      cncPrintC("plungeCSINK #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, #{ang}")
-      outR = diam / 2.0 # radius to cut to
-      puts "outR #{outR.to_mm}"     if @debug
+   def plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)
+      #@debug = true
+      cncPrintC("plungeCSINK #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, #{ang}, #{cdiam.to_l.to_s}")
+      
+      #first drill the center hole
+      cncPrint("(plunge the hole)\n")        if @debug
+      plungebore(xo, yo, zStart, zo, diam)
+      cncPrint("(end of plunge)\n")          if @debug
+      
+      outR = cdiam.to_f / 2.0 # radius to cut to
       downS = 0.25.mm  # step down for each layer
-      puts "downS #{downS.to_mm}"   if @debug
       alpha = ang / 2.0 # side wall angle - in degrees
-      puts "alpha #{alpha}"         if @debug
       xf = Math::tan(torad(alpha)) * downS   # x step to reduce radius by each step
+      puts "outR #{outR.to_mm}"     if @debug
+      puts "downS #{downS.to_mm}"   if @debug
+      puts "alpha #{alpha}"         if @debug
       puts "xf #{xf.to_mm}"         if @debug
       if (xf > @bit_diameter)
          xf = @bit_diameter / 2
       end
       hbd = @bit_diameter / 2
-      rNow = outR # starting radius
-      rEnd = @bit_diameter / 2.0 # stop when less than this
+      rNow = outR                # starting radius
+      rEnd = [diam/2.0, @bit_diameter / 2.0].max # stop when less than this
+      puts "rEnd #{rEnd.to_l.to_s}"                                                    if @debug
+      
       zNow = zStart
       output = "G00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
       output += "G01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"

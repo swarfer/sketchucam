@@ -19,9 +19,9 @@ module PhlatScript
       return self.new(edge)
     end
 
-    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0)
+    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0)
       plungecut = PlungeCut.new
-      plungecut.cut(pt, dfact, diam.to_f, knt, ang)
+      plungecut.cut(pt, dfact, diam.to_f, knt, ang, cdiam)
       return plungecut
     end
 
@@ -52,8 +52,15 @@ module PhlatScript
 
 #if cnt is > 0 then it is used in the groupname
 #if ang > 0 then it is used for the countersink angle
-    def cut(pt, dfactor, diam, cnt, ang)
+# cdia is the countersink diam, 'diam' is used for the actual hole as usual
+    def cut(pt, dfactor, diam, cnt, ang, cdia)
       Sketchup.active_model.start_operation "Cutting Plunge", true
+      
+      puts "dfactor #{dfactor}"
+      puts " diam #{diam}"
+      puts " cnt #{cnt}"
+      puts " ang #{ang}"
+      puts " cdia #{cdia}"
       rad = PlungeCut.radius
       if (diam > 0)
          #puts "PlungeCut cutting #{diam}"
@@ -93,15 +100,18 @@ module PhlatScript
         end
       end
       if (ang > 0.0)
+         circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
          newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_s)  #if this exists, then cut countersink
+         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
-         group.name = group.name + "_csink_#{ang.to_s}"
-         dfactor = PhlatScript.cutFactor
+         group.name = group.name + "_ca_#{ang.to_s}"
+         group.name = group.name + "_cd_#{cdia.to_l.to_s}"
+         dfactor = PhlatScript.cutFactor   #always at least 100% deep
       end   
 
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
          newedges[0].set_attribute Dict_name, Dict_plunge_depth_factor, dfactor.to_s
-         newedges[0].material = Color_plunge_cutd
+         newedges[0].material = Color_plunge_cutd   if (ang == 0.0)
          if (PhlatScript.isMetric)      # add depth factor to group name
            group.name = group.name + "_depth_#{dfactor}"
          else
@@ -159,6 +169,10 @@ module PhlatScript
   #swarfer: if the attribute is set gcodeutil will know what to do with it
     def diameter
       diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1)
+      return diam
+    end
+    def cdiameter   #return countersink diameter
+      diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1)
       return diam
     end
 #if angle is set it will return > 0 - use it for countersink in gcodeutil.plungebore

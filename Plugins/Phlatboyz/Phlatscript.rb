@@ -512,6 +512,7 @@ module PhlatScript
 
     require 'Phlatboyz/tools/PlungeTool.rb'
     addToolItem(PlungeTool.new())
+    addToolItem(CsinkTool.new())
 
     require 'Phlatboyz/tools/CenterLineTool.rb'
     addToolItem(CenterLineTool.new())

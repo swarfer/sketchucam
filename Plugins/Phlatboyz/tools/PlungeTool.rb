@@ -9,7 +9,6 @@ module PhlatScript
     @depth = 100
     @dia = 0
     @keyflag = 0
-    @cdia = 0.0
     
     def initialize
        super()
@@ -18,6 +17,7 @@ module PhlatScript
        @hcount = 0
        @vcount = 0
        @keyflag = 0 
+       @dia = 0.0
     end
     
     def reset(view)
@@ -26,7 +26,6 @@ module PhlatScript
       Sketchup.vcb_value = PhlatScript.cutFactor
       @depth = PhlatScript.cutFactor
       @dia = 0.0
-      @cdia = 0.0
       super
     end
 
@@ -74,7 +73,7 @@ module PhlatScript
          return false
       end
     end
-    
+
    def getDia()
       res = UI.inputbox(["Enter Hole Diameter in model units"],[0.to_s],"Bored Hole Diameter entry")
       begin
@@ -93,32 +92,6 @@ module PhlatScript
       end         
       return dia
     end
-
-   def onRButtonDown(flags, x, y, view)
-      if (@cdia == 0)
-         puts "forcing cdia"
-         @cdia = PhlatScript.bitDiameter * 2
-      end
- 
-      puts "onRButtonDown: flags = #{flags}"
-      puts "                    x = #{x}"
-      puts "                    y = #{y}"
-      puts "                 view = #{view}"
-      puts "                 cdia = #{@cdia}"
-      if ((flags & 4) == 4) # shift
-         #prompt for diameter
-         @cdia = getDia()
-         if (@cdia > PhlatScript.bitDiameter)
-            PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 82)   #depth is always 100%
-         else
-            puts "Ignored cdia <= bitdiameter"
-            @cdia = PhlatScript.bitDiameter * 2
-         end
-      else
-         PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 90)
-      end
-      
-   end    
 
     def onLButtonDown(flags, x, y, view)
 #      puts "flags " + sprintf('%08b',flags)
@@ -215,6 +188,147 @@ module PhlatScript
 
 
   end
+#-----------------------------------------------------------------------------------
+   class CsinkTool < PlungeTool
 
+   def initialize
+       super()
+       @cdia = 0.0
+       @angle = 0.0
+   end
+   
+   def reset(view)
+      Sketchup.vcb_label = "Plunge Depth %"
+      Sketchup.vcb_value = PhlatScript.cutFactor
+      @depth = PhlatScript.cutFactor
+   end
+
+   def getCounterSink
+      # prompts
+      prompts=['Counter sink diam ',
+               'Counter sink Angle ',
+               'Hole Diam ' 
+               ]
+      if (@angle < 70.0)
+         @angle = 90.0
+      end
+      puts @cdia
+      @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter * 2 : @cdia
+      puts @cdia
+      defaults=[
+         Sketchup.format_length(@cdia),
+         @angle.to_s,
+         Sketchup.format_length(@dia)
+         ]
+      # dropdown options can be added here
+      list=["",
+         "",
+         ""                ]
+
+      input = UI.inputbox(prompts, defaults, list, 'Counter Sink options')
+      # input is nil if user cancelled
+      if (input)
+         @cdia = Sketchup.parse_length(input[0])
+         @angle = input[1].to_f
+         @dia = Sketchup.parse_length(input[2])
+         if (@dia < PhlatScript.bitDiameter)
+            @dia = 0
+         end
+                     
+         return (@cdia > @dia) && (@angle > 70) && (@vspace > 0) && (@hspace > 0)
+      else
+         return false
+      end
+    end
+    
+   def activate
+      super
+      if getCounterSink 
+      else
+         puts "getcountersink cancelled"
+         @dia = @cdia = 0
+         #deselect the tool?
+      end
+   end
+
+=begin
+       def onRButtonDown(flags, x, y, view)
+      if (@cdia == 0)
+         puts "forcing cdia"
+         @cdia = PhlatScript.bitDiameter * 2
+      end
+ 
+      puts "onRButtonDown: flags = #{flags}"
+      puts "                    x = #{x}"
+      puts "                    y = #{y}"
+      puts "                 view = #{view}"
+      puts "                 cdia = #{@cdia}"
+      if ((flags & 4) == 4) # shift
+         #prompt for diameter
+         @cdia = getDia()
+         if (@cdia > PhlatScript.bitDiameter)
+            PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 82)   #depth is always 100%
+         else
+            puts "Ignored cdia <= bitdiameter"
+            @cdia = PhlatScript.bitDiameter * 2
+         end
+      else
+         PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 90)
+      end
+   end    
+=end   
+#countersink version
+   def onLButtonDown(flags, x, y, view)
+#      puts "flags " + sprintf('%08b',flags)
+      if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
+#         puts "placing hole pattern"
+         
+         if ((flags & 4) == 4)  # want big hole too, SHIFT button down
+            @dia = getDia()
+#            puts "dia #{@dia}"
+         end
+         #get params
+         if getPattern()
+            #place hole pattern, bottom left is clicked point
+#            puts "#{@ip.position} #{@hspace}"
+            np = @ip.position
+            ccnt = 1
+            for v in 0..(@vcount - 1)
+#               puts "v #{v}"
+               for h in 0..(@hcount - 1)
+#                  puts "  h #{h}"
+                  np.x = @ip.position.x + h * @hspace
+                  np.y = @ip.position.y + v * @vspace
+#                  puts "#{np}"
+                  PlungeCut.cut(np, @depth, @dia, ccnt,@angle, @cdia)
+                  ccnt += 1
+               end
+            end
+         end
+      else
+#         if (@keyflag == 1)
+         if ((flags & 4) == 4) # shift
+            #prompt for diameter
+            @dia = getDia()
+            if (@dia > PhlatScript.bitDiameter)
+               PlungeCut.cut(@ip.position, @depth, @dia,0, @angle, @cdia)
+            else
+               puts "Ignored dia <= bitdiameter"
+            end
+         else
+            PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
+         end
+      end
+      reset(view)
+   end
+   
+   
+    def statusText
+      return "Select CounterSink plunge point, [SHIFT] for large hole, set depth in VCB, [ALT] for hole pattern"
+    end
+
+   end # class
+  
+  
 end
 # $Id$
