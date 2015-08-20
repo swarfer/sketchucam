@@ -212,9 +212,9 @@ module PhlatScript
       if (@angle < 70.0)
          @angle = 90.0
       end
-      puts @cdia
+      #puts @cdia
       @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter * 2 : @cdia
-      puts @cdia
+      #puts @cdia
       defaults=[
          Sketchup.format_length(@cdia),
          @angle.to_s,
@@ -248,6 +248,7 @@ module PhlatScript
          puts "getcountersink cancelled"
          @dia = @cdia = 0
          #deselect the tool?
+         Sketchup.active_model.select_tool(nil)
       end
    end
 

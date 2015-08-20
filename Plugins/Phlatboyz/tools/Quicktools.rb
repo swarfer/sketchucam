@@ -68,7 +68,7 @@ class FourthAxisTool < PhlatTool
       def initialize
          toolname = 'Fourth Axis Tool'
          @tooltype=(PB_MENU_QTOOL)
-         @tooltip="Fourth Axis style"
+         @tooltip="Fourth Axis Settings"
          @statusText= "Select 4th Axis options"
          @menuItem="Fourth Axis"
          @menuText="Fourth Axis"

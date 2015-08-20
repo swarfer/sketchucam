@@ -1199,7 +1199,7 @@ puts " new #{newedges[i-1]}\n"
                               if (phlatcut.angle > 0)
                                  ang = phlatcut.angle
                                  cdia = phlatcut.cdiameter
-                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdia)
+                                 aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdia)
                               else
                                  c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                                  #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
@@ -1570,7 +1570,7 @@ puts " new #{newedges[i-1]}\n"
                               if (phlatcut.angle > 0)
                                  ang = phlatcut.angle
                                  cdiam = phlatcut.cdiameter
-                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam)
+                                 aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdiam)
                               else
                                  c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
                                  aMill.plungebore(point.x, point.y, @zL,c_depth, diam)

@@ -56,11 +56,11 @@ module PhlatScript
     def cut(pt, dfactor, diam, cnt, ang, cdia)
       Sketchup.active_model.start_operation "Cutting Plunge", true
       
-      puts "dfactor #{dfactor}"
-      puts " diam #{diam}"
-      puts " cnt #{cnt}"
-      puts " ang #{ang}"
-      puts " cdia #{cdia}"
+      #puts "dfactor #{dfactor}"
+      #puts " diam #{diam}"
+      #puts " cnt #{cnt}"
+      #puts " ang #{ang}"
+      #puts " cdia #{cdia}"
       rad = PlungeCut.radius
       if (diam > 0)
          #puts "PlungeCut cutting #{diam}"
