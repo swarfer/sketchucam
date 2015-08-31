@@ -135,6 +135,7 @@
          <Li><A href="#tooltab"><img alt="" src="../images/tabtool_small.png" title="Phlatboyz Tab Tool" width="16">Tab tool</a>
          <Li><A href="#toolfold"><img alt="" src="../images/foldtool_small.png" title="Phlatboyz Fold Tool" width="16">Fold cut</a>
          <Li><A href="#toolplunge"><img alt="" src="../images/plungetool_small.png" title="Phlatboyz Plunge Tool" width="16">Plunge hole</a>
+         <Li><A href="#toolcsink"><img alt="" src="../images/csinktool_small.png" title="Phlatboyz Countersink Tool" width="16">CounterSink hole</a>
          <Li><A href="#toolcenterline"><img alt="" src="../images/centerlinetool_small.png" title="Phlatboyz Centerline Tool" width="16">Centerline cut</a>
          <Li><A href="#toolpocket"><img alt="" src="../images/Pocket_small.png" title="Phlatboyz Pocket Tool" width="16">Pocket</a>
          <Li><A href="#tooleraser"><img alt="" src="../images/erasetool_small.png" title="Phlatboyz Erase Tool" width="16">Eraser</a>
@@ -433,7 +434,28 @@
          You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
          The hole will then be spiral bored to that diameter.  This is quite slow so holes that are
          greater than 3 times the diameter of the bit should rather be a circle with an inside cut to remove
-         the waste.<br>
+         the waste.
+         <p>
+         <table border=0 width=300 style="float: right;">
+         <tr>
+            <td>
+            <img src="images/holepattern01.png" align=right>
+            </td>
+         </tr>
+         <tr>
+            <td>
+            <img src="images/holepattern02.png" align=right>
+            </td>
+         </tr>
+         </table>
+         Hold down ALT or CTRL key to be prompted for a grid pattern of holes to drill.  They will all use the same
+         parameters.  Note that the Horiz and Vert Count refer to the <b>number of holes</b>.   If you need to space a
+         number of holes, say 7, along a length (say 52mm), then the spacing is calculated by<br>
+         52/(7-1) =  52/6 = 8.666mm.
+         </p>
+         <p>If either Horiz or Vert count are '1' then you get only 1 row or column of holes.
+         <img src="images/holepattern03.png">
+         </p>
          Feedrate will be the normal rate set for cuts.<br>
          Downfeed will be limited to either
          <ul>
@@ -448,10 +470,86 @@
          <li>The normal cut direction is anticlockwise giving a 'climbing cut'.  On stiff machines this will
          give a superior surface finish.   If your machine gives a bad finish in this and pocket cuts, please review the
          <i>Use_pocket_CW</i> and <i>Use_plunge_CW</i> settings in the <a href="howto_options.html">Options menu</a> section
+         <li><b>Depth first</b> or <b>Diameter first</b> (new in 1.3b)<br>
+         
+         Up to now holes have always been bored using a depth first strategy. ie for each stepover of the bit, it helical bored to final depth.<br>
+            By setting the 'Use depth first or diam first' option to <b>false</b>, the 'spiral out' strategy will be used.
+            This uses the following steps: (only for holes larger than 2 * bit_diameter!)
+            <ol>
+               <li>helical bore the center hole to 2*bitdiameter
+               <li>spiral out to desired diameter using either multipass depth layers, or a fuzzy calculated depth based on the bit diameter.
+            </ol>   
+            change this option on the 
+            <b>Tools|PhlatBoys|Options|Hole feature options</b> menu<br>
+            <img src="images/holeoptions.png">
          </ol>
       </td>
    </tr>
 
+   <tr>
+      <td class="command-image" valign=top id="toolcsink">
+         <img alt="" src="../images/csinktool_large.png" title="Phlatboyz Countersink Tool" width="32">
+      </td>
+      <td class="command-description">
+         <img src="images/csinkwooda.png" align=right>
+         <b>Countersink hole Tool</b> -
+         This tool is used to create a plunge point WITH a countersink at any given cursor position.  
+         <p>The example pictured at right was created using a 9mm straight flute bit.  The hole is 12mm diameter, 15mm deep, 
+         and the countersink is 25mm diameter.
+         The wood is unknown and resulted in fluffy edges, so what you see has been cleaned up by a few swipes with sandpaper.
+         </p>
+         <p>The step down for the countersink portion is 0.25mm per layer, with the decrease in radius being calculated from the
+         angle selected in the dialog.  Angles is limited to >= 70 and < 180 degrees.
+         <br clear=all>
+         <p>
+         <img src="images/csink02.png" align=right>
+         When you click the icon to select this tool, you will see a dialog box as pictured at right.
+
+         This permits you to set the values you want for your countersunk holes.  
+         These settings will be used for all future click events until you re-select the tool, or hold down SHIFT 
+         to be prompted for a hole diameter (countersink diameter and angle will stay the same).
+         </p>
+         <p>Common angles are 82 and 90 degrees, with 100 or 120 degrees beign used in thin sheet metal applications.
+         Use the one that matches your screws!
+         </p>
+            <br clear=all>
+         <img src="images/csink01.png" align=right >
+         The Countersink tool creates a grouped symbol of 2 circles with a blue radius line extending from the center to the outside diameter of the inner circle.<br>
+         The inner circle is the current bit diameter, or the hole diameter given in the dialog, which must be greater than the bit diameter.<br>
+         The outer circle is 8 sided and represents the diameter given for the countersink portion of the hole. (yes, the countersink
+         will be cut perfectly circular despite the octagonal symbol)<br>
+         When setting the hole diameter, a diameter of 0.0 will use the current bit diameter.
+         <br><br>
+         <p>The hole depth is ALWAYS 'overcut%' deep, you cannot specify a shallower depth.  This is because the 
+         countersink portion has to have a central hole of at least bit_diameter to start from that is guarranteed to be
+         deeper than the bottom end of the coutnersink.
+         </p>
+         <p>
+         You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
+         The hole will then be spiral bored to that diameter before the countersink is created.  
+         </p>
+         
+         <p>Hold down ALT or CTRL key to be prompted for a grid pattern of holes to drill.  They will all use the same
+         parameters.</p>
+         
+         Feedrate will be the normal rate set for cuts.<br>
+         Downfeed will be limited to either
+         <ul>
+         <li>half the bit diameter per revolution</li>
+         <li>the multipass depth if multipass is on.</li>
+         </ul>
+         Notes:
+         <ol class="newcolour">
+         <li>Note that the various CNC controllers will perform this operation in different ways.
+         LinuxCNC will do true spiral decending cuts, while other controllers might step down 
+         and do a circle with constant Z instead.
+         <li>While the hole boring part will obey the Use_plunge_CW setting, the countersink portion
+         can only cut counterclockwise and always uses the 'spiral out' strategy.
+         </ol>
+      </td>
+   </tr>
+   
+   
    <tr>
       <td class="command-image" valign=top id="toolcenterline">
          <img alt="" src="../images/centerlinetool_large.png" title="Phlatboyz Centerline Tool" width="32">

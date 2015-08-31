@@ -26,7 +26,7 @@ module PhlatScript
          edges.push(entity) if entity.kind_of?(Sketchup::Edge)  
          faces.push(entity) if entity.kind_of?(Sketchup::Face)
          }
-         # for Sketchup > 2014 we have to delete the faces seperately
+         # for Sketchup > 2014 we have to delete the faces separately
       faces.each { |entity| 
          entity.erase! if entity.kind_of?(Sketchup::Face)
          }
