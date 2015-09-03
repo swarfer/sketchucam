@@ -13,6 +13,7 @@
 #
 # EJT 11 Aug 2009
 # SWARFER Jul 2013 - offset from origin so shapes are easier to select and move
+# SWARFER Sep 2015 - offset to -100mm, and scale to 100mm long to avoid roundoff errors
 # $Id$
 require 'sketchup.rb'
 
@@ -30,12 +31,14 @@ def airfoil_dat_main
     if c == 1
       c = 2
     elsif
-      data = x.split
-      vert.push [data[0].to_f, data[1].to_f-50.mm, 0.to_f]
+      data = x.strip.split
+      xx = (data[0].to_f * 100.mm).to_inch
+      yy = (data[1].to_f * 100.mm).to_inch
+      vert.push [xx, yy-100.mm, 0.to_f]
     end
     }
 
- new_line = entities.add_face vert
+ new_line = entities.add_face(vert)
  
  Sketchup.send_action("viewTop:")
  Sketchup.send_action("viewZoomExtents:")
