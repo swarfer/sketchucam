@@ -1,4 +1,4 @@
-"stringversion"="1.04";
+"stringversion"="1.05";
 "NewPhlatboyz"="NewPhlatboyz";
 "Phlatboyz"="Phlatboyz";
 
@@ -26,6 +26,12 @@
 
 "PlungeTool"="Plunge Tool";
 "Phlatboyz PlungeTool"="Phlatboyz Plunge Tool";
+
+"CsinkTool"="CounterSink Tool";
+"Phlatboyz CsinkTool"="Phlatboyz CounterSink Tool";
+
+"CboreTool"="CounterBore Tool";
+"Phlatboyz CboreTool"="Phlatboyz CounterBore Tool";
 
 "EraseTool"="Erase Tool";
 "Phlatboyz EraseTool"="Phlatboyz Erase Tool";

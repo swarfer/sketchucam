@@ -1201,9 +1201,16 @@ puts " new #{newedges[i-1]}\n"
                                  cdia = phlatcut.cdiameter
                                  aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdia)
                               else
-                                 c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
-                                 #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
-                                 aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
+                                 if (phlatcut.angle < 0)
+                                    ang = phlatcut.angle
+                                    cdiam = phlatcut.cdiameter
+                                    cdepth = phlatcut.cdepth
+                                    aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdiam, cdepth)
+                                 else
+                                    c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+                                    #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
+                                    aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
+                                 end
                               end
                               printPass = false  # prevent print pass comments because holes are self contained and empty passes freak users out
                            end
@@ -1298,7 +1305,14 @@ puts " new #{newedges[i-1]}\n"
                               cdia = phlatcut.cdiameter
                               aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdia)
                            else
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+                              if (phlatcut.angle < 0)
+                                 ang = phlatcut.angle
+                                 cdiam = phlatcut.cdiameter
+                                 cdepth = phlatcut.cdepth
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam, cdepth)
+                              else
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+                              end
                            end
 #                           else
 #                              aMill.plung(cut_depth, PhlatScript.plungeRate)
@@ -1572,8 +1586,15 @@ puts " new #{newedges[i-1]}\n"
                                  cdiam = phlatcut.cdiameter
                                  aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdiam)
                               else
-                                 c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
-                                 aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
+                                 if (phlatcut.angle < 0)
+                                    ang = phlatcut.angle
+                                    cdiam = phlatcut.cdiameter
+                                    cdepth = phlatcut.cdepth
+                                    aMill.plungebore(point.x, point.y, @zL,max_depth, diam, ang, cdiam, cdepth)
+                                 else
+                                    c_depth = @zL - (material_thickness * (cut_factor.to_f/100).to_f)
+                                    aMill.plungebore(point.x, point.y, @zL,c_depth, diam)
+                                 end
                               end
                               #puts "plunge  material_thickness #{material_thickness.to_mm} cutfactor #{cut_factor} c_depth #{c_depth.to_mm} diam #{diam.to_mm}"
                               printPass = false  # prevent print pass comments because holes are self contained and empty passes freak users out
@@ -1622,7 +1643,14 @@ puts " new #{newedges[i-1]}\n"
                               cdiam = phlatcut.cdiameter
                               aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam)
                            else
-                              aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+                              if (phlatcut.angle < 0)
+                                 ang = phlatcut.angle
+                                 cdiam = phlatcut.cdiameter
+                                 cdepth = phlatcut.cdepth
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam, ang, cdiam, cdepth)
+                              else
+                                 aMill.plungebore(point.x, point.y, @zL,cut_depth, diam)
+                              end
                            end
                         else
                            aMill.plung(cut_depth, PhlatScript.plungeRate)

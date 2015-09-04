@@ -205,9 +205,9 @@ module PhlatScript
 
    def getCounterSink
       # prompts
-      prompts=['Counter sink diam ',
-               'Counter sink Angle ',
-               'Hole Diam ' 
+      prompts=['Counter sink diam ( > bit!)',
+               'Counter sink Angle (70..179)',
+               'Hole Diam (0 for current bit)' 
                ]
       if (@angle < 70.0)
          @angle = 90.0
@@ -230,12 +230,14 @@ module PhlatScript
       if (input)
          @cdia = Sketchup.parse_length(input[0])
          @angle = input[1].to_f
+         @angle = 70.0 if (@angle < 70.0)
+         @angle = 179.0 if (@angle > 179.0)
          @dia = Sketchup.parse_length(input[2])
          if (@dia < PhlatScript.bitDiameter)
             @dia = 0
          end
                      
-         return (@cdia > @dia) && (@angle > 70) && (@vspace > 0) && (@hspace > 0)
+         return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
       else
          return false
       end
@@ -323,13 +325,120 @@ module PhlatScript
       reset(view)
    end
    
-   
-    def statusText
-      return "Select CounterSink plunge point, [SHIFT] for large hole, set depth in VCB, [ALT] for hole pattern"
-    end
+   def statusText
+      return "Select CounterSink plunge point, [SHIFT] for large hole, [ALT] for hole pattern"
+   end
 
    end # class
-  
+
+#-----------------------------------------------------------------------------------
+   class CboreTool < PlungeTool
+
+   def initialize
+       super()
+       @cdia = 0.0
+       @angle = 0.0
+       @cdepth = PhlatScript.materialThickness / 2
+   end
+   
+   def reset(view)
+      Sketchup.vcb_label = "Plunge Depth %"
+      Sketchup.vcb_value = PhlatScript.cutFactor
+      @depth = PhlatScript.cutFactor
+   end
+
+   def getCounterBore
+      # prompts
+      prompts=['Counter bore diam ( > bit!)',
+               'Counter bore depth ( < material)',
+               'Hole Diam (0 for current bit)' 
+               ]
+      @angle = -90.0  # this tells gcodeutil what to do!
+
+      #puts @cdia
+      @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter * 2 : @cdia
+      #puts @cdia
+      defaults=[
+         Sketchup.format_length(@cdia),
+         Sketchup.format_length(@cdepth),
+         Sketchup.format_length(@dia)
+         ]
+      # dropdown options can be added here
+      list=["",
+         "",
+         ""                ]
+
+      input = UI.inputbox(prompts, defaults, list, 'Counter Bore Options')
+      # input is nil if user cancelled
+      if (input)
+         @cdia = Sketchup.parse_length(input[0])
+         @cdepth = Sketchup.parse_length(input[1])
+         @dia = Sketchup.parse_length(input[2])
+         if (@dia < PhlatScript.bitDiameter)
+            @dia = 0
+         end
+                     
+         return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness)
+      else
+         return false
+      end
+    end
+    
+   def activate
+      super
+      if getCounterBore
+      else
+         puts "getcounterbore cancelled"
+         @dia = @cdia = 0
+         #deselect the tool?
+         Sketchup.active_model.select_tool(nil)
+      end
+   end
+
+#countersink version
+   def onLButtonDown(flags, x, y, view)
+      if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
+         
+         if ((flags & 4) == 4)  # want big hole too, SHIFT button down
+            @dia = getDia()
+         end
+         #get params
+         if getPattern()
+            #place hole pattern, bottom left is clicked point
+            np = @ip.position
+            ccnt = 1
+            for v in 0..(@vcount - 1)
+               for h in 0..(@hcount - 1)
+                  np.x = @ip.position.x + h * @hspace
+                  np.y = @ip.position.y + v * @vspace
+                  PlungeCut.cut(np, @depth, @dia, ccnt,@angle, @cdia, @cdepth)
+                  ccnt += 1
+               end
+            end
+         end
+      else
+#         if (@keyflag == 1)
+         if ((flags & 4) == 4) # shift
+            #prompt for diameter
+            @dia = getDia()
+            if (@dia > PhlatScript.bitDiameter)
+               PlungeCut.cut(@ip.position, @depth, @dia,0, @angle, @cdia, @cdepth)
+            else
+               puts "Ignored dia <= bitdiameter"
+            end
+         else
+            PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia, @cdepth)
+         end
+      end
+      reset(view)
+   end
+   
+   def statusText
+      return "Select CounterBore plunge point, [SHIFT] for large hole, [ALT] for hole pattern"
+   end
+
+   end # class
+   
   
 end
 # $Id$

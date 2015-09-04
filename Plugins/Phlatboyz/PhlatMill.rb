@@ -1217,14 +1217,18 @@ module PhlatScript
    end
    
    #select between the plungebore options and call the correct method
-   def plungebore(xo,yo,zStart,zo,diam, ang=0, cdiam = 0)   
+   def plungebore(xo,yo,zStart,zo,diam, ang=0, cdiam = 0, cdepth = 0)   
       if (ang > 0)
          plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)
       else
-         if @depthfirst then
-            plungeboredepth(xo,yo,zStart,zo,diam)
+         if (ang < 0)
+            plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam,cdepth)
          else
-            plungeborediam(xo,yo,zStart,zo,diam)
+            if @depthfirst then
+               plungeboredepth(xo,yo,zStart,zo,diam)
+            else
+               plungeborediam(xo,yo,zStart,zo,diam)
+            end
          end
       end
    end
@@ -1338,8 +1342,49 @@ module PhlatScript
       output += format_measure(" Z",@retract_depth) # retract to real safe height
       output += "\n"
       cncPrint(output)
-      @debug = false
+#      @debug = false
    end
+
+# beta testers wanted a counterbore option, so here it is
+# ang will be -90
+   def plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam, cdepth)
+#      @debug = true
+      if (@debug)
+         cncPrintC("plungeCBORE #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, cdiam #{cdiam.to_f.to_mm}, cdepth #{cdepth.to_f.to_mm}")
+      else
+         cncPrintC("plungeCBORE diam#{diam.to_mm}, cdiam #{cdiam.to_f.to_mm}, cdepth #{cdepth.to_f.to_mm}")
+      end
+      
+      #first drill the center hole
+      cncPrintC("(plunge the hole)\n")        if @debug
+      plungebore(xo, yo, zStart, zo, diam)
+      cncPrintC("(end of plunge)\n")          if @debug
+      
+      #now do the counterbore
+      cncPrintC("(plunge the cbore )\n")        if @debug
+      puts "cdepth #{cdepth} cdiam #{cdiam}"    if @debug
+      oldramp = PhlatScript.mustramp?
+      if (!oldramp)  # ramp not on, set angle to 0
+         oldangle = PhlatScript.rampangle
+         PhlatScript.rampangle = 0
+      end
+      PhlatScript.mustramp = true   # force ramping on to avoid center drill cycle
+      plungebore(xo, yo, zStart, zStart-cdepth.to_f, cdiam.to_f)
+      PhlatScript.mustramp = oldramp
+      if (!oldramp)   # if it was off, reset the angle
+         PhlatScript.rampangle = oldangle
+      end
+      cncPrintC("cbore done\n")      
+      
+=begin
+      output = "G00" + format_measure("Y",yo)      # back to circle center
+      output += format_measure(" Z",@retract_depth) # retract to real safe height
+      output += "\n"
+      cncPrint(output)
+=end      
+#      @debug = false
+   end
+   
    
 #swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
 #handles multipass by itself, also handles ramping
@@ -1617,11 +1662,13 @@ module PhlatScript
 
       so = @speed_curr     #spiral at normal feed speed
       
-      if (diam <= (2*@bit_diameter))   #just do the ordinary plunge, no need to handle it here
+      bd2 = 2*@bit_diameter
+      if ( (diam < bd2) || ((bd2 - diam).abs < 0.0005) )  #just do the ordinary plunge, no need to handle it here
          puts "diam < 2bit - reverting to depth"      if @debug
          return plungeboredepth(xo,yo,zStart,zo,diam)
       end
       #SO IF WE ARE HERE WE KNOW DIAM > 2*BIT_DIAMETER
+      
       #bore the center out now
       yoff = @bit_diameter / 2
       command_out += "(plungediam: do center)\n" if @debug
@@ -1670,10 +1717,10 @@ module PhlatScript
          command_out += "G03" +  format_measure('Y', yo - @bit_diameter/2) + format_measure('I0.0 J', -@bit_diameter/4)
          @precision -= 1
          if (so != @cs)
-            puts "so #{so}  @cs #{@cs}"
+            puts "so #{so}  @cs #{@cs}"      if @debug
             command_out += format_feed(so)
             @cs = so
-            puts "   so #{so}  @cs #{@cs}"
+            puts "   so #{so}  @cs #{@cs}"   if @debug
          end
          command_out += "\n"
          

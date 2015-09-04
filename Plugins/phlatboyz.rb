@@ -49,7 +49,7 @@ module PhlatScript
          end
       else
             #file exists, check for correct version
-         correctversion = "1.04"  #this must match the version string in the file!
+         correctversion = "1.05"  #this must match the version string in the file!
          result = open(myc) { |f| f.grep(/stringversion/) }
          if result != []  #found the string, check version
             if !result[0].match(correctversion)  #version mismatch

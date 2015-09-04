@@ -110,7 +110,8 @@ Dict_cut_depth_factor = "cut_depth_factor"
 Dict_plunge_depth_factor = "plunge_depth_factor"   # overrides cut_depth_factor if set
 Dict_plunge_diameter = "plunge_diameter"           # creates spiral bored hole if set
 Dict_csink_angle = "plunge_angle"            # creates countersink included angle
-Dict_csink_diam  = "plunge_cdiam"            # diam for countersink
+Dict_csink_diam  = "plunge_cdiam"            # diam for countersink and counterbore
+Dict_cbore_depth = "plunge_cdepth"            # depth for counterbore
 Dict_edge_count = "edge_count"
 Dict_tab_depth_factor = "tab_depth_factor"
 Dict_vtabs = "vtabs"
@@ -185,6 +186,7 @@ Color_centerline_cut = "DarkSeaGreen"
 Color_plunge_cut = "Brown"
 Color_plunge_cutd = "DeepPink"  # color for less than full depth holes
 Color_plunge_csink = "MediumBlue"  #"Crimson"   #color for countersink
+Color_plunge_cbore = "Lime"  #"Crimson"   #color for countersink
 Color_pocket_cut = "HotPink"
 
 ver_ar = Sketchup.version.split(".")

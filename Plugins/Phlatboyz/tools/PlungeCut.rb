@@ -19,9 +19,9 @@ module PhlatScript
       return self.new(edge)
     end
 
-    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0)
+    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0, cdepth = 0)
       plungecut = PlungeCut.new
-      plungecut.cut(pt, dfact, diam.to_f, knt, ang, cdiam)
+      plungecut.cut(pt, dfact, diam.to_f, knt, ang, cdiam, cdepth)
       return plungecut
     end
 
@@ -53,7 +53,7 @@ module PhlatScript
 #if cnt is > 0 then it is used in the groupname
 #if ang > 0 then it is used for the countersink angle
 # cdia is the countersink diam, 'diam' is used for the actual hole as usual
-    def cut(pt, dfactor, diam, cnt, ang, cdia)
+    def cut(pt, dfactor, diam, cnt, ang, cdia, cdepth)
       Sketchup.active_model.start_operation "Cutting Plunge", true
       
       #puts "dfactor #{dfactor}"
@@ -105,6 +105,19 @@ module PhlatScript
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
          group.name = group.name + "_ca_#{ang.to_s}"
+         group.name = group.name + "_cd_#{cdia.to_l.to_s}"
+         dfactor = PhlatScript.cutFactor   #always at least 100% deep
+      end   
+      if (ang < 0.0)
+         circleInner = group.entities.add_circle(pt, vectz, cdia/2, 9)
+         circleInner.each { |e|
+            e.material = Color_plunge_cbore
+            }
+         newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_s)  #if this < 0 , then cut counterbore
+         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  
+         newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_s)  
+         newedges[0].material = Color_plunge_cbore
+         group.name = group.name + "_cb_#{cdepth.to_l.to_s}"
          group.name = group.name + "_cd_#{cdia.to_l.to_s}"
          dfactor = PhlatScript.cutFactor   #always at least 100% deep
       end   
@@ -171,10 +184,17 @@ module PhlatScript
       diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1)
       return diam
     end
+
     def cdiameter   #return countersink diameter
       diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1)
       return diam
     end
+
+    def cdepth   #return counterbore depth
+      depth = @edge.get_attribute(Dict_name, Dict_cbore_depth,  -1)  
+      return depth
+    end
+    
 #if angle is set it will return > 0 - use it for countersink in gcodeutil.plungebore
    def angle
       ang = @edge.get_attribute(Dict_name, Dict_csink_angle, -1)
