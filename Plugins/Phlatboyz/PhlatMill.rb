@@ -1413,7 +1413,7 @@ module PhlatScript
             sh += zStart.to_f
          end
          if (!@canneddrill) || (PhlatScript.mustramp?) 
-            puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
+            puts "pbd  reduced safe height #{sh.to_mm}\n"                     if @debug
             command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
             command_out += "\n"
          end
@@ -1626,7 +1626,7 @@ module PhlatScript
 #handles multipass by itself, also handles ramping
 # this is different enough from the old plunge bore that making it conditional within 'plungebore' would make it too complicated
    def plungeborediam(xo,yo,zStart,zo,diam)
-   #@debug = false
+   #@debug = true
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
       if (diam > (2*@bit_diameter))
@@ -1752,7 +1752,7 @@ module PhlatScript
       @cz = @retract_depth
       @cs = so
       @cc = '' #resetting command here so next one is forced to be correct
-#@debug = false   
+   #@debug = false   
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers

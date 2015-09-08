@@ -195,6 +195,8 @@ module PhlatScript
        super()
        @cdia = 0.0
        @angle = 0.0
+       @cdepth = PhlatScript.materialThickness / 2
+       @mode = 'CounterSink'
    end
    
    def reset(view)
@@ -205,8 +207,10 @@ module PhlatScript
 
    def getCounterSink
       # prompts
-      prompts=['Counter sink diam ( > bit!)',
+      prompts=['CounterSink or CounterBore?',
+               'Counter sink/bore diam ( > bit!)',
                'Counter sink Angle (70..179)',
+               'CounterBore depth ( < material thickness)',
                'Hole Diam (0 for current bit)' 
                ]
       if (@angle < 70.0)
@@ -216,28 +220,45 @@ module PhlatScript
       @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter * 2 : @cdia
       #puts @cdia
       defaults=[
+         @mode,
          Sketchup.format_length(@cdia),
          @angle.to_s,
+         Sketchup.format_length(@cdepth),
          Sketchup.format_length(@dia)
          ]
       # dropdown options can be added here
-      list=["",
+      list=["CounterSink|CounterBore",
+         "",
+         "",
          "",
          ""                ]
 
       input = UI.inputbox(prompts, defaults, list, 'Counter Sink options')
       # input is nil if user cancelled
       if (input)
-         @cdia = Sketchup.parse_length(input[0])
-         @angle = input[1].to_f
-         @angle = 70.0 if (@angle < 70.0)
-         @angle = 179.0 if (@angle > 179.0)
-         @dia = Sketchup.parse_length(input[2])
-         if (@dia < PhlatScript.bitDiameter)
-            @dia = 0
+         @mode = input[0]
+         if (input[0] == 'CounterSink')
+            @cdia = Sketchup.parse_length(input[1])
+            @angle = input[2].to_f
+            @angle = 70.0 if (@angle < 70.0)
+            @angle = 179.0 if (@angle > 179.0)
+            @dia = Sketchup.parse_length(input[4])
+            if (@dia < PhlatScript.bitDiameter)
+               @dia = 0
+            end
+            return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
+         else
+            @cdia = Sketchup.parse_length(input[1])
+            @angle = -90  #indicates counterbore
+            @cdepth = Sketchup.parse_length(input[3])
+            #puts @cdepth.to_mm
+            @depth = PhlatScript.cutFactor
+            @dia = Sketchup.parse_length(input[4])
+            if (@dia < PhlatScript.bitDiameter)
+               @dia = 0
+            end
+            return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness)
          end
-                     
-         return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
       else
          return false
       end
@@ -254,33 +275,7 @@ module PhlatScript
       end
    end
 
-=begin
-       def onRButtonDown(flags, x, y, view)
-      if (@cdia == 0)
-         puts "forcing cdia"
-         @cdia = PhlatScript.bitDiameter * 2
-      end
- 
-      puts "onRButtonDown: flags = #{flags}"
-      puts "                    x = #{x}"
-      puts "                    y = #{y}"
-      puts "                 view = #{view}"
-      puts "                 cdia = #{@cdia}"
-      if ((flags & 4) == 4) # shift
-         #prompt for diameter
-         @cdia = getDia()
-         if (@cdia > PhlatScript.bitDiameter)
-            PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 82)   #depth is always 100%
-         else
-            puts "Ignored cdia <= bitdiameter"
-            @cdia = PhlatScript.bitDiameter * 2
-         end
-      else
-         PlungeCut.cut(@ip.position, 100.0, @cdia, 0, 90)
-      end
-   end    
-=end   
-#countersink version
+#countersink and bore version
    def onLButtonDown(flags, x, y, view)
 #      puts "flags " + sprintf('%08b',flags)
       if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
@@ -288,6 +283,7 @@ module PhlatScript
          
          if ((flags & 4) == 4)  # want big hole too, SHIFT button down
             @dia = getDia()
+            @dia = @dia < @cdia ? @dia :  0.0
 #            puts "dia #{@dia}"
          end
          #get params
@@ -303,7 +299,14 @@ module PhlatScript
                   np.x = @ip.position.x + h * @hspace
                   np.y = @ip.position.y + v * @vspace
 #                  puts "#{np}"
-                  PlungeCut.cut(np, @depth, @dia, ccnt,@angle, @cdia)
+
+                  #PlungeCut.cut(np, @depth, @dia, ccnt,@angle, @cdia)
+                  if @mode == 'CounterSink'
+                     PlungeCut.cut(np, @depth, @dia, ccnt,@angle,@cdia)
+                  else
+                     PlungeCut.cut(np, @depth, @dia, ccnt,@angle,@cdia, @cdepth)            
+                  end
+                  
                   ccnt += 1
                end
             end
@@ -313,13 +316,22 @@ module PhlatScript
          if ((flags & 4) == 4) # shift
             #prompt for diameter
             @dia = getDia()
+            @dia = @dia < @cdia ? @dia :  PhlatScript.bitDiameter + 0.1
             if (@dia > PhlatScript.bitDiameter)
-               PlungeCut.cut(@ip.position, @depth, @dia,0, @angle, @cdia)
+               if @mode == 'CounterSink'
+                  PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
+               else # mode is CounterBore
+                  PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia, @cdepth)            
+               end
             else
                puts "Ignored dia <= bitdiameter"
             end
          else
-            PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
+            if @mode == 'CounterSink'
+               PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
+            else
+               PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia, @cdepth)            
+            end
          end
       end
       reset(view)
@@ -395,7 +407,7 @@ module PhlatScript
       end
    end
 
-#countersink version
+#counterbore version
    def onLButtonDown(flags, x, y, view)
       if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
          

@@ -61,6 +61,7 @@ module PhlatScript
       #puts " cnt #{cnt}"
       #puts " ang #{ang}"
       #puts " cdia #{cdia}"
+      #puts " cdepth #{cdepth}"
       rad = PlungeCut.radius
       if (diam > 0)
          #puts "PlungeCut cutting #{diam}"
@@ -90,7 +91,7 @@ module PhlatScript
          group.description = 'countersink'
       end
 
-      newedges[0].set_attribute Dict_name, Dict_edge_type, Key_plunge_cut
+      newedges[0].set_attribute(Dict_name, Dict_edge_type, Key_plunge_cut)
       if diam > 0 # if exists set the attribute
         newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam)
         if (PhlatScript.isMetric)  # add diam to group name
@@ -100,15 +101,17 @@ module PhlatScript
         end
       end
       if (ang > 0.0)
+         #puts "angle > #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
          newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_s)  #if this exists, then cut countersink
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
          group.name = group.name + "_ca_#{ang.to_s}"
          group.name = group.name + "_cd_#{cdia.to_l.to_s}"
-         dfactor = PhlatScript.cutFactor   #always at least 100% deep
+         dfactor = [PhlatScript.cutFactor, 100.0].max   #always at least 100% deep
       end   
       if (ang < 0.0)
+         #puts "angle < #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 9)
          circleInner.each { |e|
             e.material = Color_plunge_cbore
@@ -119,7 +122,7 @@ module PhlatScript
          newedges[0].material = Color_plunge_cbore
          group.name = group.name + "_cb_#{cdepth.to_l.to_s}"
          group.name = group.name + "_cd_#{cdia.to_l.to_s}"
-         dfactor = PhlatScript.cutFactor   #always at least 100% deep
+         dfactor = [PhlatScript.cutFactor,100].max   #always at least 100% deep
       end   
 
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
@@ -197,7 +200,7 @@ module PhlatScript
     
 #if angle is set it will return > 0 - use it for countersink in gcodeutil.plungebore
    def angle
-      ang = @edge.get_attribute(Dict_name, Dict_csink_angle, -1)
+      ang = @edge.get_attribute(Dict_name, Dict_csink_angle, 0)  #yes, really 0 to indicate 'not set'
       return ang.to_f
    end
 
