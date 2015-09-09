@@ -891,7 +891,7 @@ module PhlatScript
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
-      command_out += "   (SPIRALQ #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debug
+      command_out += "   (SPIRALQ #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)},#{sprintf('depth %0.2f',(zstart-zend).to_mm)},#{sprintf('yoff %0.2f',yoff.to_mm)},#{cwstr})\n" if @debug
       command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
       command_out += "   " + format_measure("Z",zstart+0.03) + "\n"   # rapid to near surface
       command_out += "G01" + format_measure("Z",zstart) # feed to surface
@@ -935,7 +935,7 @@ module PhlatScript
       mpass = -step
       d = zstart-zend
       puts("SpiralatQ: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
-      command_out += "   (Z step #{step.to_mm})\n"          if @debug
+      command_out += "   (Z step #{sprintf('%0.3f',step.to_mm)})\n"          if @debug
       now = zstart
       prevz = now
       while now > zend do
@@ -1267,11 +1267,15 @@ module PhlatScript
    
    def plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)
       #@debug = true
-      cncPrintC("plungeCSINK #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, #{ang}, #{cdiam.to_l.to_s}")
+      cncPrintC("plungeCSINK #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)},zs #{sprintf('%0.2f',zStart.to_mm)},zo #{sprintf('%0.3f',zo.to_mm)}")
+      cncPrintC("diam #{sprintf('%0.2f',diam.to_mm)}, #{sprintf('%0.2fdeg',ang)}, #{sprintf('cdiam %0.2f',cdiam.to_f.to_mm)}")
       
       #first drill the center hole
       cncPrint("(plunge the hole)\n")        if @debug
+      ucwas = $phoptions.usecomments?
+      $phoptions.usecomments = false         if !@debug
       plungebore(xo, yo, zStart, zo, diam)
+      $phoptions.usecomments = ucwas
       cncPrint("(end of plunge)\n")          if @debug
       
       outR = cdiam.to_f / 2.0 # radius to cut to
@@ -1348,17 +1352,21 @@ module PhlatScript
 # beta testers wanted a counterbore option, so here it is
 # ang will be -90
    def plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam, cdepth)
-#      @debug = true
+      #@debug = true
       if (@debug)
-         cncPrintC("plungeCBORE #{xo},#{yo},zs #{zStart.to_mm},zo #{zo.to_mm}, diam#{diam.to_mm}, cdiam #{cdiam.to_f.to_mm}, cdepth #{cdepth.to_f.to_mm}")
+         cncPrintC("plungeCBORE #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)},zs #{sprintf('%0.2f',zStart.to_mm)},zo #{sprintf('%0.2f',zo.to_mm)}")
+         cncPrintC("   diam#{sprintf('%0.2f',diam.to_mm)}, cdiam #{sprintf('%0.2f',cdiam.to_f.to_mm)}, cdepth #{sprintf('%0.2f',cdepth.to_f.to_mm)}")
       else
-         cncPrintC("plungeCBORE diam#{diam.to_mm}, cdiam #{cdiam.to_f.to_mm}, cdepth #{cdepth.to_f.to_mm}")
+         cncPrintC("plungeCBORE diam#{sprintf('%0.3f',diam.to_mm)}, cdiam #{sprintf('%0.3f',cdiam.to_f.to_mm)}, cdepth #{sprintf('%0.3f',cdepth.to_f.to_mm)}")
       end
       
       #first drill the center hole
-      cncPrintC("(plunge the hole)\n")        if @debug
+      cncPrintC("(plunge the hole)\n")          if @debug
+      ucwas = $phoptions.usecomments?
+      $phoptions.usecomments = false            if !@debug
       plungebore(xo, yo, zStart, zo, diam)
-      cncPrintC("(end of plunge)\n")          if @debug
+      $phoptions.usecomments = ucwas
+      cncPrintC("(end of plunge)\n")            if @debug
       
       #now do the counterbore
       cncPrintC("(plunge the cbore )\n")        if @debug
@@ -1369,7 +1377,10 @@ module PhlatScript
          PhlatScript.rampangle = 0
       end
       PhlatScript.mustramp = true   # force ramping on to avoid center drill cycle
+      ucwas = $phoptions.usecomments?
+      $phoptions.usecomments = false            if !@debug
       plungebore(xo, yo, zStart, zStart-cdepth.to_f, cdiam.to_f)
+      $phoptions.usecomments = ucwas      
       PhlatScript.mustramp = oldramp
       if (!oldramp)   # if it was off, reset the angle
          PhlatScript.rampangle = oldangle
@@ -1382,7 +1393,7 @@ module PhlatScript
       output += "\n"
       cncPrint(output)
 =end      
-#      @debug = false
+      #@debug = false
    end
    
    
@@ -1400,7 +1411,7 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrintC("HOLEdepth #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      cncPrintC("HOLEdepth #{sprintf('%0.2f',diam.to_mm)} dia at #{sprintf('%0.2f',xo.to_mm)},#{sprintf('%0.2f',yo.to_mm)} DEPTH #{sprintf('%0.2f',(zStart-zo).to_mm)}\n")       if @debug
       puts     " (HOLEdepth #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
@@ -1639,7 +1650,7 @@ module PhlatScript
       end
       command_out = ""
 
-      cncPrintC("HOLEdiam #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm}\n")       if @debug
+      cncPrintC("HOLEdiam #{sprintf('%0.2f',diam.to_mm)} dia at #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)} DEPTH #{sprintf('%0.2f',(zStart-zo).to_mm)}\n")       if @debug
       puts     " (HOLEdiam #{diam.to_mm} dia at #{xo.to_mm},#{yo.to_mm} DEPTH #{(zStart-zo).to_mm})\n"       if @debug
 
 #      xs = format_measure('X', xo)
