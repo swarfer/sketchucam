@@ -6,9 +6,10 @@ require 'Phlatboyz/Tools/PlungeCut.rb'
 module PhlatScript
 
   class PlungeTool < PhlatTool
-    @depth = 100
-    @dia = 0
+    @depth = 100.0
+    @dia = "0.0".to_l
     @keyflag = 0
+    @statusMsg = "Plunge Tool"
     
     def initialize
        super()
@@ -33,16 +34,17 @@ module PhlatScript
       if @ip.pick(view, x, y)
         view.invalidate
       end
+      Sketchup::status_text = @statusMsg      
     end
     
     def getPattern
       if ((@hcount == 0) || (@vcount == 0))
          if PhlatScript.isMetric
-            @hspace = @vspace = 7.mm
+            @hspace = @vspace = '7.mm'.to_l
          else
-            @hspace = @vspace = 0.25.inch
+            @hspace = @vspace = '0.25.inch'.to_l
          end
-         @hcount = @vcount = 2
+         @hcount = @vcount = 2.to_i
       end
       # prompts
       prompts=['Horiz Spacing ',
@@ -51,8 +53,8 @@ module PhlatScript
                'Vert Count  ' ]
 
       defaults=[
-         Sketchup.format_length(@hspace),
-         Sketchup.format_length(@vspace),
+         @hspace,
+         @vspace,
          @hcount,
          @vcount            ]
       # dropdown options can be added here
@@ -60,35 +62,35 @@ module PhlatScript
          "",
          "",
          ""                ]
-
-      input = UI.inputbox(prompts, defaults, list, 'Drill Hole Pattern')
-      # input is nil if user cancelled
-      if (input)
-         @hspace = Sketchup.parse_length(input[0])
-         @vspace = Sketchup.parse_length(input[1])
-         @hcount = input[2].to_i            
-         @vcount = input[3].to_i            
-         return (@hcount > 0) && (@vcount > 0) && (@vspace > 0) && (@hspace > 0)
-      else
-         return false
+      begin
+         input = UI.inputbox(prompts, defaults, list, 'Drill Hole Pattern')
+         # input is nil if user cancelled
+         if (input)
+            @hspace = input[0]
+            @vspace = input[1]
+            @hcount = input[2].to_i            
+            @vcount = input[3].to_i            
+            return (@hcount > 0) && (@vcount > 0) && (@vspace > 0) && (@hspace > 0)
+         else
+            return false
+         end
+      rescue ArgumentError => error
+         UI.messagebox(error.message)
+         retry
       end
     end
 
    def getDia()
-      res = UI.inputbox(["Enter Hole Diameter in model units"],[0.to_s],"Bored Hole Diameter entry")
       begin
-         dia = Sketchup.parse_length(res[0])
-#         .to_f
-#         if PhlatScript.isMetric
-#            dia = dia.mm # convert to inch
-#         end
+         res = UI.inputbox(["Enter Hole Diameter in model units"],['0'.to_l],"Bored Hole Diameter entry")
+         dia = res[0]  # will be a length
 
          if (dia < PhlatScript.bitDiameter)
-            dia = PhlatScript.bitDiameter
+            dia = 0.to_l
          end
-      rescue  Exception => e
-         dia = 0
-         UI.messagebox "Exception in PlungeTool:getDia "+$! + e.backtrace.to_s
+      rescue ArgumentError => error
+         UI.messagebox(error.message)
+         retry
       end         
       return dia
     end
@@ -98,7 +100,7 @@ module PhlatScript
 #      if (@keyflag == 2)
       if ((flags & 32) == 32) || ((flags & 8) == 8) # ALT button or CTRL button, alt does not work in Ubuntu
 #         puts "placing hole pattern"
-         @dia = 0
+         @dia = '0'.to_l
          if ((flags & 4) == 4)  # want big hole too, SHIFT button down
             @dia = getDia()
 #            puts "dia #{@dia}"
@@ -148,7 +150,8 @@ module PhlatScript
     end
 
     def statusText
-      return "Select plunge point, [SHIFT] for large hole, set depth in VCB, [ALT] for hole pattern"
+      @statusMsg = "Select plunge point, [SHIFT] for large hole, set depth in VCB, [ALT] for hole pattern"
+      return @statusMsg
     end
 
     def enableVCB?
@@ -189,20 +192,26 @@ module PhlatScript
 
   end
 #-----------------------------------------------------------------------------------
+# counter sink and counterbore together
    class CsinkTool < PlungeTool
 
    def initialize
        super()
        @cdia = 0.0
        @angle = 0.0
-       @cdepth = PhlatScript.materialThickness / 2
+       @cdepth = (PhlatScript.materialThickness / 2).to_l
        @mode = 'CounterSink'
+       @statusMsg = "CounterSink|CounterBore"
    end
    
    def reset(view)
-      Sketchup.vcb_label = "Plunge Depth %"
-      Sketchup.vcb_value = PhlatScript.cutFactor
+      Sketchup.vcb_label = "n/a"
+      Sketchup.vcb_value = "not used"
       @depth = PhlatScript.cutFactor
+   end
+   
+   def enableVCB?
+      return false
    end
 
    def getCounterSink
@@ -221,10 +230,10 @@ module PhlatScript
       #puts @cdia
       defaults=[
          @mode,
-         Sketchup.format_length(@cdia),
+         @cdia.to_l,
          @angle.to_s,
-         Sketchup.format_length(@cdepth),
-         Sketchup.format_length(@dia)
+         @cdepth.to_l,
+         @dia.to_l
          ]
       # dropdown options can be added here
       list=["CounterSink|CounterBore",
@@ -232,30 +241,40 @@ module PhlatScript
          "",
          "",
          ""                ]
-
-      input = UI.inputbox(prompts, defaults, list, 'Counter Sink options')
+      begin
+         input = UI.inputbox(prompts, defaults, list, 'Counter Sink options')
+      rescue ArgumentError => error
+         UI.messagebox(error.message)
+         retry
+      end
+        
       # input is nil if user cancelled
       if (input)
          @mode = input[0]
          if (input[0] == 'CounterSink')
-            @cdia = Sketchup.parse_length(input[1])
-            @angle = input[2].to_f
+            @cdia = input[1]
+            begin
+               @angle = input[2].to_f
+            rescue 
+               UI.messagebox("Invalid angle #{@angle}, setting to 90")
+               @angle = 90.0
+            end
             @angle = 70.0 if (@angle < 70.0)
             @angle = 179.0 if (@angle > 179.0)
-            @dia = Sketchup.parse_length(input[4])
+            @dia = input[4]
             if (@dia < PhlatScript.bitDiameter)
                @dia = 0
             end
             return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
          else
-            @cdia = Sketchup.parse_length(input[1])
+            @cdia = input[1]
             @angle = -90  #indicates counterbore
-            @cdepth = Sketchup.parse_length(input[3])
+            @cdepth = input[3]
             #puts @cdepth.to_mm
             @depth = PhlatScript.cutFactor
-            @dia = Sketchup.parse_length(input[4])
+            @dia = input[4]
             if (@dia < PhlatScript.bitDiameter)
-               @dia = 0
+               @dia = 0.to_l
             end
             return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness)
          end
@@ -267,9 +286,15 @@ module PhlatScript
    def activate
       super
       if getCounterSink 
+         if (@angle > 0)
+            @statusMsg = "Select CounterSINK plunge point, [SHIFT] for large hole, [ALT] for hole pattern: diam:#{@cdia.to_s} angle:#{sprintf('%0.3f°',@angle)}"
+         else
+            @statusMsg = "Select CounterBORE plunge point, [SHIFT] for large hole, [ALT] for hole pattern: diam:#{@cdia.to_s} depth:#{@cdepth.to_s}"
+         end
+         Sketchup::status_text = @statusMsg
       else
          puts "getcountersink cancelled"
-         @dia = @cdia = 0
+         @dia = @cdia = 0.to_l
          #deselect the tool?
          Sketchup.active_model.select_tool(nil)
       end
@@ -338,12 +363,13 @@ module PhlatScript
    end
    
    def statusText
-      return "Select CounterSink plunge point, [SHIFT] for large hole, [ALT] for hole pattern"
+      return "CounterSink | CounterBore tool"
    end
 
    end # class
 
 #-----------------------------------------------------------------------------------
+=begin
    class CboreTool < PlungeTool
 
    def initialize
@@ -379,7 +405,7 @@ module PhlatScript
       list=["",
          "",
          ""                ]
-
+must do begin rescue here
       input = UI.inputbox(prompts, defaults, list, 'Counter Bore Options')
       # input is nil if user cancelled
       if (input)
@@ -450,7 +476,7 @@ module PhlatScript
    end
 
    end # class
-   
+=end   
   
 end
 # $Id$

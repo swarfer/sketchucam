@@ -96,11 +96,11 @@ class FourthAxisTool < PhlatTool
 
          defaults=[
             $phoptions.useA?.inspect(),
-            $phoptions.posA.to_s,
+            $phoptions.posA.to_f,
             $phoptions.useB?.inspect(),
-            $phoptions.posB.to_s,
+            $phoptions.posB.to_f,
             $phoptions.useC?.inspect(),
-            $phoptions.posC.to_s
+            $phoptions.posC.to_f
             ]
          # dropdown options can be added here
          list=[            
@@ -111,8 +111,12 @@ class FourthAxisTool < PhlatTool
             "true|false",
             ""
             ]
-
-         input=UI.inputbox(prompts, defaults, list, 'Rotation options')
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Rotation options')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end
          # input is nil if user cancelled
          if (input)
             $phoptions.useA                    = (input[0] == 'true')
