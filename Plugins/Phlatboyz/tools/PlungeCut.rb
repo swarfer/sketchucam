@@ -19,9 +19,9 @@ module PhlatScript
       return self.new(edge)
     end
 
-    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0, cdepth = 0)
+    def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0.to_l, cdepth = 0.to_l)
       plungecut = PlungeCut.new
-      plungecut.cut(pt, dfact, diam.to_f, knt, ang, cdiam, cdepth)
+      plungecut.cut(pt, dfact, diam, knt, ang, cdiam, cdepth)
       return plungecut
     end
 
@@ -57,11 +57,11 @@ module PhlatScript
       Sketchup.active_model.start_operation "Cutting Plunge", true
       
       #puts "dfactor #{dfactor}"
-      #puts " diam #{diam}"
+      #puts " diam #{diam} #{diam.class}"
       #puts " cnt #{cnt}"
-      #puts " ang #{ang}"
-      #puts " cdia #{cdia}"
-      #puts " cdepth #{cdepth}"
+      #puts " ang #{ang}  #{ang.class}"
+      #puts " cdia #{cdia}   #{cdia.class}"
+      #puts " cdepth #{cdepth}   #{cdepth.class}"
       rad = PlungeCut.radius
       if (diam > 0)
          #puts "PlungeCut cutting #{diam}"
@@ -107,7 +107,7 @@ module PhlatScript
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
          group.name = group.name + "_ca_#{ang.to_s}"
-         group.name = group.name + "_cd_#{cdia.to_l.to_s}"
+         group.name = group.name + "_cd_#{cdia.to_s}"
          dfactor = [PhlatScript.cutFactor, 100.0].max   #always at least 100% deep
       end   
       if (ang < 0.0)
@@ -120,8 +120,8 @@ module PhlatScript
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  
          newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_s)  
          newedges[0].material = Color_plunge_cbore
-         group.name = group.name + "_cb_#{cdepth.to_l.to_s}"
-         group.name = group.name + "_cd_#{cdia.to_l.to_s}"
+         group.name = group.name + "_cb_#{cdepth.to_s}"
+         group.name = group.name + "_cd_#{cdia.to_s}"
          dfactor = [PhlatScript.cutFactor,100].max   #always at least 100% deep
       end   
 
@@ -171,7 +171,7 @@ module PhlatScript
     end
 
     def cut_factor
-      cf = @edge.get_attribute(Dict_name, Dict_plunge_depth_factor, -1)
+      cf = @edge.get_attribute(Dict_name, Dict_plunge_depth_factor, -1).to_f
       if cf != -1 # if set then use it for the plunge depth in gcodeutil
         if cf != PhlatScript.cutFactor
 #          puts "PlungeCut.cutfactor " + cf.to_s
@@ -185,17 +185,17 @@ module PhlatScript
   #swarfer: if the attribute is set gcodeutil will know what to do with it
     def diameter
       diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1)
-      return diam
+      return diam.to_l
     end
 
     def cdiameter   #return countersink diameter
       diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1)
-      return diam
+      return diam.to_l
     end
 
     def cdepth   #return counterbore depth
       depth = @edge.get_attribute(Dict_name, Dict_cbore_depth,  -1)  
-      return depth
+      return depth.to_l
     end
     
 #if angle is set it will return > 0 - use it for countersink in gcodeutil.plungebore

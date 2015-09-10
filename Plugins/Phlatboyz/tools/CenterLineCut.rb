@@ -88,14 +88,14 @@ module PhlatScript
 
     # returns the dictionary attribute for cut_depth_factor of the first entity
     def cut_factor
-      return @edge.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_fold_depth_factor)
+      return @edge.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_fold_depth_factor).to_f
     end
 
     # sets the cut_depth_facotr attribute for all entities that are part of this cut
     def cut_factor=(factor)
       f = factor % 1000
       (f = Max_fold_depth_factor) if (f > Max_fold_depth_factor)
-      @edge.set_attribute(Dict_name, Dict_cut_depth_factor, f)
+      @edge.set_attribute(Dict_name, Dict_cut_depth_factor, f.to_f)
     end
 
   end

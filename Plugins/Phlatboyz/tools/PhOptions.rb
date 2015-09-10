@@ -118,8 +118,8 @@ module PhlatScript
          @default_multipass = Default_multipass
          @default_multipass_depth = Default_multipass_depth
          @default_stepover = Default_stepover
-         @min_z = Min_z
-         @max_z = Max_z
+         @min_z = Min_z.to_l
+         @max_z = Max_z.to_l
          @bracket = true  #default to using bracket style comments, Mach3 likes this, GRBL likes ;
          @usecomments = true
          #features
@@ -134,8 +134,8 @@ module PhlatScript
          @use_home_height = Use_Home_Height
          @default_home_height = Default_Home_Height
          @use_end_position       =  false
-         @end_x                  =  0   
-         @end_y                  =  0
+         @end_x                  =  0.to_l   
+         @end_y                  =  0.to_l
          @use_fuzzy_holes        = true
          @use_fuzzy_pockets      = true
          @ramp_angle             =  0
@@ -917,18 +917,18 @@ end # class
             'Default_pocket_direction '
          ]
          defaults=[
-            @options.default_spindle_speed.to_s,
-            Sketchup.format_length(@options.default_feed_rate),
-            Sketchup.format_length(@options.default_plunge_rate),
-            Sketchup.format_length(@options.default_safe_travel),
-            Sketchup.format_length(@options.default_material_thickness),
-            @options.default_cut_depth_factor.to_s,
-            Sketchup.format_length(@options.default_bit_diameter),
-            Sketchup.format_length(@options.default_tab_width),
-            @options.default_tab_depth_factor.to_s,
+            @options.default_spindle_speed.to_i,
+            @options.default_feed_rate.to_l,
+            @options.default_plunge_rate.to_l,
+            @options.default_safe_travel.to_l,
+            @options.default_material_thickness.to_l,
+            @options.default_cut_depth_factor.to_f,
+            @options.default_bit_diameter.to_l,
+            @options.default_tab_width.to_l,
+            @options.default_tab_depth_factor.to_f,
             @options.default_vtabs?.inspect(),
-            @options.default_fold_depth_factor.to_s,
-            @options.default_pocket_depth_factor.to_s,
+            @options.default_fold_depth_factor.to_f,
+            @options.default_pocket_depth_factor.to_f,
             @options.default_pocket_direction?.inspect()
             ]
          list=[
@@ -947,22 +947,26 @@ end # class
             'true|false'
             ]
 
-
-         input=UI.inputbox(prompts, defaults, list, 'Tool Options (read the help!)')
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Tool Options (read the help!)')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end
          # input is nil if user cancelled
          if (input)
-            @options.default_spindle_speed      = input[0].to_i
-            @options.default_feed_rate          = Sketchup.parse_length(input[1])
-            @options.default_plunge_rate        = Sketchup.parse_length(input[2])
-            @options.default_safe_travel        = Sketchup.parse_length(input[3])
-            @options.default_material_thickness = Sketchup.parse_length(input[4])
-            @options.default_cut_depth_factor   = input[5].to_f
-            @options.default_bit_diameter       = Sketchup.parse_length(input[6])
-            @options.default_tab_width          = Sketchup.parse_length(input[7])
-            @options.default_tab_depth_factor   = input[8].to_f
+            @options.default_spindle_speed      = input[0]
+            @options.default_feed_rate          = input[1]
+            @options.default_plunge_rate        = input[2]
+            @options.default_safe_travel        = input[3]
+            @options.default_material_thickness = input[4]
+            @options.default_cut_depth_factor   = input[5]     # float
+            @options.default_bit_diameter       = input[6]
+            @options.default_tab_width          = input[7]
+            @options.default_tab_depth_factor   = input[8]     #float
             @options.default_vtabs              = (input[9] == 'true')
-            @options.default_fold_depth_factor  = input[10].to_f
-            @options.default_pocket_depth_factor = input[11].to_f
+            @options.default_fold_depth_factor  = input[10]    # float
+            @options.default_pocket_depth_factor = input[11]   #float
             @options.default_pocket_direction   = (input[12] == 'true')
             @options.save
          end # if input
@@ -1000,16 +1004,16 @@ end # class
             'Output Comments'
             ];
          defaults=[
-            Sketchup.format_length(@options.default_safe_origin_x),
-            Sketchup.format_length(@options.default_safe_origin_y),
-            Sketchup.format_length(@options.default_safe_width),
-            Sketchup.format_length(@options.default_safe_height),
+            @options.default_safe_origin_x.to_l,
+            @options.default_safe_origin_y.to_l,
+            @options.default_safe_width.to_l,
+            @options.default_safe_height.to_l,
             @options.default_overhead_gantry?.inspect(),
             @options.default_multipass?.inspect(),
-            Sketchup.format_length(@options.default_multipass_depth),
-            @options.default_stepover.to_s,
-            Sketchup.format_length(@options.min_z),
-            Sketchup.format_length(@options.max_z),
+            @options.default_multipass_depth.to_l,
+            @options.default_stepover.to_f,
+            @options.min_z.to_l,
+            @options.max_z.to_l,
             @options.bracket?.inspect(),
             @options.usecomments?.inspect()
             ];
@@ -1028,20 +1032,24 @@ end # class
             'true|false'
             ];
 
-
-         input=UI.inputbox(prompts, defaults, list, 'Machine Options (read the help!)')
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Machine Options (read the help!)')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end
          # input is nil if user cancelled
          if (input)
-            @options.default_safe_origin_x   = Sketchup.parse_length(input[0]);
-            @options.default_safe_origin_y   = Sketchup.parse_length(input[1]);
-            @options.default_safe_width      = Sketchup.parse_length(input[2]);
-            @options.default_safe_height     = Sketchup.parse_length(input[3]);
+            @options.default_safe_origin_x   = input[0];
+            @options.default_safe_origin_y   = input[1];
+            @options.default_safe_width      = input[2];
+            @options.default_safe_height     = input[3];
             @options.default_overhead_gantry = (input[4] == 'true');
             @options.default_multipass       = (input[5] == 'true');
-            @options.default_multipass_depth = Sketchup.parse_length(input[6]);
-            @options.default_stepover        = input[7].to_f  if (input[7].to_f > 0)
-            @options.min_z                   = Sketchup.parse_length(input[8]);
-            @options.max_z                   = Sketchup.parse_length(input[9]);
+            @options.default_multipass_depth = input[6];
+            @options.default_stepover        = input[7]  if (input[7] > 0)
+            @options.min_z                   = input[8];
+            @options.max_z                   = input[9];
             @options.bracket                 = (input[10] == 'true');
             @options.usecomments             = (input[11] == 'true');
 
@@ -1093,12 +1101,12 @@ end # class
             @options.use_vtab_speed_limit?.inspect(),
             @options.profile_save_material_thickness?.inspect(),
             @options.use_home_height?.inspect(),
-            Sketchup.format_length(@options.default_home_height),
+             @options.default_home_height.to_l,
             @options.use_end_position?.inspect(),
-            Sketchup.format_length(@options.end_x),
-            Sketchup.format_length(@options.end_y),
+             @options.end_x.to_l,
+             @options.end_y.to_l,
             @options.use_fuzzy_pockets?.inspect(),
-            @options.ramp_angle.to_f,
+             @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
             @options.gforce?.inspect(),
             ];
@@ -1121,9 +1129,12 @@ end # class
             'true|false',
             'true|false'
             ];
-
-         input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
-         # input is nil if user cancelled
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end         # input is nil if user cancelled
          if (input)
             @options.use_exact_path          = (input[0] == 'true')
             @options.always_show_safearea    = (input[1] == 'true')
@@ -1134,18 +1145,18 @@ end # class
             @options.use_vtab_speed_limit    = (input[6] == 'true')
             @options.profile_save_material_thickness         = (input[7] == 'true')
             @options.use_home_height         = (input[8] == 'true')
-            @options.default_home_height     = Sketchup.parse_length(input[9])
+            @options.default_home_height     = input[9] # length
 
             @options.use_end_position        = (input[10] == 'true')
             if (@options.use_outfeed?)     # only one of them
                @options.use_end_position = false
             end
-            @options.end_x                   = Sketchup.parse_length(input[11])
-            @options.end_y                   = Sketchup.parse_length(input[12])
+            @options.end_x                   = input[11] #length
+            @options.end_y                   = input[12] #length
 
             @options.use_fuzzy_pockets       = (input[13] == 'true')
 
-            @options.ramp_angle              = input[14].to_f
+            @options.ramp_angle              = input[14]  #float
             @options.must_ramp               = (input[15] == 'true')
             @options.gforce                  = (input[16] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"

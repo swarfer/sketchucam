@@ -222,8 +222,8 @@ module PhlatScript
              PhlatScript.cutFactor.to_s,
              Sketchup.format_length(PhlatScript.bitDiameter),
              Sketchup.format_length(PhlatScript.tabWidth),
-             PhlatScript.tabDepth.to_s,
-             Sketchup.format_length(PhlatScript.safeTravel),
+             PhlatScript.tabDepth.to_i,
+             PhlatScript.safeTravel.to_l,
              Sketchup.format_length(PhlatScript.safeWidth),
              Sketchup.format_length(PhlatScript.safeHeight),
              PhlatScript.useOverheadGantry?.inspect()]
@@ -246,8 +246,12 @@ module PhlatScript
          else
             list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true","false|true","",""]
          end
-
-         input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
+         begin
+            input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end
          # input is nil if user cancelled
          if (input)
             PhlatScript.spindleSpeed = input[0].to_i
@@ -261,8 +265,8 @@ module PhlatScript
                PhlatScript.bitDiameter = tmp
             end
             PhlatScript.tabWidth = Sketchup.parse_length(input[6]).to_f
-            PhlatScript.tabDepth = input[7].to_i
-            PhlatScript.safeTravel = Sketchup.parse_length(input[8]).to_f
+            PhlatScript.tabDepth = input[7]     #int
+            PhlatScript.safeTravel = input[8]   #length
             PhlatScript.safeWidth = Sketchup.parse_length(input[9])
             PhlatScript.safeHeight = Sketchup.parse_length(input[10])
             PhlatScript.useOverheadGantry = (input[11] == 'true')
@@ -322,7 +326,7 @@ module PhlatScript
                web_dialog.setValue('materialthickness', $phoptions.default_material_thickness.to_mm)
                web_dialog.setValue('bitdiameter', $phoptions.default_bit_diameter.to_mm)
                web_dialog.setValue('tabwidth', $phoptions.default_tab_width.to_mm)
-               web_dialog.setValue('safetravel', $phoptions.default_safe_travel.to_mm)
+               web_dialog.setValue('safetravel', $phoptions.default_safe_travel.to_l.to_s)
                web_dialog.setValue('safewidth', $phoptions.default_safe_width.to_mm)
                web_dialog.setValue('safeheight', $phoptions.default_safe_height.to_mm)
                web_dialog.setValue('multipassdepth', $phoptions.default_multipass_depth.to_mm)
@@ -332,7 +336,7 @@ module PhlatScript
                web_dialog.setValue('materialthickness', $phoptions.default_material_thickness)
                web_dialog.setValue('bitdiameter', $phoptions.default_bit_diameter)
                web_dialog.setValue('tabwidth', $phoptions.default_tab_width)
-               web_dialog.setValue('safetravel', $phoptions.default_safe_travel)
+               web_dialog.setValue('safetravel', $phoptions.default_safe_travel.to_l.to_s)
                web_dialog.setValue('safewidth', $phoptions.default_safe_width)
                web_dialog.setValue('safeheight', $phoptions.default_safe_height)
                web_dialog.setValue('multipassdepth', $phoptions.default_multipass_depth)

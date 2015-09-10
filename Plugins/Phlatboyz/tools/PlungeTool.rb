@@ -197,7 +197,7 @@ module PhlatScript
 
    def initialize
        super()
-       @cdia = 0.0
+       @cdia = 0.to_l
        @angle = 0.0
        @cdepth = (PhlatScript.materialThickness / 2).to_l
        @mode = 'CounterSink'
@@ -226,12 +226,12 @@ module PhlatScript
          @angle = 90.0
       end
       #puts @cdia
-      @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter * 2 : @cdia
+      @cdia = (@cdia == 0.0) ? PhlatScript.bitDiameter.to_l * 2 : @cdia
       #puts @cdia
       defaults=[
          @mode,
          @cdia.to_l,
-         @angle.to_s,
+         @angle.to_f,
          @cdepth.to_l,
          @dia.to_l
          ]
@@ -254,7 +254,7 @@ module PhlatScript
          if (input[0] == 'CounterSink')
             @cdia = input[1]
             begin
-               @angle = input[2].to_f
+               @angle = input[2]          # float
             rescue 
                UI.messagebox("Invalid angle #{@angle}, setting to 90")
                @angle = 90.0
@@ -263,7 +263,7 @@ module PhlatScript
             @angle = 179.0 if (@angle > 179.0)
             @dia = input[4]
             if (@dia < PhlatScript.bitDiameter)
-               @dia = 0
+               @dia = 0.to_l
             end
             return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
          else

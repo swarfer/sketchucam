@@ -106,20 +106,21 @@ module PhlatScript
   end
 
   def PhlatScript.get_fold_depth_factor(model=Sketchup.active_model)
-    return model.get_attribute(Dict_name, Dict_fold_depth_factor, $phoptions.default_fold_depth_factor)
+    return model.get_attribute(Dict_name, Dict_fold_depth_factor, $phoptions.default_fold_depth_factor).to_f
   end
 
   def PhlatScript.set_fold_depth_factor(in_factor, model=Sketchup.active_model)
-    f = in_factor % 1000
+    f = in_factor.to_f 
+    f = (f % 1000).to_f   if (in_factor > 1000)
     (f = Max_fold_depth_factor) if (f > Max_fold_depth_factor)
-    model.set_attribute Dict_name, Dict_fold_depth_factor, f
+    model.set_attribute(Dict_name, Dict_fold_depth_factor, f.to_f)
   end
 
   def PhlatScript.display_fold_depth_factor
     #Sketchup::set_status_text "depth percent", SB_VCB_LABEL
     Sketchup::set_status_text(PhlatScript.getString("depth percent"), SB_VCB_LABEL)
     fold_factor = get_fold_depth_factor()
-    Sketchup::set_status_text("#{fold_factor.to_s}%", SB_VCB_VALUE)
+    Sketchup::set_status_text("#{sprintf('%0.2f',fold_factor)}%", SB_VCB_VALUE)
   end
 
   def PhlatScript.tools
@@ -231,7 +232,7 @@ module PhlatScript
   end
 
   def PhlatScript.materialThickness
-    Sketchup.active_model.get_attribute(Dict_name, Dict_material_thickness, $phoptions.default_material_thickness)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_material_thickness, $phoptions.default_material_thickness).to_l
   end
 
   def PhlatScript.materialThickness=(mthickness)
@@ -239,11 +240,11 @@ module PhlatScript
   end
 
   def PhlatScript.cutFactor     # Inside/Outside Overcut %
-    Sketchup.active_model.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_cut_depth_factor)
+    Sketchup.active_model.get_attribute(Dict_name, Dict_cut_depth_factor, $phoptions.default_cut_depth_factor).to_f
   end
 
   def PhlatScript.cutFactor=(cfactor)
-    Sketchup.active_model.set_attribute(Dict_name, Dict_cut_depth_factor, cfactor.to_i)
+    Sketchup.active_model.set_attribute(Dict_name, Dict_cut_depth_factor, cfactor.to_f)
   end
 
   def PhlatScript.bitDiameter

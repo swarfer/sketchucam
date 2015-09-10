@@ -111,7 +111,7 @@ module PhlatScript
      # VCB
     def onUserText(text,view)
       begin
-         value = text.to_i
+         value = text.to_f
       rescue
          # Error parsing the text
          UI.beep
