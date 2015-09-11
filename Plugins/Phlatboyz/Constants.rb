@@ -57,7 +57,6 @@ Default_tab_depth_factor = 50
 Default_vtabs = false
 Default_fold_depth_factor = 50
 Default_pocket_depth_factor = 51
-Default_pocket_direction = false
 
 Default_safe_origin_x = 0.0.inch
 Default_safe_origin_y = 0.0.inch

@@ -183,6 +183,8 @@ module PhlatScript
     end
 
   #swarfer: if the attribute is set gcodeutil will know what to do with it
+  # note that the .to_l in these functions will cause gcode generation to fail when 
+  # regional settings has a comma for decimal separator, user has been warned!
     def diameter
       diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1)
       return diam.to_l

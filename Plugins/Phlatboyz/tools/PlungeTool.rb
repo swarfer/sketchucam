@@ -6,8 +6,12 @@ require 'Phlatboyz/Tools/PlungeCut.rb'
 module PhlatScript
 
   class PlungeTool < PhlatTool
-    @depth = 100.0
-    @dia = "0.0".to_l
+    @depth = '100.0'.to_f
+    begin
+       @dia = "0.0".to_l
+    rescue
+       @dia = 0.to_l
+    end
     @keyflag = 0
     @statusMsg = "Plunge Tool"
     

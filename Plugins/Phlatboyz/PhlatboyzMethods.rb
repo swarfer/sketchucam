@@ -203,10 +203,10 @@ end
 #returns an array of strings ready to output, used by phjoiner
 def PhlatScript.gcomments(comment)
    output = Array.new
-      string = comment.gsub("\n","")
+      string = comment.gsub(/\n/,"")
       string = string.gsub(/\(|\)/,"")  # remove existing brackets
-      if (string.length > 48)
-         chunks = chunk(string,45)
+      if (string.length > 70)
+         chunks = chunk(string,68)
          chunks.each { |bit|
             bb = PhlatScript.gcomment(bit)
             output += [bb]

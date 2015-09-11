@@ -13,7 +13,7 @@ module PhlatScript
       #replace trailing " with .inch
       out=inp.to_inch.to_s + '.inch'
     end
-    out=out.gsub("~ ",'')
+    out=out.gsub(/~ /,'')
     return out
   end #
 

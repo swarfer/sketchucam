@@ -4,7 +4,7 @@
 # everywhere that the old Default globals are used must be changed to use the options class values
 # $Id$
 
-require 'PhlatBoyz/Constants.rb'
+#require 'PhlatBoyz/Constants.rb'
 
 require 'Phlatboyz/PhlatTool.rb'
 require 'Phlatboyz/utils/SketchupDirectoryUtils.rb'

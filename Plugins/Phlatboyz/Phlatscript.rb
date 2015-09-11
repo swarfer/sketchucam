@@ -1,6 +1,7 @@
 # $Id$
 require('sketchup.rb')
 require('extensions.rb')
+require('Phlatboyz/Constants.rb')
 require('Phlatboyz/Observers.rb')
 
 module PhlatScript
@@ -45,26 +46,32 @@ module PhlatScript
     return @@phlatboyzStrings.GetString(s)
   end
 
-  def PhlatScript.decimal_separator
-      '1.0'.to_l
-      return '.'
-    rescue ArgumentError
-      return ','
-    end
+   def PhlatScript.decimal_separator
+      begin
+         '1.0'.to_l
+         return '.'
+      rescue ArgumentError
+         return ','
+      end
+   end
     
-  def PhlatScript.load
+   def PhlatScript.load
+  
+      # try to warn the user about not having a . as decimal seperator
+      if (decimal_separator() == ',')
+         UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
+      end
+  
     Sketchup.active_model.add_observer(PhlatScript.modelChangeObserver)
     return if @@Loaded
+    puts "loadtools"
     loadTools
+    puts "add context menu"
       UI.add_context_menu_handler do | menu | contextMenuHandler(menu) end
     setModelOptions(Sketchup.active_model)
     @@Loaded = true
     
-   # try to warn the user about not having a . as decimal seperator
    
-   if (decimal_separator() == ',')
-      UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
-   end
    
 #   length = (4.0/3.0).to_l.to_s     # generate a string with a decimal seperator
 #   UI.messagebox(length)
