@@ -221,10 +221,10 @@ module PhlatScript
    def getCounterSink
       # prompts
       prompts=['CounterSink or CounterBore?',
-               'Counter sink/bore diam ( > bit!)',
-               'Counter sink Angle (70..179)',
-               'CounterBore depth ( < material thickness)',
-               'Hole Diam (0 for current bit)' 
+               'Counter Sink/Bore diam ( > bit!)',
+               'CounterSINK Angle (70..179)',
+               'CounterBORE depth ( < material thickness!)',
+               'Hole Diameter (0 for current bit)' 
                ]
       if (@angle < 70.0)
          @angle = 90.0

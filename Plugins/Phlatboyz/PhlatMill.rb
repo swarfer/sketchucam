@@ -927,14 +927,18 @@ module PhlatScript
       else
          if PhlatScript.useMultipass?
             step = -PhlatScript.multipassDepth
+            puts "step from mpass was #{step}" if @debug
             step = StepFromMpass(zstart,zend,step)                      # possibly recalculate step to have equal sized steps
+            puts "   became #{step}" if @debug
          else
+            puts "step from bit" if @debug
             step = StepFromBit(zstart,zend)                       # each spiral Z feed will be bit diameter/2 or slightly less
+            puts "   became #{step}" if @debug
          end
       end
       mpass = -step
       d = zstart-zend
-      puts("SpiralatQ: step #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
+      puts("SpiralatQ: zstep #{step.to_mm} zstart #{zstart.to_mm} zend #{zend.to_mm}  depth #{d.to_mm}" )   if @debug
       command_out += "   (Z step #{sprintf('%0.3f',step.to_mm)})\n"          if @debug
       now = zstart
       prevz = now
@@ -1210,6 +1214,7 @@ module PhlatScript
          end
       end
       if (ystep > rem)
+         puts "yste > rem, trimming to rem" if @debug
          ystep =  rem
       end
 #   @debug = false         
