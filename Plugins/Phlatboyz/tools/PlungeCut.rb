@@ -126,7 +126,7 @@ module PhlatScript
       end   
 
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
-         newedges[0].set_attribute Dict_name, Dict_plunge_depth_factor, dfactor.to_s
+         newedges[0].set_attribute(Dict_name, Dict_plunge_depth_factor, dfactor.to_s)
          newedges[0].material = Color_plunge_cutd   if (ang == 0.0)
          if (PhlatScript.isMetric)      # add depth factor to group name
            group.name = group.name + "_depth_#{dfactor}"
@@ -178,7 +178,7 @@ module PhlatScript
           return cf
         end
       else
-        return PhlatScript.cutFactor
+         return PhlatScript.cutFactor
       end
     end
 
@@ -186,17 +186,61 @@ module PhlatScript
   # note that the .to_l in these functions will cause gcode generation to fail when 
   # regional settings has a comma for decimal separator, user has been warned!
     def diameter
-      diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1)
+      diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1.0)
+      #puts "diam #{diam} #{diam.class}"
+      if diam.class.to_s == 'Float'
+         #puts "converting"
+         diam = diam.to_s + '"'
+         #puts "    Diam #{diam} #{diam.class}"
+         begin
+            diam.to_l
+         rescue
+            if diam.match('.')
+               diam = diam.gsub(/\./,',')
+            else
+               diam = diam.gsub(/,/,'.')
+            end
+         end
+         #puts diam.to_l
+      end
       return diam.to_l
     end
 
     def cdiameter   #return countersink diameter
-      diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1)
+      diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1.0)
+      #puts "cdiam #{diam} #{diam.class}"
+      if !diam.match(/"|mm/)
+         diam += '"'
+      end
+      begin
+         diam.to_l
+      rescue
+         if diam.match('.')
+            diam = diam.gsub(/\./,',')
+         else
+            diam = diam.gsub(/,/,'.')
+         end
+         #puts diam.to_l
+      end
+      #puts "   cdiam #{diam} #{diam.class}"
       return diam.to_l
     end
 
     def cdepth   #return counterbore depth
-      depth = @edge.get_attribute(Dict_name, Dict_cbore_depth,  -1)  
+      depth = @edge.get_attribute(Dict_name, Dict_cbore_depth,  -1.0)  
+      #puts " cdepth #{depth} #{depth.class}"
+      if !depth.match(/"|mm/)
+         depth += '"'
+      end
+      begin
+         depth.to_l
+      rescue
+         if depth.match('.')
+            depth = depth.gsub(/\./,',')
+         else
+            depth = depth.gsub(/,/,'.')
+         end
+      end
       return depth.to_l
     end
     
