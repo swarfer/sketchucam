@@ -221,9 +221,9 @@ module PhlatScript
    def getCounterSink
       # prompts
       prompts=['CounterSink or CounterBore?',
-               'Counter Sink/Bore diam ( > bit!)',
-               'CounterSINK Angle (70..179)',
-               'CounterBORE depth ( < material thickness!)',
+               'Countersink/bore diam ( > bit!)',
+               '(CounterSINK only) Set Angle (70..179)',
+               '(CounterBORE only) Set depth ( < material thickness!)',
                'Hole Diameter (0 for current bit)' 
                ]
       if (@angle < 70.0)
@@ -269,6 +269,9 @@ module PhlatScript
             if (@dia < PhlatScript.bitDiameter)
                @dia = 0.to_l
             end
+            if !((@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70))
+               UI.messagebox('Error: values make no sense')
+            end
             return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70)
          else
             @cdia = input[1]
@@ -279,6 +282,9 @@ module PhlatScript
             @dia = input[4]
             if (@dia < PhlatScript.bitDiameter)
                @dia = 0.to_l
+            end
+            if !((@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness))
+               UI.messagebox('Error: values make no sense')
             end
             return (@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness)
          end

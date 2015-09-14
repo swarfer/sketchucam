@@ -1224,10 +1224,12 @@ module PhlatScript
    #select between the plungebore options and call the correct method
    def plungebore(xo,yo,zStart,zo,diam, ang=0, cdiam = 0, cdepth = 0)   
       if (ang > 0)
-         plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)
+         plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)      if (cdiam > 0.0)
+         UI.messagebox('ERROR: cdiam < 0 in plungecsink')   if (cdiam < 0.0)
       else
          if (ang < 0)
-            plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam,cdepth)
+            plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam,cdepth)  if ((cdiam > 0.0) &&  (cdepth > 0.0))
+            UI.messagebox('ERROR: cdiam < 0 in plungecBore')      if ((cdiam < 0.0) &&  (cdepth < 0.0))
          else
             if @depthfirst then
                plungeboredepth(xo,yo,zStart,zo,diam)

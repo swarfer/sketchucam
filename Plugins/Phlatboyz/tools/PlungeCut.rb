@@ -93,7 +93,8 @@ module PhlatScript
 
       newedges[0].set_attribute(Dict_name, Dict_edge_type, Key_plunge_cut)
       if diam > 0 # if exists set the attribute
-        newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam)
+        #puts "set diam #{diam} #{diam.to_inch} #{diam.to_f} #{diam.class}"
+        newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam.to_f)
         if (PhlatScript.isMetric)  # add diam to group name
            group.name = group.name + "_diam_#{diam.to_mm}mm"
         else
@@ -103,8 +104,10 @@ module PhlatScript
       if (ang > 0.0)
          #puts "angle > #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
-         newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_s)  #if this exists, then cut countersink
-         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  #if this exists, then cut countersink
+         #puts "set ang #{ang} #{ang.to_inch} #{ang.to_f} #{ang.class}"
+         newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_f)  #if this exists, then cut countersink
+         #puts "set cdia #{cdia} #{cdia.to_inch} #{cdia.to_f} #{cdia.class}"
+         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
          group.name = group.name + "_ca_#{ang.to_s}"
          group.name = group.name + "_cd_#{cdia.to_s}"
@@ -116,9 +119,9 @@ module PhlatScript
          circleInner.each { |e|
             e.material = Color_plunge_cbore
             }
-         newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_s)  #if this < 0 , then cut counterbore
-         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_s)  
-         newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_s)  
+         newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_f)  #if this < 0 , then cut counterbore
+         newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  
+         newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_f)  
          newedges[0].material = Color_plunge_cbore
          group.name = group.name + "_cb_#{cdepth.to_s}"
          group.name = group.name + "_cd_#{cdia.to_s}"
@@ -126,7 +129,7 @@ module PhlatScript
       end   
 
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
-         newedges[0].set_attribute(Dict_name, Dict_plunge_depth_factor, dfactor.to_s)
+         newedges[0].set_attribute(Dict_name, Dict_plunge_depth_factor, dfactor.to_s)  # class is float
          newedges[0].material = Color_plunge_cutd   if (ang == 0.0)
          if (PhlatScript.isMetric)      # add depth factor to group name
            group.name = group.name + "_depth_#{dfactor}"
@@ -172,11 +175,9 @@ module PhlatScript
 
     def cut_factor
       cf = @edge.get_attribute(Dict_name, Dict_plunge_depth_factor, -1).to_f
-      if cf != -1 # if set then use it for the plunge depth in gcodeutil
-        if cf != PhlatScript.cutFactor
-#          puts "PlungeCut.cutfactor " + cf.to_s
-          return cf
-        end
+      #puts "cf #{cf} #{cf.class}"
+      if (cf > -1.0) && (cf != PhlatScript.cutFactor)
+         return cf
       else
          return PhlatScript.cutFactor
       end
@@ -185,18 +186,18 @@ module PhlatScript
   #swarfer: if the attribute is set gcodeutil will know what to do with it
   # note that the .to_l in these functions will cause gcode generation to fail when 
   # regional settings has a comma for decimal separator, user has been warned!
+  # since 1.3b this is stored as a float, but must return a length object
+  # older code stored a string
     def diameter
       diam = @edge.get_attribute(Dict_name, Dict_plunge_diameter, -1.0)
       #puts "diam #{diam} #{diam.class}"
       if diam.class.to_s == 'Float'
-         #puts "converting"
-         diam = diam.to_s + '"'
-         #puts "    Diam #{diam} #{diam.class}"
+         diam = diam.to_s + '"'    # force it to decimal inch string
          begin
-            diam.to_l
+            diam.to_l      # try to convert
          rescue
             if diam.match('.')
-               diam = diam.gsub(/\./,',')
+               diam = diam.gsub(/\./,',')   #swap separators if it failed
             else
                diam = diam.gsub(/,/,'.')
             end
@@ -206,9 +207,12 @@ module PhlatScript
       return diam.to_l
     end
 
-    def cdiameter   #return countersink diameter
+    def cdiameter   #return countersink diameter as a Length, stored as a decimal inch float, older code has strings
       diam = @edge.get_attribute(Dict_name, Dict_csink_diam, -1.0)
       #puts "cdiam #{diam} #{diam.class}"
+      if diam.class.to_s == 'Float'
+         diam = diam.to_s + '"'
+      end   
       if !diam.match(/"|mm/)
          diam += '"'
       end
@@ -226,12 +230,11 @@ module PhlatScript
       return diam.to_l
     end
 
-    def cdepth   #return counterbore depth
+    def cdepth   #return counterbore depth as a Length
       depth = @edge.get_attribute(Dict_name, Dict_cbore_depth,  -1.0)  
       #puts " cdepth #{depth} #{depth.class}"
-      if !depth.match(/"|mm/)
-         depth += '"'
-      end
+      depth = depth.to_s + '"'      if depth.class.to_s == 'Float'
+      depth += '"'                  if !depth.match(/"|mm/)
       begin
          depth.to_l
       rescue
@@ -246,8 +249,13 @@ module PhlatScript
     
 #if angle is set it will return > 0 - use it for countersink in gcodeutil.plungebore
    def angle
-      ang = @edge.get_attribute(Dict_name, Dict_csink_angle, 0)  #yes, really 0 to indicate 'not set'
-      return ang.to_f
+      ang = @edge.get_attribute(Dict_name, Dict_csink_angle, 0.0)  #yes, really 0 to indicate 'not set'
+#      puts " ang #{ang} #{ang.class}"
+      if ang.class.to_s == 'String'
+         return ang.to_f  # should return a float
+      else
+         return ang
+      end
    end
 
     # marks all entities as having been milled in gcodeutil
