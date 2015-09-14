@@ -150,6 +150,12 @@ module PhlatScript
          @posC                   = 0.0
          @quick_peck             = false
          @depth_first            = true
+         
+         @toolnum                = -1        # also not saved, awaiting extension of tool profile code
+         @useg43                 = false
+         @useH                   = false
+         @toolh                  = -1
+
 
          # if MyOptions.ini exists then read it
          path = PhlatScript.toolsProfilesPath()
@@ -793,6 +799,35 @@ module PhlatScript
       def quick_peck=(newval)
          @quick_peck = newval == true
       end
+#tool change      
+      def toolnum
+         @toolnum  
+      end
+      def toolnum=(newval)
+         @toolnum  = newval.to_i
+      end
+
+      def useg43?
+         @useg43     
+      end
+      def useg43=(newval)
+         @useg43 = newval
+      end
+      
+      def useH?
+         @useH               
+      end
+      def useH=(newval)
+         @useH = newval
+      end
+
+      def toolh       
+         @toolh              
+      end
+      def toolh=(newval)
+         @toolh = newval.to_i
+      end
+
       
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -133,6 +133,75 @@ class FourthAxisTool < PhlatTool
          end # if input      end #select
       end
    end # class
+
+class ToolChangeTool < PhlatTool
+
+      def initialize
+         toolname = 'Tool Change Tool'
+         @tooltype=(PB_MENU_QTOOL)
+         @tooltip="Tool Change Settings"
+         @statusText= "Select Tool Change options"
+         @menuItem="Tool Change"
+         @menuText="Tool Change"
+         @largeIcon = "images/toolchange_large.png"
+         @smallIcon = "images/toolchange_small.png"
+         @cmmd = nil
+      end
+      
+      def statusText
+         return @statusText
+      end
+
+      def cmmd=(val)
+         @cmmd =  val
+      end
+      
+      def select
+         # prompts
+         prompts=['Tool Number (-1 for none)',
+            'Use G43',
+            'Use H',
+            'H Number' ]
+
+         defaults=[
+            $phoptions.toolnum.to_i,
+            $phoptions.useg43?.inspect(),
+            $phoptions.useH?.inspect(),
+            $phoptions.toolh.to_i
+            ]
+         # dropdown options can be added here
+         list=[            
+            "",
+            "true|false",
+            "true|false",
+            ""
+            ]
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Tool Change options')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end
+         # input is nil if user cancelled
+         if (input)
+            $phoptions.toolnum                 = input[0] < 0 ? -1 : input[0]
+            $phoptions.useg43                  = (input[1] == 'true')
+            $phoptions.useH                    = (input[2] == 'true')
+            if $phoptions.useH?
+               if $phoptions.toolh > -1
+                  $phoptions.toolh                   = input[3]
+               else
+                  $phoptions.useH = false
+               end
+            end
+            
+            #puts "toolnum #{$phoptions.toolnum}"
+            #puts "useG43  #{$phoptions.useg43?.inspect()}"
+            #puts "useH    #{$phoptions.useH?.inspect()}"
+            #puts "toolh   #{$phoptions.toolh}"
+         end # if input      end #select
+      end
+   end # class
    
    
 end # module

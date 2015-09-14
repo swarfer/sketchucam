@@ -207,6 +207,19 @@ module PhlatScript
       stop_code = $phoptions.use_exact_path? ? "G61" : "" # G61 - Exact Path Mode
       cncPrint("G90 #{unit_cmd} G49 #{stop_code} G17\n") # G90 - Absolute programming (type B and C systems)
       
+#tool change      
+      if ($phoptions.toolnum > -1)
+         tool = "T#{$phoptions.toolnum} M06"
+         if $phoptions.useg43?
+            tool += " G43"
+            if $phoptions.useH?
+               tool += " H#{$phoptions.toolh}"     if ($phoptions.toolh > -1)
+            end
+         end
+         tool += "\n"
+         cncPrint(tool)
+      end
+      
       #output A or B axis rotation if selected
       if ($phoptions.useA?)
          cncPrint("G00 A", $phoptions.posA.to_s , "\n")
@@ -217,9 +230,6 @@ module PhlatScript
       if ($phoptions.useC?)
          cncPrint("G00 C", $phoptions.posC.to_s , "\n")
       end
-      
-      #cncPrint("G20\n") # G20 - Programming in inches
-      #cncPrint("G49\n") # G49 - Tool offset compensation cancel
       cncPrint("M3 S", @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
     end
 

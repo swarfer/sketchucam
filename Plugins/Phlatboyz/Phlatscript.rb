@@ -578,6 +578,7 @@ module PhlatScript
     addToolItem(UseCommentsTool.new())
     addToolItem(UseBracketsTool.new())
     addToolItem(FourthAxisTool.new())
+    addToolItem(ToolChangeTool.new())
     
 
 #    require 'Phlatboyz/tools/TestTool.rb'
