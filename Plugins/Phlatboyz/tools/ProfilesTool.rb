@@ -70,7 +70,39 @@ end
 
     def select
       model=Sketchup.active_model
-
+      
+#use savepanel
+      path = PhlatScript.toolsProfilesPath()
+      if not File.exist?(path)
+         Dir.mkdir(path)
+      end      
+      trying = true
+      #deal with the pre 2014 dialog bug
+      @vv = Sketchup.version.split(".")[0].to_i  #primary version number      
+      if (@vv >= 14)
+         wildcard = '.tpi Files|*.tpi|All tool files|*.t*||'
+      else
+         wildcard = "default.tpi"
+      end
+      
+      while trying do
+         result = UI.savepanel(PhlatScript.getString("Save Tool Profile"), path, wildcard)
+         if (result != nil)
+            result = File.basename(result)  # remove path because we force it later
+            result += '.tpi' if (File.extname(result).empty?)
+            if !result.match(/\.tpi/)
+               UI.messagebox('Please select a *.tpi file or omit the extension')
+            else
+               trying = false
+            end
+         else
+            trying = false
+         end
+      end # while
+      
+      if (result != nil)   
+         profilename = result.gsub(/ /,'') # never allow spaces in names
+=begin
       # prompts
       prompts=['Name']
       defaults=['default']
@@ -80,53 +112,20 @@ end
       input=UI.inputbox(prompts, defaults, 'Save Tool Profile')
       # input is nil if user cancelled
       if (input)
-        profilename=input[0].to_s.gsub(/ /,'')
+         profilename=input[0].to_s.gsub(/ /,'')
+=end      
+         print "saving to #{profilename} in path #{path}\n"
 
-        path = PhlatScript.toolsProfilesPath()
-
-        if not File.exist?(path)
-          Dir.mkdir(path)
-        end
-
-        print "saving to #{profilename} in path #{path}\n"
-
-        if File.exist?(path)
-          #write contents to ini file format - this will supplant current tpr format over time
-          generator = IniGenerator.new()
-          prof = ProfileSettings.new()
-          ohash = {'profile' => prof.toHash}
-          filePath = File.join(path, profilename + '.tpi')
-          generator.dumpHashMapToIni(ohash, filePath)
-
-=begin
-          #create file
-          filePath = File.join(path, profilename + '.tpr')
-          outf=File.new(filePath,"w")
-
-          #outf.print "module PhlatScript\n";
-          outf.print "prof_spindlespeed=" + PhlatScript.spindleSpeed.to_i.to_s  + "\n"
-          outf.print "prof_feedrate="     + PhlatScript.conformat(PhlatScript.feedRate)  + "\n"
-          outf.print "prof_plungerate="   + PhlatScript.conformat(PhlatScript.plungeRate)  + "\n"
-#          if (Profile_save_material_thickness)
-            outf.print "prof_matthick="   + PhlatScript.conformat(PhlatScript.materialThickness)  + "\n"
-          end
-          outf.print "prof_cutfactor="    + PhlatScript.cutFactor.to_s   + "\n"
-          outf.print "prof_bitdiameter="  + PhlatScript.conformat(PhlatScript.bitDiameter)   + "\n"
-          outf.print "prof_tabwidth="     + PhlatScript.conformat(PhlatScript.tabWidth)   + "\n"
-          outf.print "prof_tabdepth="     + PhlatScript.tabDepth.to_i.to_s   + "\n"
-          outf.print "prof_safetravel="   + PhlatScript.conformat(PhlatScript.safeTravel)   + "\n"
-
-          outf.print "prof_usemultipass=" + (PhlatScript.useMultipass? ? '1' : '0')   + "\n"
-          outf.print "prof_multipassdepth=" + PhlatScript.conformat(PhlatScript.multipassDepth)   + "\n"
-          outf.print "prof_gen3d="        + (PhlatScript.gen3D ? '1' : '0')   + "\n"
-          outf.print "prof_stepover="     + PhlatScript.stepover.to_i.to_s   + "\n"
-          #outf.print "end\n";
-          #close file
-          outf.close
-=end
-        else
-          print "ERROR path does not exist #{path}"
-        end # path exists so we saved it
+         if File.exist?(path)
+            #write contents to ini file format - this will supplant current tpr format over time
+            generator = IniGenerator.new()
+            prof = ProfileSettings.new()
+            ohash = {'profile' => prof.toHash}
+            filePath = File.join(path, profilename)
+            generator.dumpHashMapToIni(ohash, filePath)
+         else
+            print "ERROR path does not exist #{path}"
+         end # path exists so we saved it
       end # if input
     end # def select
   end # class
