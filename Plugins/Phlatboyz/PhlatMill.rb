@@ -218,6 +218,22 @@ module PhlatScript
          end
          tool += "\n"
          cncPrint(tool)
+      else
+         if $phoptions.toolfile != 'no'
+            lines = IO.readlines($phoptions.toolfile)
+            if lines
+               tool = ''
+               lines.each { |line|
+                  if !line.match(/%s/)
+                     tool += line
+                  else  # stick in the tooloffset in the %s place
+                     line = sprintf(line,format_measure('',$phoptions.tooloffset).strip )
+                     tool += line
+                  end
+                  }
+               cncPrint(tool)   
+            end
+         end
       end
       
       #output A or B axis rotation if selected

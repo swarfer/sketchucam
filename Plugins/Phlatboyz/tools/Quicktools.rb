@@ -161,19 +161,26 @@ class ToolChangeTool < PhlatTool
          prompts=['Tool Number (-1 for none)',
             'Use G43',
             'Use H',
-            'H Number' ]
+            'H Number',
+            'OR: Use Tool File (ignores above)',
+            'AND Tool Offset'            ]
 
          defaults=[
             $phoptions.toolnum.to_i,
             $phoptions.useg43?.inspect(),
             $phoptions.useH?.inspect(),
-            $phoptions.toolh.to_i
+            $phoptions.toolh.to_i,
+            $phoptions.toolfile,
+            $phoptions.tooloffset   #must be a length
             ]
          # dropdown options can be added here
+         tf = $phoptions.toolfile == 'no' ? "no|yes - prompt after Ok" : "no|#{$phoptions.toolfile}|yes"
          list=[            
             "",
             "true|false",
             "true|false",
+            "",
+            tf,
             ""
             ]
          begin
@@ -184,17 +191,56 @@ class ToolChangeTool < PhlatTool
          end
          # input is nil if user cancelled
          if (input)
-            $phoptions.toolnum                 = input[0] < 0 ? -1 : input[0]
-            $phoptions.useg43                  = (input[1] == 'true')
-            $phoptions.useH                    = (input[2] == 'true')
-            if $phoptions.useH?
-               if $phoptions.toolh > -1
-                  $phoptions.toolh                   = input[3]
-               else
-                  $phoptions.useH = false
+         
+            if input[4] == 'no'
+            puts "use normal tool change"
+               $phoptions.toolnum                 = input[0] < 0 ? -1 : input[0]
+               $phoptions.useg43                  = (input[1] == 'true')
+               $phoptions.useH                    = (input[2] == 'true')
+            puts "$phoptions.useH #{$phoptions.useH?}"
+               if ($phoptions.useH?)
+                  if input[3] > -1
+                     $phoptions.toolh                   = input[3]
+                     puts "toolh #{$phoptions.toolh}"
+                  else
+                     $phoptions.useH = false
+                     puts "forced useh false"
+                  end
+               end
+               $phoptions.toolfile = 'no'
+               $phoptions.tooloffset = 0.to_l
+            else
+               if input[4].match(/yes/)
+                  puts "# get filename from user"
+                  file_ext = $phoptions.default_file_ext	# Local variable so we can format it
+                  file_ext = file_ext.upcase				# Convert string to upper case
+                  if (file_ext[0].chr == ".")				# First char is a dot
+                     file_ext.slice!(0)					# Remove the dot
+                  end
+                  @vv = Sketchup.version.split(".")[0].to_i  #primary version number
+                  path = PhlatScript.toolsProfilesPath()
+                  if (@vv >= 14)
+                     #for >= 2014
+                     wildcard = ".#{file_ext} Files|\*.#{file_ext}|All Files|\*.\*||"
+                     result = UI.openpanel("Select toolchange G-code file.", path, wildcard)
+                  else
+                     #for < 2014 dialog is broken so work around it
+                     wildcard = "toolchange.#{file_ext}"
+                     result = UI.openpanel("Select Toolchange G-code file.", path, wildcard)
+                  end
+                  if (result && File.exists?(result))
+                     $phoptions.toolnum = -2
+                     $phoptions.toolfile = result
+                     $phoptions.tooloffset = input[5]
+                  else
+                     UI.messagebox('File not found, ignoring')
+                  end
+               else  #it is a filename
+                  $phoptions.toolnum = -2
+                  puts "# do not change existing toolfile"
+                  $phoptions.tooloffset = input[5]
                end
             end
-            
             #puts "toolnum #{$phoptions.toolnum}"
             #puts "useG43  #{$phoptions.useg43?.inspect()}"
             #puts "useH    #{$phoptions.useH?.inspect()}"

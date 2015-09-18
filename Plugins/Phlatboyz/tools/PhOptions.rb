@@ -155,6 +155,8 @@ module PhlatScript
          @useg43                 = false
          @useH                   = false
          @toolh                  = -1
+         @toolfile               = 'no'
+         @tooloffset             = 0.to_l
 
 
          # if MyOptions.ini exists then read it
@@ -827,7 +829,24 @@ module PhlatScript
       def toolh=(newval)
          @toolh = newval.to_i
       end
-
+      
+      def toolfile      
+         @toolfile
+      end
+      def toolfile=(newval)
+         @toolfile = newval.to_s
+      end
+      
+      def tooloffset  
+         @tooloffset
+      end
+      def tooloffset=(newval)  # give it a length!
+         if newval.class.to_s != 'Length'
+            @tooloffset=newval.to_l
+         else
+            @tooloffset=newval
+         end
+      end
       
    end # class Options
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

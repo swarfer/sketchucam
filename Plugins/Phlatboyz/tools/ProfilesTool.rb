@@ -55,6 +55,13 @@ class ProfileSettings < Hashable
       @prof_stepover    = PhlatScript.stepover.to_i.to_s
       @prof_mustramp    = (PhlatScript.mustramp?  ? '1' : '0')
       @prof_rampangle   = PhlatScript.rampangle.to_f.to_s
+      
+      @prof_toolnum = $phoptions.toolnum.to_i.to_s
+      @prof_useg43  = $phoptions.useg43? ?  '1' : '0'
+      @prof_useH    = $phoptions.useH?   ? '1' : '0'
+      @prof_toolh   = $phoptions.toolh.to_i.to_s
+      @prof_toolfile = $phoptions.toolfile
+      @prof_tooloffset = PhlatScript.conformat($phoptions.tooloffset)
    end
 end
 #-----------------------------------------------------------------------------
@@ -70,6 +77,9 @@ end
 
     def select
       model=Sketchup.active_model
+      
+      tct = ToolChangeTool.new
+      tct.select
       
 #use savepanel
       path = PhlatScript.toolsProfilesPath()
@@ -291,6 +301,33 @@ class ProfilesLoadTool < ProfilesTool
             value = getvalue(profile['prof_mustramp'])                           if (profile.has_key?('prof_mustramp'))
             PhlatScript.mustramp = value > 0 ? true : false                         if (value != -1)
             PhlatScript.rampangle = getvalue(profile['prof_rampangle'])          if (profile.has_key?('prof_rampangle'))
+#stuff for tool change        
+            $phoptions.toolnum = -1.to_i
+            $phoptions.toolnum   =  getvalue(profile['prof_toolnum']).to_i       if (profile.has_key?('prof_toolnum'))
+         puts "$phoptions.toolnum #{$phoptions.toolnum}"
+            value = -1
+            value = getvalue(profile['prof_useg43'])                             if (profile.has_key?('prof_useg43'))
+            $phoptions.useg43 = false
+            $phoptions.useg43 = value > 0 ? true : false                        if (value != -1)
+         puts "$phoptions.useg43 #{$phoptions.useg43?}"
+           
+            value = -1
+            value = getvalue(profile['prof_useH'])                             if (profile.has_key?('prof_useH'))
+            $phoptions.useH = false
+            $phoptions.useH = value > 0 ? true : false                        if (value != -1)
+         puts "$phoptions.useH #{$phoptions.useH?}"
+            
+            $phoptions.toolh = -1.to_i
+            $phoptions.toolh = getvalue(profile['prof_toolh']).to_i            if (profile.has_key?('prof_toolh'))
+         puts "$phoptions.toolh #{$phoptions.toolh}"   
+         
+            $phoptions.toolfile = 'no'
+            $phoptions.toolfile = profile['prof_toolfile']                     if (profile.has_key?('prof_toolfile'))
+         puts "$phoptions.toolfile #{$phoptions.toolfile}"
+         
+            $phoptions.tooloffset = 0.to_l
+            $phoptions.tooloffset = getvalue(profile['prof_tooloffset'])       if (profile.has_key?('prof_tooloffset'))
+         puts "$phoptions.tooloffset #{$phoptions.tooloffset} #{$phoptions.tooloffset.class}"
 
             PhlatScript.commentText = "Loaded profile #{input[0]}"
             puts "Loaded profile '#{input[0]}' from ini"
