@@ -492,41 +492,44 @@
       </td>
       <td class="command-description">
          <img src="images/csinkwooda.png" align=right>
-         <b>Countersink hole Tool</b> -
-         This tool is used to create a plunge point WITH a countersink at any given cursor position.  
+         <b>CounterSink/CounterBore hole Tool</b> - (V1.4)
+         This tool is used to create a plunge point WITH a CounterSINK or CounterBORE at any given cursor position.  
          <p>The example pictured at right was created using a 9mm straight flute bit.  The hole is 12mm diameter, 15mm deep, 
          and the countersink is 25mm diameter.
          The wood is unknown and resulted in fluffy edges, so what you see has been cleaned up by a few swipes with sandpaper.
          </p>
          <p>The step down for the countersink portion is 0.25mm per layer, with the decrease in radius being calculated from the
-         angle selected in the dialog.  Angles is limited to >= 70 and < 180 degrees.
+         angle selected in the dialog.  Angle is limited to >= 70 and < 180 degrees.
          <br clear=all>
          <p>
-         <img src="images/csink02.png" align=right>
-         When you click the icon to select this tool, you will see a dialog box as pictured at right.
+         <img src="images/csink02.png" align=right width="50%">
+         When you click the icon to select this tool, you will see a dialog box as pictured at right.<br>
 
-         This permits you to set the values you want for your countersunk holes.  
+         This permits you to set the values you want for your counterSINK/BORE holes.<br>  
          These settings will be used for all future click events until you re-select the tool, or hold down SHIFT 
-         to be prompted for a hole diameter (countersink diameter and angle will stay the same).
+         to be prompted for a hole diameter (countersink/bore diameter and angle or depth will stay the same).
          </p>
-         <p>Common angles are 82 and 90 degrees, with 100 or 120 degrees beign used in thin sheet metal applications.
+         <p>Common angles are 82 and 90 degrees, with 100 or 120 degrees being used in thin sheet metal applications.
          Use the one that matches your screws!
          </p>
             <br clear=all>
          <img src="images/csink01.png" align=right >
-         The Countersink tool creates a grouped symbol of 2 circles with a blue radius line extending from the center to the outside diameter of the inner circle.<br>
+         The <b>Countersink</b> tool creates a grouped symbol of 2 circles with a blue radius line extending from the center to the outside diameter of the inner circle.<br>
          The inner circle is the current bit diameter, or the hole diameter given in the dialog, which must be greater than the bit diameter.<br>
          The outer circle is 8 sided and represents the diameter given for the countersink portion of the hole. (yes, the countersink
          will be cut perfectly circular despite the octagonal symbol)<br>
          When setting the hole diameter, a diameter of 0.0 will use the current bit diameter.
          <br><br>
+         
+         <p style="color: red;">The <b>CounterBORE</b> tool .....</p>
+         
          <p>The hole depth is ALWAYS 'overcut%' deep, you cannot specify a shallower depth.  This is because the 
-         countersink portion has to have a central hole of at least bit_diameter to start from that is guarranteed to be
-         deeper than the bottom end of the coutnersink.
+         countersink portion has to have a central hole of at least bit_diameter to start from that is guaranteed to be
+         deeper than the bottom end of the countersink.
          </p>
          <p>
          You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
-         The hole will then be spiral bored to that diameter before the countersink is created.  
+         The hole will then be spiral bored to that diameter before the countersink/bore is created.  
          </p>
          
          <p>Hold down ALT or CTRL key to be prompted for a grid pattern of holes to drill.  They will all use the same
@@ -541,7 +544,7 @@
          Notes:
          <ol class="newcolour">
          <li>Note that the various CNC controllers will perform this operation in different ways.
-         LinuxCNC will do true spiral decending cuts, while other controllers might step down 
+         LinuxCNC will do true spiral descending cuts, while other controllers might step down 
          and do a circle with constant Z instead.
          <li>While the hole boring part will obey the Use_plunge_CW setting, the countersink portion
          can only cut counterclockwise and always uses the 'spiral out' strategy.

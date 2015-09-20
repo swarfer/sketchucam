@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="id" content="$Id$">
+<title>Phlatboyz PhlatScript Help - Quicktools</title>
+   <style type="text/css">
+   body, div, span {
+           font-family: Verdana;
+   }
+   body {
+           background-color: grey;
+           text-align: center;
+           width: 1024px;
+           padding-left:0.5%;
+           padding-right:0.5%;
+   }
+   div.shell {
+           /*background-color: #eee;*/
+           background-color: #ddeeff;
+           /*background-color: white;*/
+           font-size: 1.05em;
+   }
+
+   div.intro-name {
+           text-align:center;
+           font-size: 1.20em;
+           font-weight: bold;
+           padding-top:25px;
+   }
+   div.intro-name div {
+           font-size: 0.60em;
+           font-weight: normal;
+   }
+   div.intro-title {
+           text-align:center;
+           margin:10px;
+           font-size: 1.10em;
+           font-weight: bold;
+           padding-top: 15px;
+   }
+   div.intro {
+           text-align:left;
+           margin:5px;
+           padding: 5px;
+           font-size: 0.90em;
+   }
+
+
+   .command-image {
+           /*background-color: #ededed;*/
+           background-color: #ddeeff;
+           height: 100px;
+           font-weight: bold;
+           font-size: 0.90em;
+           vertical-align:center;
+           padding:10px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+   }
+   .command-description {
+           /*background-color: #ededed;*/
+           background-color: #eaecfa;
+           /*margin: 2px;*/
+           padding: 15px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           font-size: 0.90em;
+   }
+
+   .command-title {
+           font-size: 1.00em;
+           font-weight: bold;
+           /*border-bottom: thin solid blue;*/
+           text-align: center;
+           padding-top: 25px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           text-decoration: underline;
+   }
+   .command-subtitle {
+           font-size: 0.70em;
+           font-style: italic;
+           }
+   .newcolour {
+            color: #000000;
+            }
+   hr {
+      background-color: #6699ff; 
+      height: 2px; 
+      border: 0; 
+      }
+   td {
+      text-align: justify;
+      }
+   dt {
+      margin-top: 5px;
+      }
+   .index {
+      line-height: 1.6em;
+      }
+   </style>
+</head>
+<body>
+
+<div class="shell">
+<br>
+<a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
+
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4</b><br>Oct 2015</div></div>
+        
+<hr>
+<table summary="phlatboyz menu table" id="tools">
+   <tbody>
+   <tr>
+      <th colspan="3" class="command-title">
+      QuickTools Toolbar<br><span style="float: right;"><a href="help.html">Back to help index</a></span><br>
+      </th>
+   </tr>
+   <tr>
+      <th colspan="2" class="command-subtitle" height=10%>
+      These items appear on the QuickTools Toolbar.  <br>
+      Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      </th>
+      <th rowspan=5 valign=top>
+         <img alt="" src="images/quicktoolbar.png">
+      </th>
+   </tr>
+
+   <tr>
+      <td class="command-image" valign=top>
+         <img src="../images/comment_large.png">
+      </td>
+      <td class="command-description" valign=top>
+         This icon provides a quick way to toggle Gcode comments on or off.<br>  
+         The status bar will display the current status of the setting.<br>
+         This setting will be used the next time you generate Gcode. <br> 
+         It will not be saved as a default, use the Tools|PhlatBoyz|Options menu for that.
+      </td>
+   </tr>
+
+<tr>
+      <td class="command-image" valign=top id="rvtab">
+      <img src="../images/bracket_large.png">
+      </td>
+      <td class="command-description" valign=top>
+         This icon provides a quick way to toggle the format of Gcode comments.<br>
+         It switches between (comment) format and the<br>
+         ; comment<br>
+         format.
+      </td>
+</tr>      
+   
+   <tr>
+      <td class="command-image" valign=top>
+      <img src="../images/rotate_large.png">
+      </td>
+      <td class="command-description" valign=top>
+        Use this icon to set values for A, B an C axes, values will be output before all other motion, and zeroed after the final 
+        return to X0 Y0 and raise Z commands.<br>
+         <i>It is left to the user to figure out the correct offsets to cut in the correct place on rotated workpieces.</i>
+      </td>
+   </tr>
+   
+   
+   <tr>
+      <td class="command-image" valign=top>
+      <img src="../images/toolchange_large.png">
+      </td>
+      <td class="command-description" valign=top>
+         <img src="images/toolchange01.png" width="50%" align=right>
+         This icon on the Quicktools toolbar enables the use of <b>toolchange</b> commands.  For controllers that understand the 'Tx M6' 
+         command you can output the command with a given tool number.  Optionally include G43 (apply offset) and Hx, select offset.<br><br>
+         <br>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
+         achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
+         For example, for GRBL you can set the tool offset with this line:<br>
+         <pre>G38.1 Z%s</pre>
+         <br>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      </td>
+   </tr>
+   
+        </tbody></table>
+        
+        
+
+   <div>
+   <p>&nbsp;</p>
+        <br/><hr width="100%" >
+
+   <i><b>Thank you for your interest in the Phlatboyz project. Please take the time to visit the <a href="http://www.phlatforum.com/">Phlatforum</a> for lots of great people sharing great ideas and designs created with the PhlatScripT on their Phlatboyz machines!</b></i>
+   <hr width="100%" ><br/>
+   </div>
+</div>
+
+</body></html>

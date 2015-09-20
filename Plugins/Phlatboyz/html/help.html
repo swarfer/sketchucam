@@ -100,6 +100,7 @@
       }
    dt {
       margin-top: 5px;
+      font-weight: bold;
       }
    .index {
       line-height: 1.6em;
@@ -188,6 +189,7 @@
                   <Li><A href="sketchucamtoolbar.html#tooltab">Tab tool</a>
                   <Li><A href="sketchucamtoolbar.html#toolfold">Fold cut</a>
                   <Li><A href="sketchucamtoolbar.html#toolplunge">Plunge hole</a>
+                  <Li><A href="sketchucamtoolbar.html#toolcsink">Plunge hole with countersink/counterbore</a>
                   <Li><A href="sketchucamtoolbar.html#toolcenterline">Centerline cut</a>
                   <Li><A href="sketchucamtoolbar.html#toolpocket">Pocket</a>
                   <Li><A href="sketchucamtoolbar.html#tooleraser">Eraser</a>
@@ -198,6 +200,7 @@
                   <Li><A href="sketchucamtoolbar.html#toolgoto">Goto Phlatforum</a>
                   <Li><A href="sketchucamtoolbar.html#toolhelp">Help</a>
                </ul>
+               <li><a class="index" href="quicktools.html">QuickTools Toolbar*</a>
                <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
                <li><a class="index" href="toolsmenu.html">Tools|PhlatBoyz Menu</a>
                <li><a class="index" href="howto_ramping.html"><b>How to use Ramping</b></a>
@@ -210,7 +213,68 @@
 <tbody>
 <tr>
    <td width="90%">
-   
+   <div class="intro">
+      
+      <h4>New in V1.4 (Oct 2015)</h4>
+   <dl>   
+   <dt>Bug fixes
+      <dd>
+      <dl>
+         <dt>fix for Phlatten tool
+            <dd>since Make 2014 Phlatten has failed to actually phlatten due to not liking the order
+            used for deleting faces.   Faces are now deleted separately from edge collection.
+         <dt>fold/centerline/pocket tool depth in VCB
+            <dd>can now be set to floating point number, eg 10.6% or 34.15% etc
+         <dt>Inputbox error checking
+            <dd> all input boxes use exception rescuing to detect errors in number formats and 'retry'.  This is a step on the way to
+            handling regionalized number formats.
+            <dd>Note that a side effect of this is that the main parameters dialog will fail silently if it is given an invalid number and the
+            corresponding variable will not be set.  For example if you type 45t for Safe Height the safe height 
+            will not be changed AND you will not be notified.
+      </dl>   
+   <dt>Added features
+      <Dd><dl>
+      <dt>make the path to the gplot program a string in options so it is preserved between versions.
+         <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
+         a Gcode file as a parameter for preview.
+         <dd>Tools|PhlatBoyz|Options|File options|Gcode plotter program
+         <dd>set to 'default' to use Gplot.exe the efault plotter
+         <dd>set to the full path and filename of your choice of plotter program, such at NC-Plot.
+
+      <dt>Multiselect pockets
+         <dd>if multiple faces are selected when the pocket tool is selected, all the faces will be pocketed
+         <dd>all selected entities will be UNselected after this process
+         <dd>if only one thing is selected, nothing is done, process is ignored
+         <dd> make sure you have the correct pocket parameters before doing the multiselect operation!
+      <dt>Holes in a grid
+         <dd>select the Plunge hole tool
+         <dd>hold down ALT and select the point for the bottom left hole
+         <dd>you will be prompted for the spacing and number of holes
+         <dd>a grid of holes is created
+         <dd>You can hold SHIFT at the same time and give a size for the gridded holes
+      <dt>CounterSink/CounterBore tool <img src="../images/csinktool_large.png">
+         <dd>CounterSink, extension of the plunge tool, does counter sinks at the top of holes
+         <dd>grids and size selection as for plunge tool
+         <dd>depth is always overcut% - hopefully always deeper than the bottom of the countersink
+         <dd>
+         <dd>CounterBore, does a counter bore on top of a hole
+         <dd>grids and size selection as for plunge tool
+         <dd>depth is always overcut% - make sure it is deeper than the counterbore!     
+         <dd>ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
+
+      <dt>Simple ABC axis commands <a href="quicktools.html"><img src="../images/rotate_large.png"><img src="images/quicktoolbar.png" align=right></a>
+         <dd>On the Quicktools toolbar, use the rotate icon to set values for A, B an C axes, values will be output before all other motion, and zeroed after homing
+      <dt>Toolchange <img src="../images/toolchange_large.png">
+         <dd><a href="quicktools.html"><img src="images/toolchange01.png" width="50%" align=right></a>
+         The T icon on the Quicktools toolbar enables the use of toolchange commands.  For controllers that understand the 'Tx M6' 
+         command you can output the command with a given tool number.  Optionally include G43 (apply offset) and Hx, select offset.<br><br>
+         <dd>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
+         achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
+         <dd>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      </dl>
+   </dl>
+   </div>   
+      
       <div class="intro">
       <h4>New in V1.3a (June 2015)</h4>
       <ul>
@@ -227,7 +291,7 @@
       <li>G-code Joiner will not output any comments if <I>Use Comments</I> is false.  However, it <b>will not remove</b> comments already
          in the files being joined.
       <li>G-code Joiner now has an icon <img src="../images/joiner_large.png"> on the toolbar.
-      <li>New 'Quick Tools' toolbar that allows you to quickly toggle the status of the <img src="images/quicktoolbar.png" align=right>
+      <li>New 'Quick Tools' toolbar that allows you to quickly toggle the status of the 
          'Use Comments' and 'Comment Style' options.   Using these will NOT affect the default settings set via the 
          <i>Tools|Phlatboyz|Options|Machine Options</i>
          menu.  Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
