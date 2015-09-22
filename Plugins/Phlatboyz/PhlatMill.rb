@@ -181,6 +181,19 @@ module PhlatScript
          end
       end
 
+      if (@depthfirst)
+         cncPrintC("Plunge Depth first")
+      else
+         cncPrintC("Plunge Diam First")
+      end
+      
+      if ($phoptions.toolnum > -1)
+         cncPrintC("Using plain toolchange")
+      end
+      if $phoptions.toolfile != 'no'
+         cncPrintC("Using toolchange file #{File.basename($phoptions.toolfile)}")
+      end
+      
       if (optim)    # swarfer - display optimize status as part of header
         cncPrintC("Optimization is ON")
       else

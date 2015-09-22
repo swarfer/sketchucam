@@ -71,7 +71,7 @@ module PhlatScript
        
        #try to find the phrev.dat file, if it exists add the version to the .version
        #this is purely internal, an ordinary user never sees this
-       vv = Sketchup.find_support_file("phrev.dat")
+       vv = Sketchup.find_support_file("phrev.dat", 'Plugins/')
        if (vv != nil)
           #read first line from file
           lines=IO.readlines(vv)

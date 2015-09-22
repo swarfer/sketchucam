@@ -33,7 +33,7 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   git describe --abbrev=4 --dirty --always --tags > phrev.dat
+   git describe --abbrev=4 --dirty --always --tags > plugins\phrev.dat
    php move.php plugins\tp.zip SketchUcam-1_3b.rbz
 
 goto end

@@ -2,9 +2,9 @@
 
 //argv[1]   source file
 //argv[2]   dest file
-//current folder 'phrev.dat' contains
+//plugins folder 'phrev.dat' contains git id of this commit
 
-$rev = file('phrev.dat');
+$rev = file('plugins\phrev.dat');
 $rev = trim($rev[0]);
 
 $src = $argv[1];

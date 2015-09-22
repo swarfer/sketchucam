@@ -193,25 +193,25 @@ class ToolChangeTool < PhlatTool
          if (input)
          
             if input[4] == 'no'
-            puts "use normal tool change"
+            #puts "use normal tool change"
                $phoptions.toolnum                 = input[0] < 0 ? -1 : input[0]
                $phoptions.useg43                  = (input[1] == 'true')
                $phoptions.useH                    = (input[2] == 'true')
-            puts "$phoptions.useH #{$phoptions.useH?}"
+            #puts "$phoptions.useH #{$phoptions.useH?}"
                if ($phoptions.useH?)
                   if input[3] > -1
                      $phoptions.toolh                   = input[3]
-                     puts "toolh #{$phoptions.toolh}"
+                     #puts "toolh #{$phoptions.toolh}"
                   else
                      $phoptions.useH = false
-                     puts "forced useh false"
+                     #puts "forced useh false"
                   end
                end
                $phoptions.toolfile = 'no'
                $phoptions.tooloffset = 0.to_l
             else
                if input[4].match(/yes/)
-                  puts "# get filename from user"
+                  #puts "# get filename from user"
                   file_ext = $phoptions.default_file_ext	# Local variable so we can format it
                   file_ext = file_ext.upcase				# Convert string to upper case
                   if (file_ext[0].chr == ".")				# First char is a dot
@@ -237,7 +237,7 @@ class ToolChangeTool < PhlatTool
                   end
                else  #it is a filename
                   $phoptions.toolnum = -2
-                  puts "# do not change existing toolfile"
+                  #puts "# do not change existing toolfile"
                   $phoptions.tooloffset = input[5]
                end
             end
