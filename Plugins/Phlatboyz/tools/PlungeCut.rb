@@ -104,6 +104,9 @@ module PhlatScript
       if (ang > 0.0)
          #puts "angle > #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
+         circleInner.each { |e|
+            e.material = Color_plunge_csink
+            }
          #puts "set ang #{ang} #{ang.to_inch} #{ang.to_f} #{ang.class}"
          newedges[0].set_attribute(Dict_name, Dict_csink_angle, ang.to_f)  #if this exists, then cut countersink
          #puts "set cdia #{cdia} #{cdia.to_inch} #{cdia.to_f} #{cdia.class}"

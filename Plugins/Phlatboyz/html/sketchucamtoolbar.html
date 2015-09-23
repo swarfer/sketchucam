@@ -461,6 +461,7 @@
          <ul>
          <li>half the bit diameter per revolution</li>
          <li>the multipass depth if multipass is on.</li>
+         <li>the calculated Z feed if ramp angle is set, in order to achieve the correct helix angle.
          </ul>
          Notes:
          <ol class="newcolour">
@@ -498,34 +499,59 @@
          and the countersink is 25mm diameter.
          The wood is unknown and resulted in fluffy edges, so what you see has been cleaned up by a few swipes with sandpaper.
          </p>
-         <p>The step down for the countersink portion is 0.25mm per layer, with the decrease in radius being calculated from the
-         angle selected in the dialog.  Angle is limited to >= 70 and < 180 degrees.
+         
          <br clear=all>
          <p>
-         <img src="images/csink02.png" align=right width="50%">
+         <img src="images/csink03.png" align=right width="55%">
          When you click the icon to select this tool, you will see a dialog box as pictured at right.<br>
 
          This permits you to set the values you want for your counterSINK/BORE holes.<br>  
          These settings will be used for all future click events until you re-select the tool, or hold down SHIFT 
          to be prompted for a hole diameter (countersink/bore diameter and angle or depth will stay the same).
          </p>
-         <p>Common angles are 82 and 90 degrees, with 100 or 120 degrees being used in thin sheet metal applications.
-         Use the one that matches your screws!
-         </p>
-            <br clear=all>
-         <img src="images/csink01.png" align=right >
+         
+            
+         <h4>The Countersink tool</h4>
+         <p><img src="images/csink01.png" align=right >
          The <b>Countersink</b> tool creates a grouped symbol of 2 circles with a blue radius line extending from the center to the outside diameter of the inner circle.<br>
          The inner circle is the current bit diameter, or the hole diameter given in the dialog, which must be greater than the bit diameter.<br>
-         The outer circle is 8 sided and represents the diameter given for the countersink portion of the hole. (yes, the countersink
+         The outer circle is 8 sided, coloured blue, and represents the diameter given for the countersink portion of the hole. (yes, the countersink
          will be cut perfectly circular despite the octagonal symbol)<br>
          When setting the hole diameter, a diameter of 0.0 will use the current bit diameter.
-         <br><br>
+         </p>
+         <p>The step down for the countersink portion is 0.25mm per layer, with the decrease in radius being calculated from the
+         angle selected in the dialog.  </p>
+         <p>Common angles are 82 and 90 degrees, with 100 or 120 degrees being used in thin sheet metal applications.
+         Use the one that matches your screws! Angle is limited to >= 70 and < 180 degrees.
+         </p>
+         <br clear=all>
+         <table border=0 align=right>
+         <tr>
+            <td>
+            <img src="images/csink02.png"><br>
+            <img src="images/csink04.png">
+            </td>
+         </tr>
+         </table>
+         <h4>The <b>CounterBORE</b> tool</h4>
+         By selecting <b>CounterBore</b> from the first drop down list the tool will create counterbore operations, making a symbol as shown at right,
+         showing the center hole diameter as for the countersink tool, and the outer diameter shown as a 9 sided figure in green.  
+         The radius indicator line will be green<br>
+         The angle setting is ignored, and the 'Set Depth' setting is used for the depth of the counterbore.  This is set using the current model units.
+         Optionally set the 'Hole Diameter' to have a full depth hole that is bigger than the bit diameter.  Set to 0 to have a plain bit diameter hole.
          
-         <p style="color: red;">The <b>CounterBORE</b> tool .....</p>
+         <ul>
+         <li>Counterbore depth cannot be greater than the current <i>Material Thickness</i>
+         <li>Hole Diameter cannot be larger than <i>Countersink/bore diam</i>
+         </ul>
+         
+         
+         <b>Things that apply to both options:</b><br>
+         
          
          <p>The hole depth is ALWAYS 'overcut%' deep, you cannot specify a shallower depth.  This is because the 
-         countersink portion has to have a central hole of at least bit_diameter to start from that is guaranteed to be
-         deeper than the bottom end of the countersink.
+         countersink/bore portion has to have a central hole of at least bit_diameter to start from that is guaranteed to be
+         deeper than the bottom end of the countersink or counterbore depth.
          </p>
          <p>
          You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
@@ -536,7 +562,7 @@
          parameters.</p>
          
          Feedrate will be the normal rate set for cuts.<br>
-         Downfeed will be limited to either
+         Downfeed will be limited to either (and will use fuzzy calculation)
          <ul>
          <li>half the bit diameter per revolution</li>
          <li>the multipass depth if multipass is on.</li>
@@ -602,7 +628,7 @@
          <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
          is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 99%.
          &nbsp;</p>
-         <p><b>New in 1.3a - fuzzy stepover.</b><br>
+         <p><b>Fuzzy stepover (new in V1.3a)</b><br>
          The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
          
          <p>Using the exact stepover may result in a gap at the end of the zigzag that is much larger than the stepover%, causing the
@@ -628,6 +654,14 @@ stepover% <= 100%
    offset =  stepover% / 4</pre><br>
          <p>This means that the offset is adjusted smaller as the stepover increases.  This is done to prevent leaving large wedges for the final
             cut to handle, this happens especially on curved or sloped edges.</p>
+            
+         <h4>MultiSelect pocketing (new in v1.4)</h4>
+         <ul>
+         <li>if multiple faces are selected when the pocket tool is selected, all the faces will be pocketed
+         <li>all selected entities will be UNselected after this process
+         <li>if only one thing is selected, nothing is done, process is ignored
+         <li> make sure you have the correct pocket parameters before doing the multiselect operation!         
+         </li>
             
        
       </td>

@@ -234,25 +234,25 @@
       </dl>   
    <dt>Added features
       <Dd><dl>
-      <dt>make the path to the gplot program a string in options so it is preserved between versions.
+      <dt><a href="howto_options.html#a5">make the path to the gplot program a string in options so it is preserved between versions.</a>
          <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
          a Gcode file as a parameter for preview.
          <dd>Tools|PhlatBoyz|Options|File options|Gcode plotter program
          <dd>set to 'default' to use Gplot.exe the efault plotter
          <dd>set to the full path and filename of your choice of plotter program, such at NC-Plot.
 
-      <dt>Multiselect pockets
+      <dt><a href="sketchucamtoolbar.html#toolpocket">Multiselect pockets</a>
          <dd>if multiple faces are selected when the pocket tool is selected, all the faces will be pocketed
          <dd>all selected entities will be UNselected after this process
          <dd>if only one thing is selected, nothing is done, process is ignored
          <dd> make sure you have the correct pocket parameters before doing the multiselect operation!
-      <dt>Holes in a grid
+      <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
          <dd>select the Plunge hole tool
          <dd>hold down ALT and select the point for the bottom left hole
          <dd>you will be prompted for the spacing and number of holes
          <dd>a grid of holes is created
          <dd>You can hold SHIFT at the same time and give a size for the gridded holes
-      <dt>CounterSink/CounterBore tool <img src="../images/csinktool_large.png">
+      <dt><A href="sketchucamtoolbar.html#toolcsink">CounterSink/CounterBore tool</a> <img src="../images/csinktool_large.png">
          <dd>CounterSink, extension of the plunge tool, does counter sinks at the top of holes
          <dd>grids and size selection as for plunge tool
          <dd>depth is always overcut% - hopefully always deeper than the bottom of the countersink
@@ -262,9 +262,9 @@
          <dd>depth is always overcut% - make sure it is deeper than the counterbore!     
          <dd>ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
 
-      <dt>Simple ABC axis commands <a href="quicktools.html"><img src="../images/rotate_large.png"><img src="images/quicktoolbar.png" align=right></a>
+      <dt><a href="quicktools.html">Simple ABC axis commands <img src="../images/rotate_large.png"><img src="images/quicktoolbar.png" align=right></a>
          <dd>On the Quicktools toolbar, use the rotate icon to set values for A, B an C axes, values will be output before all other motion, and zeroed after homing
-      <dt>Toolchange <img src="../images/toolchange_large.png">
+      <dt><a href="quicktools.html">Toolchange <img src="../images/toolchange_large.png"></a>
          <dd><a href="quicktools.html"><img src="images/toolchange01.png" width="50%" align=right></a>
          The T icon on the Quicktools toolbar enables the use of toolchange commands.  For controllers that understand the 'Tx M6' 
          command you can output the command with a given tool number.  Optionally include G43 (apply offset) and Hx, select offset.<br><br>
