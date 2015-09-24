@@ -20,6 +20,7 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
 
    @set PLINK_PROTOCOL=ssh
    @if not defined TERM set TERM=msys
+   git describe --abbrev=4 --dirty --always --tags > plugins\phrev.dat
    
    if exist "C:\Program Files (x86)\Google\Google SketchUp 8" cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins"
    if exist "C:\Program Files\Google\Google SketchUp 8\Plugins" cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
@@ -33,7 +34,7 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   git describe --abbrev=4 --dirty --always --tags > plugins\phrev.dat
+   
    php move.php plugins\tp.zip SketchUcam-1_3b.rbz
 
 goto end

@@ -20,6 +20,7 @@ BsSndRpt.exe
 glcards.dat
 opensourcecredits.html
 phrev.dat
+Plugins/phrev.dat
 Plugins/examples.rb
 Plugins/Ocean/ocean.rb
 Plugins/ocean_extension.rb
