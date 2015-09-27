@@ -8,6 +8,7 @@ require 'Phlatboyz/tools/OffsetCut.rb'
    swarfer: added .center back to phlatarc entities so that gcodeutil can output X Y I J format arcs
    in the hope of solving the issues around R format when arcs are very small, which happens when using the
    phlatbones tool
+   sept 2015 - removed SHIFT key processing since it breaks the cut direction when used on a reversed face.  user: rather reverse the face!
    $Id$
 =end
 module PhlatScript
@@ -60,23 +61,24 @@ module PhlatScript
     end
 
     def onKeyDown(key, repeat, flags, view)
-      if key == VK_SHIFT
-        @switch_edge_side = true
-        @preview_face = nil
-        view.invalidate
-      elsif key == VK_END   # select next face, when on edge                       #78 # N key
+      #if key == VK_SHIFT
+      #  @switch_edge_side = true
+      #  @preview_face = nil
+      #  view.invalidate
+      #els
+      if key == VK_END   # select next face, when on edge                       
         @@N += 1
         view.invalidate
       end
     end
 
-    def onKeyUp(key, repeat, flags, view)
-      if key == VK_SHIFT
-        @switch_edge_side = false
-        @preview_face = nil
-        view.invalidate
-      end
-    end
+    #def onKeyUp(key, repeat, flags, view)
+      #if key == VK_SHIFT
+      #  @switch_edge_side = false
+      #  @preview_face = nil
+      #  view.invalidate
+      #end
+    #end
 
     def draw(view)
       self.calcPreviewPoints(@ip)
@@ -113,7 +115,8 @@ module PhlatScript
     end
 
     def statusText
-      return "Select face.    [Shift] to invert offset.    [End] to select next face, when on edge."
+      # return "Select face.    [Shift] to invert offset.    [End] to select next face, when on edge."
+      return "Select face.    [End] to select next face, when on edge."
     end
 
     private

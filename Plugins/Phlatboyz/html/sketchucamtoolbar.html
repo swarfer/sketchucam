@@ -311,13 +311,13 @@
          It differs from the inside cut tool in that the path cut direction, will be clockwise.
          <br>
          <br>
-         Use the<u>["Shift" key]</u> if the preview shows the outside cut on the wrong side. Just press and
-         hold "Shift" prior to clicking.                                                          <br><br>
+         If the preview shows the outside cut on the wrong side, reverse the face, outside cut must only be used on the outside of a polygon<br><br>
 
          Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
          hover over faces instead of edges.                             &nbsp;   <br><br>
 
          Note: reversing the face (Edit/Face/Reverse Faces) <i>prior</i> to using the Outside Cut Tool will cause the cut direction to be reversed.  This works the same as the Inside Cut Tool.
+         This may have unintended side effects on arcs!
       </td>
    </tr>
 
@@ -332,8 +332,7 @@
          to a transparent texture to resemble a hole. It differs from the outside cut
          tool in that the path cut direction, will be counter-clockwise.<br><br>
 
-         Use the<u>["Shift" key]</u> if the preview shows the inside cut on the wrong side. Just press and
-         hold "Shift" prior to clicking.                                                          <br><br>
+         If the preview shows the inside cut on the wrong side, reverse the face.<br><br>
 
          Use the <u>["End" key]</u> if the tool locks onto the wrong adjacent face.  You won't need this feature, if you
          hover over faces instead of edges.                                      &nbsp; <br><br>
@@ -432,9 +431,10 @@
          percentage of the material thickness in depth.  You will need to set the depth for every hole.<br>
          AND<br>
          You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
-         The hole will then be spiral bored to that diameter.  This is quite slow so holes that are
+         The hole will then be spiral bored to that diameter.  This is a relatively slow way to cut a hole so holes that are
          greater than 3 times the diameter of the bit should rather be a circle with an inside cut to remove
-         the waste.
+         the waste.   However, if you are cutting soft material (large or no multipass) and using the 'diameter first' cut strategy, the cut will be
+         quite quick.
          <p>
          <table border=0 width=300 style="float: right;">
          <tr>
