@@ -61,7 +61,7 @@ module PhlatScript
       if (decimal_separator() == ',')
          UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
       end
-UI.messagebox('debug')
+
     Sketchup.active_model.add_observer(PhlatScript.modelChangeObserver)
     return if @@Loaded
     puts "loadtools"
@@ -478,24 +478,23 @@ UI.messagebox('debug')
   def PhlatScript.loadTools
     @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz") + ' SketchUcam')
     @@qToolbar = UI::Toolbar.new('SketchUcam Quick Tools')
-puts '1'    
+    
     add_separator_to_menu("Tools")
     @@phlatboyz_tools_submenu = UI.menu("Tools").add_submenu(getString("Phlatboyz"))
-puts '2'
+
     require 'Phlatboyz/tools/ParametersTool.rb'
     addToolItem(ParametersTool.new())
-puts '3'
+
     require 'Phlatboyz/tools/ProfilesTool.rb'
     addToolItem(ProfilesSaveTool.new())
     addToolItem(ProfilesLoadTool.new() )
     addToolItem(ProfilesDeleteTool.new() )
-puts '4'
+
     require 'Phlatboyz/tools/PhJoiner.rb'
     jcmd = addToolItem(jtool = JoinerTool.new())  # need to add it to toolbar out of order
-puts '5'
+
     require 'Phlatboyz/tools/RampTabTool.rb'
     addToolItem(RampTabTool.new())    
-puts '6'
 	
     @@phlatboyz_tools_submenu.add_separator
        require 'PhlatBoyz/tools/PhOptions.rb'
@@ -508,38 +507,37 @@ puts '6'
        addToolItem( OptionsFeat2Tool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
     @@phlatboyz_tools_submenu.add_separator
-puts '7'
+
     require 'Phlatboyz/tools/CutTool.rb'
     addToolItem(OutsideCutTool.new)
     addToolItem(InsideCutTool.new)
-puts '8'
+
     require 'Phlatboyz/tools/TabTool.rb'
     addToolItem(TabTool.new())
-puts '9'
+
     require 'Phlatboyz/tools/FoldTool.rb'
     addToolItem(FoldTool.new())
-puts 'a'
+
     require 'Phlatboyz/tools/PlungeTool.rb'
     addToolItem(PlungeTool.new())
     addToolItem(CsinkTool.new())
     #addToolItem(CboreTool.new())
-puts 'b'
+
     require 'Phlatboyz/tools/CenterLineTool.rb'
     addToolItem(CenterLineTool.new())
-puts 'c'
+
     require 'Phlatboyz/tools/PhPocketTool.rb'
     addToolItem(PocketTool.new())
-puts 'd'
 
     require 'Phlatboyz/tools/EraseTool.rb'
     addToolItem(EraseTool.new())
-puts 'e'
+
     require 'Phlatboyz/tools/PhlattenTool.rb'
     addToolItem(PhlattenTool.new())
-puts 'f'
+
     require 'Phlatboyz/tools/SafeTool.rb'
     addToolItem(SafeTool.new())
-puts 'g'
+
     require 'Phlatboyz/tools/Ky_Reorder_Groups.rb'
     addToolItem(Ky_Reorder_Groups.new())
          #also add this to the Plugins menu
@@ -550,12 +548,12 @@ puts 'g'
       $PhlatScript_PlugName = UI.menu('Plugins').add_submenu('PhlatPlugins')
       $PhlatScript_PlugName.add_item(label) { Sketchup.active_model.select_tool Ky_Reorder_Groups.new }
     end
-puts 'h'
+
    @@commandToolbar.add_separator 
 
    require 'Phlatboyz/tools/ZeroTool.rb'
    addToolItem(ZeroTool.new())
-puts 'i'   
+
    jcmd.large_icon = jtool.largeIcon  # only need these for a toolbar item
    jcmd.small_icon = jtool.smallIcon
    @@commandToolbar.add_item(jcmd)
@@ -564,23 +562,23 @@ puts 'i'
     require 'Phlatboyz/tools/GcodeUtil.rb'
     addToolItem(GcodeUtil.new())
     @@commandToolbar.add_separator 
-puts 'j'
+
         @@phlatboyz_tools_submenu.add_separator
     require 'Phlatboyz/tools/HomepageTool.rb'
     addToolItem(HomepageTool.new())
-puts 'k'
+
     require 'Phlatboyz/tools/HelpTool.rb'
     addToolItem(HelpTool.new())
     addToolItem( SummaryTool.new() )
     addToolItem( DisplayProfileFolderTool.new() )
     addToolItem( GroupList.new() )   # from GcodeUtil.rb but want the entry here
-puts 'l'
+
     require 'Phlatboyz/tools/Quicktools.rb'
     addToolItem(UseCommentsTool.new())
     addToolItem(UseBracketsTool.new())
     addToolItem(FourthAxisTool.new())
     addToolItem(ToolChangeTool.new())
-puts 'm'
+
 
 #    require 'Phlatboyz/tools/TestTool.rb'
 #    addToolItem(TestTool.new())
