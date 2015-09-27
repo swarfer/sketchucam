@@ -10,10 +10,9 @@ module PhlatScript
     begin
        @dia = "0.0".to_l
     rescue
-       @dia = 0.to_l
+       @dia = '0'.to_l
     end
     @keyflag = 0
-    @statusMsg = "Plunge Tool"
     
     def initialize
        super()
@@ -22,7 +21,9 @@ module PhlatScript
        @hcount = 0
        @vcount = 0
        @keyflag = 0 
-       @dia = 0.0
+       @dia = '0'.to_l
+      @statusMsg = "Plunge Tool"
+      @statusMsga = "Select plunge point, [SHIFT] for large hole, [HOME] for large hole lock, set depth in VCB, [ALT] for hole pattern"    
     end
     
     def reset(view)
@@ -30,7 +31,7 @@ module PhlatScript
       Sketchup.vcb_label = "Plunge Depth %"
       Sketchup.vcb_value = PhlatScript.cutFactor
       @depth = PhlatScript.cutFactor
-      @dia = 0.0
+      @dia = '0'.to_l      if (@keyflag != 3)
       super
     end
 
@@ -90,7 +91,7 @@ module PhlatScript
          dia = res[0]  # will be a length
 
          if (dia < PhlatScript.bitDiameter)
-            dia = 0.to_l
+            dia = '0'.to_l
          end
       rescue ArgumentError => error
          UI.messagebox(error.message)
@@ -134,12 +135,12 @@ module PhlatScript
             @dia = getDia()
             if (@dia > PhlatScript.bitDiameter)
                PlungeCut.cut(@ip.position, @depth, @dia)
-               @dia = 0
+               @dia = '0'.to_l  if (@keyflag != 3)    #reset if lock mode is off
             else
                puts "Ignored dia <= bitdiameter"
             end
          else
-           PlungeCut.cut(@ip.position, @depth, 0)
+            PlungeCut.cut(@ip.position, @depth, @dia)
          end
       end
       reset(view)
@@ -154,7 +155,13 @@ module PhlatScript
     end
 
     def statusText
-      @statusMsg = "Select plunge point, [SHIFT] for large hole, set depth in VCB, [ALT] for hole pattern"
+      if @keyflag == 3
+         #puts "locked"
+         @statusMsg = @statusMsga + " LARGE LOCKED #{@dia}"
+      else
+         #puts "not locked"
+         @statusMsg = @statusMsga
+      end
       return @statusMsg
     end
 
@@ -178,20 +185,32 @@ module PhlatScript
     end
 
 #swarfer: detect keys
-    def onKeyDown(key, repeat, flags, view)
-       if (key == VK_SHIFT)
-          @keyflag = 1
-       end
-       if (key == VK_ALT)
-          @keyflag = 2
-       end
-    end
+   def onKeyDown(key, repeat, flags, view)
+       #if (key == VK_SHIFT)
+       #   @keyflag = 1
+       #end
+       #if (key == VK_ALT)
+       #   @keyflag = 2
+       #end
+      if (key == VK_HOME)
+         if @keyflag == 0
+            @keyflag = 3 
+            @dia = getDia()
+         else
+            @keyflag = 0
+            @dia = 0.to_l
+         end            
+         Sketchup::status_text = statusText    
+         #puts "key #{key}  keyflag #{@keyflag}"
+      end
+   end
 
-    def onKeyUp(key, repeat, flags, view)
-       if ((key = VK_SHIFT) || (key = VK_ALT))
-          @keyflag = 0
-       end
-    end
+   def onKeyUp(key, repeat, flags, view)
+      #if ((key = VK_SHIFT) || (key = VK_ALT) || (key = VK_HOME) )
+      #if (key == VK_HOME) 
+      #   @keyflag = 0
+      #end
+   end
 
 
   end
@@ -269,6 +288,10 @@ module PhlatScript
             if (@dia < PhlatScript.bitDiameter)
                @dia = 0.to_l
             end
+            if (@dia > @cdia)
+               @dia = 0.to_l
+               UI.messagebox('Hole diameter cannot be larger than countersink diameter, reset to 0')
+            end
             if !((@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@angle >= 70))
                UI.messagebox('Error: values make no sense')
             end
@@ -282,6 +305,10 @@ module PhlatScript
             @dia = input[4]
             if (@dia < PhlatScript.bitDiameter)
                @dia = 0.to_l
+            end
+            if (@dia > @cdia)
+               @dia = 0.to_l
+               UI.messagebox('Hole diameter cannot be larger than counterbore diameter, reset to 0')
             end
             if !((@cdia > PhlatScript.bitDiameter) && (@cdia > @dia) && (@cdepth < PhlatScript.materialThickness))
                UI.messagebox('Error: values make no sense')
@@ -318,7 +345,7 @@ module PhlatScript
          
          if ((flags & 4) == 4)  # want big hole too, SHIFT button down
             @dia = getDia()
-            @dia = @dia < @cdia ? @dia :  0.0
+            @dia = @dia < @cdia ? @dia :  0.to_l
 #            puts "dia #{@dia}"
          end
          #get params
@@ -351,7 +378,7 @@ module PhlatScript
          if ((flags & 4) == 4) # shift
             #prompt for diameter
             @dia = getDia()
-            @dia = @dia < @cdia ? @dia :  PhlatScript.bitDiameter + 0.1
+            @dia = @dia < @cdia ? @dia : 0.to_l
             if (@dia > PhlatScript.bitDiameter)
                if @mode == 'CounterSink'
                   PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
@@ -362,6 +389,7 @@ module PhlatScript
                puts "Ignored dia <= bitdiameter"
             end
          else
+            @dia = @dia < @cdia ? @dia : 0.to_l
             if @mode == 'CounterSink'
                PlungeCut.cut(@ip.position, @depth, @dia, 0,@angle,@cdia)
             else
@@ -374,6 +402,10 @@ module PhlatScript
    
    def statusText
       return "CounterSink | CounterBore tool"
+   end
+   
+   def onKeyDown(key, repeat, flags, view)  #override inherited to prevent 'lock mode' since counter* inherently does lock mode
+      @keyflag = 0
    end
 
    end # class
