@@ -127,16 +127,16 @@
       These menu items appear on the Tools|Phlatboyz menu.  
       Most entries duplicate the toolbar entries so only those that are unique will be described here.
       </th>
-      <th rowspan=5 valign=top>
+      <th rowspan=5 valign="top">
          <img alt="" src="images/toolsmenu.png">
       </th>
    </tr>
 
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign="top">
       G-code Joiner
       </td>
-      <td class="command-description" valign=top>
+      <td class="command-description" valign="top">
          This tool allows you to join several G-code files together to create a single output file.
          It will keep the first files header and list all the file names as a comment at the top of the output.
          Following files will have the header and footer stripped to prevent going to X0 Y0 between each file.
@@ -153,23 +153,26 @@
             Click NO to end the process without previewing the code.
          </ul>
          <b>NOTE:</b>
-         This tool will happily join files that have been created for different bit diameters.  The (Bit diameter ...) comment lines
-         from every file will be included in the joined output.  It is up to the user to check that all bit diameters are the same.
-      </td>
+This tool will happily join files that have been created 
+for different bit diameters.  The (Bit diameter ...) 
+comment lines from every file will be included in the 
+joined output.  It is up to the user to check 
+that all bit diameters are the same.
+</td>
    </tr>
 
 <tr>
-      <td class="command-image" valign=top id="rvtab">
+      <td class="command-image" valign="top" id="rvtab">
       Set Ramp VTabs
       </td>
-      <td class="command-description" valign=top>
+      <td class="command-description" valign="top">
       This command will set the tab width and depth to values that will ensure the Vtabs adhere to the currently set
       Ramp Limit Angle.  Thus the Vtabs will ramp up and down at the ramp limit angle.
       To use this command:
       <ol>
       <li>Use the Parameters Dialog to set the initial tab depth and the Ramp Limit Angle
       For low angles the tabs can get very long so you may need to set a large tab depth, 75% or more.
-      <li>Select the Set Ramp VTabs tool
+      <li>Select the Set Ramp VTabs tool.
       <li>Review the settings in the Parameters Dialog.   Tab depth will have decreased and Tab Width will
       be long enough to ensure the currently set Ramp Angle is achieved in Vtabs.
       </ol>
@@ -178,10 +181,10 @@
 </tr>      
    
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign="top">
       Options
       </td>
-      <td class="command-description" valign=top>
+      <td class="command-description" valign="top">
          The items on this menu allow you to set many default values that affect your machines operation.
          Please see the help for the  <a href="howto_options.html">Options Menu</a>.
          This menu item replaces the need for editing the Constants and MyConstants files.
@@ -190,34 +193,38 @@
    
    
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign="top">
       Options Summary
       </td>
-      <td class="command-description" valign=top>
+      <td class="command-description" valign="top">
          This will display your current settings for a number of global options settable in the <a href="howto_options.html">Options Menu</a>.
          Yes, we know it is misnamed 'Validity Check', that is a Sketchup default we cannot change :-)
          Please see the <a href="howto_options.html">Options Menu</a> help.
       </td>
    </tr>
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign="top">
       Display Profiles Folder
       </td>
-      <td class="command-description" valign=top>
-         Tool Profiles are saved as 'ini' format text files.  The folder used is within the users APPDATA folder and is a 
-         little tricky to find, so we made it simple with this menu item.  Click it and a file explorer will open at the correct folder.
+      <td class="command-description" valign="top">
+Tool Profiles are saved as 'ini' format text files.  
+The folder used is within the users APPDATA folder and 
+is a little tricky to find, so we made it simple with 
+this menu item.  Click it and a file explorer will 
+open at the correct folder.
       </td>
    </tr>
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign="top">
       Groups Summary
       </td>
-      <td class="command-description" height=70% valign=top>
-         By grouping elements of your drawing you can set the cut order.  Groups will be cut in the order grouped, or set using the 
-         Group Reorder tool.   Use this menu item to see the cut order of your groups.  Note that in order for this to make sense you 
-         should name your groups using the Entitity Info dialog box (right click the group, Entity Info).  You can group a bunch of groups.
-         Group names will be shown in the G-code.
-      </td>
+      <td class="command-description" height="70%" valign="top">
+By grouping elements of your drawing you can set the cut order. Groups
+will be cut in the order grouped, or set using the Group Reorder tool.
+Use this menu item to see the cut order of your groups. Note that in
+order for this to make sense you should name your groups using the
+Entitity Info dialog box (right click the group, Entity Info). You can
+group a bunch of groups. Group names will be shown in the G-code. </td>
    </tr>
 
         </tbody></table>

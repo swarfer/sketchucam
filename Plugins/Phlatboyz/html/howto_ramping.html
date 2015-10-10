@@ -128,27 +128,37 @@
 </tr>
 </table>   
 <p>
-With the advent of stronger home CNC routers (and mills) like the Shapeoko and OX, comes the desire to cut harder materials like G10 and aluminum.
-The right way to enter cuts in such materials is to ramp in at an angle until the cutter reaches the correct depth.<br>
-With this release (1.3, May 2015) SketchUcam brings you simple ramping options that increase your work envelope in harder materials.
-Of course, the previous option of plunging directly into the work is still available.
+With the advent of stronger home CNC routers (and mills) 
+like the Shapeoko and OX, comes the desire to cut harder 
+materials like G10 and aluminum.
+The right way to enter cuts in such materials is to ramp 
+in at an angle until the cutter reaches the correct depth.<br>
+With this release (1.3, May 2015) SketchUcam brings you 
+simple ramping options that increase your work envelope 
+in harder materials.
+Of course, the previous option of plunging directly into 
+the work is still available.
 </p>
 
 
 <h3>Summary</h3>
 <ul>
-<li>Plunges are replaced with ramps
-<li>Arcs and lines can be ramped
-<li>Plunge feed rate is used for ramps
-<li>Plungebores use the ramp angle for the helix
-<li>Segments less than BitRadius long will not be ramped
+<li>Plunges are replaced with ramps.
+<li>Arcs and lines can be ramped.
+<li>Plunge feed rate is used for ramps.
+<li>Plunge bores use the ramp angle for the helix.
+<li>Segments less than BitRadius long will not be ramped.
 </ul>
 
 <h3>Basics</h3>
 
-<p>With ramping turned on any point that would have been a plunge becomes a ramp along the first segment of the cut, and also after tabs, 
+<p>With ramping turned on, any point that would have been a 
+plunge becomes a ramp along the first segment of the cut, 
+and also after tabs, 
 as you can see in the image at above right.
-The cut begins at the closest corner to the origin and ramps along the first segment, taking two passes to get to full depth.  In this case the ramp angle
+The cut begins at the closest corner to the origin and 
+ramps along the first segment, taking two passes to get 
+to full depth.  In this case the ramp angle
 limit is 5 degrees. 
 </p>
 <p>If the first segment of a cut is very short, less than BitDiam/2, the cut will be converted to a <b>vertical plunge</b>.  
@@ -166,9 +176,14 @@ pre-drill all those holes).</i>
 <img src="images/ramp04.png">
 <div>Ramping on an arc, 20 degree limit, 10mm deep, 12 segments in arc</div>
 </div>
-If the first segment is an arc (or a tab on an arc), the arc will be ramped to depth.  Some controllers will not cut a proper helix, instead 
-plunging and then cutting the arc, despite the G-code specifying a helical (ramped arc) motion. (You will already know this for your controller
-since plunge holes with larger than bit diameter use helical arcs to get to the desired diameter).
+If the first segment is an arc (or a tab on an arc), 
+the arc will be ramped to depth.  Some controllers will 
+not cut a proper helix, instead plunging and then cutting 
+the arc, despite the G-code specifying a helical 
+(ramped arc) motion. (You will already know this for 
+your controller since plunge holes with larger than 
+bit diameter use helical arcs to get to the desired 
+diameter).
 <p>
 When  placing arcs it might be better to use 8 or 12 segments instead of the default 24, 
 this makes each segment longer giving it a decent chance to ramp.
@@ -180,9 +195,14 @@ This can be the same as the Feed speed, or less, depending on the capabilities o
 <p>
 There are two modes of operation, with and without <b>ramp angle limiting</b>.</p>
 <ol>
-<li>With the ramp angle set to 0 degrees, the angle is not limited.   This means that depth will always be reached in a single zigzag.
-For a short segment the 'ramp' could be almost vertical so it is important to study the G-code in a previewer before cutting to ensure
-that the angles are sensible.   However, ramping on arcs will be limited to 45 degrees even when limit is set to 0.
+<li>With the ramp angle set to 0 degrees, the angle is not 
+limited.  This means that depth will always be reached 
+in a single zigzag.
+For a short segment the 'ramp' could be almost vertical 
+so it is important to study the G-code in a previewer 
+before cutting to ensure that the angles are sensible.   
+However, ramping on arcs will be limited to 45 degrees 
+even when limit is set to 0.
 <li>
 With the ramp angle limit set from 1 to 45 degrees the actual cut angle is always less than or equal to the given angle.
 As many ramp movements as are needed to get to depth at the angle given will be generated.
@@ -193,16 +213,22 @@ The number of ramps must always be an even number so the count is rounded up, th
 The ramp options are set on the <a href="sketchucamtoolbar.html#toolparameters">parameters dialog</a>, a segment of which is shown at right.
 Tick 'Ramp in Z' to turn ramping on.<br>
 Set the 'Ramp angle limit' to 0 for no limit, or to a value from 1 to 45 degrees for a limited angle.<br>
-Note that small angle limits may significantly increase your cut time
+Note that small angle limits may significantly increase your cut time.
 </p>
 
 <h3>Shortening long ramps:</h3>
 <img src="images/ramp05.png" style="float: right;">
 <p>
-If the first segment of a cut is a very long straight line the ramp will be very long.
-You can shorten it by placing a <b>tab</b> a suitable distance along that line, and then use the PB erase tool to remove the tab.
-The cut line will remain 'broken' at that point and the ramp will only go up to the break, as illustrated at right.
-In that drawing is an outside cut around a 100x30mm rectangle, the long cuts are just over 100mm, and the ramp is about 20mm long to a depth of 10mm.
+If the first segment of a cut is a very long straight line 
+the ramp will be very long.
+You can shorten it by placing a <b>tab</b> 
+a suitable distance along that line, and then use the PB 
+erase tool to remove the tab.
+The cut line will remain 'broken' at that point and the 
+ramp will only go up to the break, as illustrated at right.
+In that drawing is an outside cut around a 100x30mm 
+rectangle, the long cuts are just over 100mm, and the 
+ramp is about 20mm long to a depth of 10mm.
 </p>
 It will ramp down after tabs, with the added optimization of plunging down to almost 
 (less a few thou) the previous pass depth before starting the new ramp.
@@ -256,7 +282,7 @@ limited ramp angle.  Might not matter on plywood, but will matter on aluminum an
 <h3>Ramping and plunge holes</h3>
 <p>
 <img src="images/ramp10.png" style="float: right;">
-The helix angle used for boring holes will be limited to the ramp angle if it is set > 0.
+The helix angle used for boring holes will be limited to the ramp angle if it is set &gt; 0.
 If not set the normal scheme is used, ie each helix depth will be limited to multipassdepth or to BitDiam/2 if multipass is off.
 Limiting the helix angle means that the number of cuts will vary with diameter, requiring more cuts for the inside of a hole
 than for the final diameter cuts.  This is particularly noticeable at low ramp limit angles.
@@ -266,7 +292,7 @@ When ramping is on the plunge hole routine will try hard to <i>not plunge</i> di
 Obviously, if the plunge hole is the same diameter as the toolbit, it will have to plunge.<br>
  In this case
 it may be better to do a seperate drawing with just these holes on it, and generate G-code with either:<br>
-&nbsp;&nbsp;&nbsp;multipass set to a much smaller multipass depth than would be used for the normal cuts<br>
+&nbsp;&nbsp;&nbsp;Multipass set to a much smaller multipass depth than would be used for the normal cuts<br>
 or<br>
 &nbsp;&nbsp;&nbsp;normal multipass depth, but use a real drill bit for the cuts, and run this file before the normal cut file (see <a href="toolsmenu.html">G-code joiner</a>).
 </p>

@@ -160,16 +160,17 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
 <h2><a id="a1">Tool Options</a></h2>
 <p>   
 <img src="images/options-tool.png" style="float: right;">
-These defaults will only be seen on new drawings.  These settings should reflect your most commonly used cutting tool and material.
+These defaults will only be seen on new drawings.  
+These settings should reflect your most commonly used cutting tool and material.
 These settings can easily be overridden by using the Tool Profiles save and load mechanism.
 </p>
 <dl>
    <dt>Default_spindle_speed
       <dd>This sets the default 'S' word written to the G-code, which sets the spindle speed if your controller supports it.
    <dt>Default_feed_rate 
-      <dd>This is the default cutting feed rate in current drawing units per minute
+      <dd>This is the default cutting feed rate in current drawing units per minute.
    <dt>Default_plunge_rate 
-      <dd>In hard materials you need a slower plunge feed rate, set it here in drawing units per minute
+      <dd>In hard materials you need a slower plunge feed rate, set it here in drawing units per minute.
    <dt>Default_safe_travel 
       <dd>Height above the workpiece where it is safe to move rapidly to the next cut.
    <dt>Default_material_thickness 
@@ -184,14 +185,15 @@ These settings can easily be overridden by using the Tool Profiles save and load
       <dd>Experience will show you how much tab depth your prefer, set it here.
    <dt>Default_vtabs 
       <dd>Normal tabs have vertical edges, V-tabs ave sloped edges and allow the cutter to keep moving at a constant speed.
-         By setting this to true the default tab style willb e Vtab.  You can still change it whiel placing tabs with the END key.
+         By setting this to true the default tab style will be Vtab.  
+         You can still change it while placing tabs with the END key.
    <dt>Default_fold_depth_factor 
-      <dd>Your preferred fold depth factor in %
+      <dd>Your preferred fold depth factor in %.
    <dt>Default_pocket_depth_factor 
-      <dd>Your preferred pocket depth factor in %
+      <dd>Your preferred pocket depth factor in %.
    <dt>Default_pocket_direction 
       <dd>Set this to true to have pocket zigzags default to along Y axis, false for along X axis.
-         This setting can be changed on the fly with the END key
+         This setting can be changed on the fly with the END key.
 </dl>
 
 <h2><a id="a2">Misc Options</a></h2>
@@ -209,20 +211,20 @@ These settings can easily be overridden by using the Tool Profiles save and load
       <dd>Set this TRUE if you want to always zero your tool to the table top instead of the material top.
       Phlatprinters must use the material top for Z-Zero (set this false), but all other machines can use the table top.
       If you fit an automatic tool zero sensor level with the table top, Mach3 and LinuxCNC make this very easy to use.
-      Using the table as zero will also all you to generate G-code that can cut many thicknesses of material up to the maximum of the
-      thickness you specified.
+      Using the table as zero will also all you to generate G-code that can cut many thicknesses of material up to the maximum of the thickness you specified.
    <dt id="compat">Use_compatible_dialogs set TRUE if you cannot see the parameters dialog
-      <dd>This one is rather obvious.  If the main Parameters Dialog shows up largely blank, you need to set this to true.
-      Mac and Linux users will be most in need of this setting.   Linux users running Sketchup under WINE can work around this issue
-      by installing 'winetricks' and then issuing the command 'winetricks ie8'.  This will install IE8 and allow the Parameters dialog to work
-      correctly with this setting set to false.
+      <dd>This one is rather obvious.  
+      If the main Parameters Dialog shows up largely blank, you need to set this to true.
+      Mac and Linux users will be most in need of this setting.   
+      Linux users running Sketchup under WINE can work around this issue by installing 'winetricks' and then issuing the command 'winetricks ie8'.  
+      This will install IE8 and allow the Parameters dialog to work correctly with this setting set to false.
 </dl>   
 
 <h2><a id="a3">Machine Options</a></h2>
 <p>
 <img src="images/options-machine.png" style="float: right;">
-These options set defaults taken from the size and shape of your CNC machine.  If you have more than one machine, set these to the largest
-machines values and be careful when generating code for the smaller ones.
+These options set defaults taken from the size and shape of your CNC machine.  
+If you have more than one machine, set these to the largest machines values and be careful when generating code for the smaller ones.
 </p>
 <dl>
    <dt>Default_safe_origin_x 
@@ -243,8 +245,8 @@ machines values and be careful when generating code for the smaller ones.
       <dd>Set to your preferred multipass cut depth.  Note that you can optimize multipass cuts by calculating this figure
       so that the last pass is the same size as all other passes.
       <pre>cuts = Overcut%/100 * MatThickness / Multipassdepth</pre>
-      will give you the number of passes at the current settings.  If there are any numbers after the decimal point there will be
-      1 extra pass with that fraction of the multipass depth as the cut depth.<br>
+      will give you the number of passes at the current settings.  
+      If there are any numbers after the decimal point there will be 1 extra pass with that fraction of the multipass depth as the cut depth.<br>
       For example
 <pre>6mm material
 2mm multipass depth
@@ -300,7 +302,7 @@ cuts = 3.3</pre>
          Otherwise the safe area will only show, if it's size has been changed.
             
    <dt>Use_reduced_safe_height
-      <dd>Set this to true to use 1/3 of the usual safe travel height during plunge boring moves
+      <dd>Set this to true to use 1/3 of the usual safe travel height during plunge boring moves.
             
    <dt>Use_pocket_CW
       <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
@@ -326,14 +328,15 @@ cuts = 3.3</pre>
       <dd>Set this to TRUE to have the material thickness saved and restored in Tool Profiles.
           Profiles that do not contain a material thickness will load just fine.
             
-   <Dt>Use_Home_Height 
+   <dt>Use_Home_Height 
       <dd>Set this true and set the height and the Z will retract to this at the end of the job
-         really only useful for overhead gantries
+         really only useful for overhead gantries.
       <dl>
       <dt>Default_Home_Height 
       <dd>If <i>Use_Home_Height</i> is TRUE, then a G00 Z movement will be issued at the end of the job, using this height for Z.<br>
       If you have material top as Z-zero, it will retract this high above the material.<br>
       If you have table top as Z-Zero, it will retract this high above the table.
+      </dd>
       </dl>
       
    <dt>Use_End_Position
@@ -358,10 +361,10 @@ cuts = 3.3</pre>
 
    <dt>Use fuzzy pocket stepover
       <dd>TRUE = recalculate the zigzag stepover to prevent remainders at the end of the cut. <a href="sketchucamtoolbar.html#toolpocket">Read here for details</a>
-      <DD>FALSE = use the exact stepover% given in the paramemeters dialog.
+      <DD>FALSE = use the exact stepover% given in the parameters dialog.
       
    <dt>Limit Ramping Angle to (degrees)
-      <dd>0 = no limit on ramping angle
+      <dd>0 = no limit on ramping angle.
       <dd>1..45 = limit ramping angle to this value.  This means it will never be more than this angle, but may be less.
       <dd><a href="howto_ramping.html">Read more about ramping</a>
    <dt>Use Ramping
@@ -372,8 +375,8 @@ cuts = 3.3</pre>
          controllers getting confused about doing a full circle.
          <dd>FALSE = output helixes as a full circle code.  Do not use this with LinuxCNC and test carefully before trusting.
 
-   <dt>Force all Gcodes on for Marlin         
-      <dd>FALSE (default) = use optimized Gcode output that does not repeat G commands if they are not needed
+   <dt>Force all G-codes on for Marlin         
+      <dd>FALSE (default) = use optimized G-code output that does not repeat G commands if they are not needed
       <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
    </dl>
    
@@ -382,16 +385,16 @@ cuts = 3.3</pre>
    Some options that affect saving G-code files.
 <dl>
    <dt>Default_file_name
-      <dd>The default gocode file name, with extension
+      <dd>The default G-code file name, with extension
    <dt>Default_file_ext
       <dd>The default extension to use for G-code files.  This will be added to the name if you do not give an extension in the save dialog.
    <dt>Default_directory_name
       <dd>The default directory to save G-code into.  Make sure it exists!
    <dt>G-code plotter program
-      <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
-         a Gcode file as a parameter for preview.
+      <dd>By setting a path to a program that can display G-code files you can use any program that takes 
+         a G-code file as a parameter for preview.
       <dd>Set this to 'default' to use the supplied Gplot.exe preview program
-      <dd>Set it to the full path and filename of an alternative Gcode previewer that takes the name of the Gcode file as the first parameter.
+      <dd>Set it to the full path and filename of an alternative G-code previewer that takes the name of the G-code file as the first parameter.
 </dl>      
 
 

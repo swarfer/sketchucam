@@ -113,7 +113,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.3a</b><br>June 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4</b><br>October 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -121,7 +121,7 @@
         Introduction
         </div>
 
-<table summary="help 1" cellspacing=0 cellpadding=1>
+<table summary="help 1" cellpadding="1" cellspacing="0">
 <tbody>
 <tr>
    <td>
@@ -178,27 +178,27 @@
             <ul style="padding-left: 2px;">
                <li><a class="index" href="howto_options.html">Change Default Options</a>
                <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog blank</a>            
-               <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
+               <li><a class="index" href="howto-changegplot.html">Change G-code plotter*</a>
                <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
                <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
                <li><a class="index" href="sketchucamtoolbar.html">Toolbar Icons</a>
                <ul>
                   <li><a href="sketchucamtoolbar.html#toolparameters">Parameters</a>
-                  <Li><A href="sketchucamtoolbar.html#tooloutside">Outside cut</a>
-                  <Li><A href="sketchucamtoolbar.html#toolinside">Inside cut</a>
-                  <Li><A href="sketchucamtoolbar.html#tooltab">Tab tool</a>
-                  <Li><A href="sketchucamtoolbar.html#toolfold">Fold cut</a>
-                  <Li><A href="sketchucamtoolbar.html#toolplunge">Plunge hole</a>
-                  <Li><A href="sketchucamtoolbar.html#toolcsink">Plunge hole with countersink/counterbore</a>
-                  <Li><A href="sketchucamtoolbar.html#toolcenterline">Centerline cut</a>
-                  <Li><A href="sketchucamtoolbar.html#toolpocket">Pocket</a>
-                  <Li><A href="sketchucamtoolbar.html#tooleraser">Eraser</a>
-                  <Li><A href="sketchucamtoolbar.html#toolsafe">Safe Area mover</a>
-                  <Li><A href="sketchucamtoolbar.html#toolreorder">Group reorder</a>
-                  <Li><A href="sketchucamtoolbar.html#tooljoiner">G-code Joiner</a>
-                  <Li><A href="sketchucamtoolbar.html#toolgcode">Generate G-code</a>
-                  <Li><A href="sketchucamtoolbar.html#toolgoto">Goto Phlatforum</a>
-                  <Li><A href="sketchucamtoolbar.html#toolhelp">Help</a>
+                  <li><a href="sketchucamtoolbar.html#tooloutside">Outside cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolinside">Inside cut</a>
+                  <li><a href="sketchucamtoolbar.html#tooltab">Tab tool</a>
+                  <li><a href="sketchucamtoolbar.html#toolfold">Fold cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolplunge">Plunge hole</a>
+                  <li><a href="sketchucamtoolbar.html#toolcsink">Plunge hole with countersink/counterbore</a>
+                  <li><a href="sketchucamtoolbar.html#toolcenterline">Centerline cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolpocket">Pocket</a>
+                  <li><a href="sketchucamtoolbar.html#tooleraser">Eraser</a>
+                  <li><a href="sketchucamtoolbar.html#toolsafe">Safe Area mover</a>
+                  <li><a href="sketchucamtoolbar.html#toolreorder">Group reorder</a>
+                  <li><a href="sketchucamtoolbar.html#tooljoiner">G-code Joiner</a>
+                  <li><a href="sketchucamtoolbar.html#toolgcode">Generate G-code</a>
+                  <li><a href="sketchucamtoolbar.html#toolgoto">Goto Phlatforum</a>
+                  <li><a href="sketchucamtoolbar.html#toolhelp">Help</a>
                </ul>
                <li><a class="index" href="quicktools.html">QuickTools Toolbar*</a>
                <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
@@ -220,21 +220,21 @@
    <dt>Bug fixes
       <dd>
       <dl>
-         <dt>fix for Phlatten tool
-            <dd>since Make 2014 Phlatten has failed to actually phlatten due to not liking the order
+         <dt>Fix for Phlatten tool
+            <dd>Since Make 2014, Phlatten has failed to actually phlatten due to not liking the order
             used for deleting faces.   Faces are now deleted separately from edge collection.
-         <dt>fold/centerline/pocket tool depth in VCB
-            <dd>can now be set to floating point number, eg 10.6% or 34.15% etc
+         <dt>Fold/centerline/pocket tool depth in VCB
+            <dd>The depth can now be set to floating point number, eg 10.6% or 34.15% etc.
          <dt>Inputbox error checking
-            <dd> all input boxes use exception rescuing to detect errors in number formats and 'retry'.  This is a step on the way to
+            <dd> All input boxes use exception rescuing to detect errors in number formats and 'retry'. &nbsp;This is a step on the way to
             handling regionalized number formats.
             <dd>Note that a side effect of this is that the main parameters dialog will fail silently if it is given an invalid number and the
             corresponding variable will not be set.  For example if you type 45t for Safe Height the safe height 
             will not be changed AND you will not be notified.
       </dl>   
    <dt>Added features
-      <Dd><dl>
-      <dt><a href="howto_options.html#a5">make the path to the gplot program a string in options so it is preserved between versions.</a>
+      <dd><dl>
+      <dt><a href="howto_options.html#a5">Make the path to the gplot program a string in options so it is preserved between versions.</a>
          <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
          a Gcode file as a parameter for preview.
          <dd>Tools|PhlatBoyz|Options|File options|Gcode plotter program
@@ -242,35 +242,37 @@
          <dd>set to the full path and filename of your choice of plotter program, such at NC-Plot.
 
       <dt><a href="sketchucamtoolbar.html#toolpocket">Multiselect pockets</a>
-         <dd>if multiple faces are selected when the pocket tool is selected, all the faces will be pocketed
-         <dd>all selected entities will be UNselected after this process
-         <dd>if only one thing is selected, nothing is done, process is ignored
-         <dd> make sure you have the correct pocket parameters before doing the multiselect operation!
+         <dd>If multiple faces are selected when the pocket tool is selected, all the faces will be pocketed.
+         <dd>All selected entities will be Unselected after this process.
+         <dd>If only one thing is selected, nothing is done, process is ignored.
+         <dd> Make sure you have the correct pocket parameters before doing the multiselect operation!
       <dt>Large plunge holes with sticky size   
-         <dd>Holding down shift when clicking for a plunge hole allows you to set size, but till now you had to do that
-            for every hole.   Now you can tap the HOME key to set 'LARGE LOCK' on and be prompted for a hole diameter that will persist
-            until you select another tool or tap HOME again.
-      <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
-         <dd>select the Plunge hole tool
-         <dd>hold down ALT and select the point for the bottom left hole
-         <dd>you will be prompted for the spacing and number of holes
-         <dd>a grid of holes is created
+         <dd>Holding
+down shift when clicking for a plunge hole allows you to set size, but
+until now you had to do that for every hole. Now you can tap the HOME
+key to set 'LARGE LOCK' on and be prompted for a hole diameter that
+will persist until you select another tool or tap HOME again. <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
+         <dd>Select the Plunge hole tool
+         <dd>Hold down ALT and select the point for the bottom left hole
+         <dd>You will be prompted for the spacing and number of holes
+         <dd>A grid of holes is created
          <dd>You can hold SHIFT at the same time and give a size for the gridded holes
-      <dt><A href="sketchucamtoolbar.html#toolcsink">CounterSink/CounterBore tool</a> <img src="../images/csinktool_large.png">
-         <dd>CounterSink, extension of the plunge tool, does counter sinks at the top of holes
-         <dd>grids and size selection as for plunge tool
-         <dd>depth is always overcut% - hopefully always deeper than the bottom of the countersink
-         <dd>
-         <dd>CounterBore, does a counter bore on top of a hole
-         <dd>grids and size selection as for plunge tool
-         <dd>depth is always overcut% - make sure it is deeper than the counterbore!     
-         <dd>ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
+      <dt><a href="sketchucamtoolbar.html#toolcsink">CounterSink/CounterBore tool</a> <img src="../images/csinktool_large.png">
+         <dd>CounterSink, extension of the plunge tool, does counter sinks at the top of holes.
+         <dd>Grids and size selection same as for plunge tool.
+         <dd>Depth is always overcut% - hopefully always deeper than the bottom of the countersink.
+         <dd>&nbsp;
+         <dd>CounterBore, does a counter bore on top of a hole.
+         <dd>Grids and size selection same as for plunge tool.
+         <dd>Depth is always overcut% - make sure it is deeper than the counterbore!     
+         <dd>Ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
 
       <dt><a href="quicktools.html">Simple ABC axis commands <img src="../images/rotate_large.png"><img src="images/quicktoolbar.png" align=right></a>
-         <dd>On the Quicktools toolbar, use the rotate icon to set values for A, B an C axes, values will be output before all other motion, and zeroed after homing
+         <dd>On the Quicktools toolbar, use the rotate icon to set values for A, B and C axes, values will be output before all other motion, and zeroed after homing
       <dt><a href="quicktools.html">Toolchange <img src="../images/toolchange_large.png"></a>
-         <dd><a href="quicktools.html"><img src="images/toolchange01.png" width="50%" align=right></a>
-         The T icon on the Quicktools toolbar enables the use of toolchange commands.  For controllers that understand the 'Tx M6' 
+         <dd><a href="quicktools.html"><img src="images/toolchange01.png" width="50%" align="right"></a>
+         The T icon on the Quicktools toolbar enables the use of toolchange 
+         commands.  For controllers that understand the 'Tx M6' 
          command you can output the command with a given tool number.  Optionally include G43 (apply offset) and Hx, select offset.<br><br>
          <dd>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
          achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
@@ -282,7 +284,7 @@
       <div class="intro">
       <h4>New in V1.3a (June 2015)</h4>
       <ul>
-      <li>Bugfix: concave arcs on the edge of rectangle were not cut in the correct direction, causing scalloped edges.
+      <li>Bugfix: Concave arcs on the edge of rectangle were not cut in the correct direction, causing scalloped edges.
       <li>Pocket zigzags now use <i>fuzzy stepover</i>.  A new stepover is calculated from the given stepover such that the zigzag always
          starts and ends at the given offset from the edges.  This prevents leaving large gaps at the end of the zigzag which
          might break a tool in hard materials.  Note that complicated shapes can still leave oversize (larger than stepover) nubs
@@ -331,7 +333,7 @@
             carried out on the same part.
          <li>Use_End_Position - on the Options|Features menu, setting this true allows you to select an ending position other than X0 Y0 for the gantry.
             TIP: use in combination with the Use_Home_Height option.
-         <LI>Bug fixes in the 3D G-code generator.
+         <li>Bug fixes in the 3D G-code generator.
          <li>3D code that uses multipass will now stop early once all features have been cut, ie it will not 
             continue to full material depth if all features have been cut. 
          <li>Plunge holes are automatically grouped.  This prevents underlying geometry from interfering with G-code generation.
@@ -346,18 +348,16 @@
       <div class="intro">
       <h4>New in V1.2</h4>
          <ul>
-         <li>The '<u>Table top is Z-Zero</u>' checkbox.  If this is ticked the table top will be used as the Z zero reference
-         instead of the material top surface.  This is most useful on overhead gantry machines, and <i>not at all useful</i> on Phlatprinters.
-         <li>The <a href="howto_options.html">Options Menu</a> allows you to set default options that will be applied to new drawings.  These options affect such things as
-         your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and G-code generation options.
-         <i>This menu system replaces the MyConstants.rb file in a transparent way.  Your existing settings will be used until you use the Options menu to change them.</i>
-         <li>  profile file format was changed to ini format, extension .pri
-         <li>  fix for parameters tool on mac
-         <li>  phlatBones preferences file moved to profiles folder, solves write permissions issue on Win7/8
+         <li>The '<u>Table top is Z-Zero</u>' checkbox.  If this is ticked the table top will be used as the Z zero reference instead of the material top surface.  This is most useful on overhead gantry machines, and <i>not at all useful</i> on Phlatprinters.
+         <li>The <a href="howto_options.html">Options Menu</a> allows you to set default options that will be applied to new drawings.  These options affect such things as your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and G-code generation options.
+            <i>This menu system replaces the MyConstants.rb file in a transparent way.  Your existing settings will be used until you use the Options menu to change them.</i>
+         <li>  Profile file format was changed to ini format, extension .pri
+         <li>  Fix for parameters tool on mac
+         <li>  PhlatBones preferences file moved to profiles folder, solves write permissions issue on Win7/8
          <li>  Pocketcut: improved undo so entire pocket cut will undo in one operation
-         <li>  arcs, extra digit of precision
-         <li>  3D - removed full depth plunge at start of last multipass pass that may remove extra material.
-         <li>  added Z-Zero option to parameters dialog 
+         <li>  Arcs, extra digit of precision
+         <li>  3D - removed full depth plunge at start of last multipass pass that may remove extra material
+         <li>  Added Z-Zero option to parameters dialog 
          </ul>
       </div>
       
@@ -372,7 +372,7 @@
 <h3>Where to go next</h3>
 <ol>
 <li><a href="afterinstall.html">First things to do after install</a>
-<Li><a href="sketchucamtoolbar.html">Learn about the toolbar</a>
+<li><a href="sketchucamtoolbar.html">Learn about the toolbar</a>
 </ol>
         
         
@@ -388,4 +388,5 @@
    </div>
 </div>
 
-</body></html>
+</body>
+</html>
