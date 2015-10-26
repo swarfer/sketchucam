@@ -96,9 +96,9 @@ module PhlatScript
         #puts "set diam #{diam} #{diam.to_inch} #{diam.to_f} #{diam.class}"
         newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam.to_f)
         if (PhlatScript.isMetric)  # add diam to group name
-           group.name = group.name + "_diam_#{diam.to_mm}mm"
+           group.name = group.name + "_diam_#{sprintf("%.3f",diam.to_mm)}mm"
         else
-           group.name = group.name + "_diam_#{diam}"
+           group.name = group.name + "_diam_#{sprintf("%.3f",diam)}"
         end
       end
       if (ang > 0.0)

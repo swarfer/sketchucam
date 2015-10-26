@@ -110,13 +110,15 @@ module PhlatScript
          outf.puts("%")
          idx = 0
          outf.puts(PhlatScript.gcomment("joined files"))     if ($phoptions.usecomments?)
-         while(idx < filenames.length)
-#            outf.puts(PhlatScript.gcomment("   #{File.basename(filenames[idx])}") )
-            comms = PhlatScript.gcomments("   #{File.basename(filenames[idx])}")
-            comms.each { |cm|
-               outf.puts(cm)     if ($phoptions.usecomments?)
-               }
-            idx += 1
+         if ($phoptions.usecomments?)
+            while(idx < filenames.length)
+   #            outf.puts(PhlatScript.gcomment("   #{File.basename(filenames[idx])}") )
+               comms = PhlatScript.gcomments("   #{File.basename(filenames[idx])}")
+               comms.each { |cm|
+                  outf.puts(cm)     if ($phoptions.usecomments?)
+                  }
+               idx += 1
+            end
          end
          idx = 0
          lastfile = filenames.length - 1  #last file

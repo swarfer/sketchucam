@@ -206,7 +206,7 @@ def PhlatScript.gcomments(comment)
       string = comment.gsub(/\n/,"")
       string = string.gsub(/\(|\)/,"")  # remove existing brackets
       if (string.length > 70)
-         chunks = chunk(string,68)
+         chunks = string.scan(/.{1,68}/)
          chunks.each { |bit|
             bb = PhlatScript.gcomment(bit)
             output += [bb]

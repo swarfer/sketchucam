@@ -231,6 +231,8 @@
             <dd>Note that a side effect of this is that the main parameters dialog will fail silently if it is given an invalid number and the
             corresponding variable will not be set.  For example if you type 45t for Safe Height the safe height 
             will not be changed AND you will not be notified.
+         <dt>Joiner tool - bug in long filenames
+            <dd>When the joiner tried to create a comment from a long filename, the chunking operation failed.  replaced with .scan()
       </dl>   
    <dt>Added features
       <dd><dl>
