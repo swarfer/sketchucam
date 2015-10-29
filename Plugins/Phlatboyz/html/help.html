@@ -215,7 +215,7 @@
    <td width="90%">
    <div class="intro">
       
-      <h4>New in V1.4 (Oct 2015)</h4>
+      <h4>New in V1.4 (Nov 2015)</h4>
    <dl>   
    <dt>Bug fixes
       <dd>
@@ -279,6 +279,9 @@ will persist until you select another tool or tap HOME again. <dt><a href="sketc
          <dd>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
          achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
          <dd>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      <dt>Rapid approach for Z plunge
+         <dd>When starting a cut, Z will now rapid down to within 0.5mm of the surface before switching to plunge feed rate in the same way that ramping does.
+            This should make cutting with high safe heights much quicker.
       </dl>
    </dl>
    </div>   

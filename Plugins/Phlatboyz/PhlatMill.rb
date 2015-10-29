@@ -421,6 +421,27 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
+         # if above material, G00 to surface
+         if (@cz == @retract_depth) && (zo < @cz)
+            offset = @is_metric ? 0.5.mm : 0.02.inch
+            flag = false
+            if (@table_flag)
+               if ((@material_thickness + offset) < @retract_depth)
+                  @cz = @material_thickness + offset
+                  flag = true
+               end
+            else
+               if offset < @retract_depth
+                  @cz = 0.0 + offset   
+                  flag = true
+               end
+            end
+            if (flag)
+               command_out += "G00" + format_measure('Z',@cz) +"\n"
+               @cc = @cmd_rapid
+            end
+         end
+         
          command_out += cmd if ((cmd != @cc) || @gforce)
          command_out += (format_measure('Z', zo))
          so = @speed_plung  # force using plunge rate for vertical moves
