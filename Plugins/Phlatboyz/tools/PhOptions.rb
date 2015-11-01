@@ -1255,7 +1255,7 @@ end # class
             'true|false'
             ];
 
-         input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
+         input=UI.inputbox(prompts, defaults, list, 'Hole Feature Options (read the help!)')
          # input is nil if user cancelled
          if (input)
             @options.use_fuzzy_holes         = (input[0] == 'true')

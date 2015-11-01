@@ -21,6 +21,7 @@ module PhlatScript
       @quickpeck = $phoptions.quick_peck?   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
       @canneddrill = false
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
+      @fastapproach = true
 #
       @max_x = 48.0
       @min_x = -48.0
@@ -421,27 +422,28 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         # if above material, G00 to surface
-         if (@cz == @retract_depth) && (zo < @cz)
-            offset = @is_metric ? 0.5.mm : 0.02.inch
-            flag = false
-            if (@table_flag)
-               if ((@material_thickness + offset) < @retract_depth)
-                  @cz = @material_thickness + offset
-                  flag = true
+         # if above material, G00 to near surface, fastapproach
+         if (@fastapproach)
+            if (@cz == @retract_depth) && (zo < @cz)
+               offset = @is_metric ? 0.5.mm : 0.02.inch
+               flag = false
+               if (@table_flag)
+                  if ((@material_thickness + offset) < @retract_depth)
+                     @cz = @material_thickness + offset
+                     flag = true
+                  end
+               else
+                  if offset < @retract_depth
+                     @cz = 0.0 + offset   
+                     flag = true
+                  end
                end
-            else
-               if offset < @retract_depth
-                  @cz = 0.0 + offset   
-                  flag = true
+               if (flag)
+                  command_out += "G00" + format_measure('Z',@cz) +"\n"
+                  @cc = @cmd_rapid
                end
-            end
-            if (flag)
-               command_out += "G00" + format_measure('Z',@cz) +"\n"
-               @cc = @cmd_rapid
             end
          end
-         
          command_out += cmd if ((cmd != @cc) || @gforce)
          command_out += (format_measure('Z', zo))
          so = @speed_plung  # force using plunge rate for vertical moves
@@ -1486,7 +1488,8 @@ module PhlatScript
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
       if ($phoptions.use_reduced_safe_height?) 
-         sh = (@retract_depth - zStart) / 3 # use reduced safe height
+         sh = (@retract_depth - zStart) / 4 # use reduced safe height
+         sh = (sh > 0.5.mm) ? 0.5.mm : sh
          if zStart > 0
             sh += zStart.to_f
          end
@@ -1725,7 +1728,8 @@ module PhlatScript
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
       if ($phoptions.use_reduced_safe_height?) 
-         sh = (@retract_depth - zStart) / 3 # use reduced safe height
+         sh = (@retract_depth - zStart) / 4 # use reduced safe height
+         sh = (sh > 0.5.mm) ? 0.5.mm : sh
          if zStart > 0
             sh += zStart.to_f
          end

@@ -434,13 +434,17 @@
          The plunge tool allows the generation of G-code required to plunge the bit at the depth indicated
          in the "Material Thickness" Parameters dialog.<br>
          OR<br>
-         You can set the percentage depth before you click.  This hole will then be that
+         You can set the <b>percentage depth</b> before you click.  This hole will then be that
          percentage of the material thickness in depth.  You will need to set the depth for every hole.<br>
          AND<br>
-         You can hold down the SHIFT key when clicking, and you will be prompted for a diameter.
-         The hole will then be spiral bored to that diameter.  
+         You can hold down the <B>SHIFT</b> key when clicking, and you will be prompted for a <b>diameter</b>.<br>
+         The hole will then be spiral bored to that diameter.  <br>
          This is a relatively slow way to cut a hole so holes that are greater than 3 times the diameter of the bit should rather be a circle with an inside cut to remove the waste.   
          However, if you are cutting soft material (large or no multipass) and using the 'diameter first' cut strategy, the cut will be quite quick.
+         
+         <p>New in V1.4 is the ability to lock the large diameter setting so that you can easily create many holes with the same large diameter.
+         Tap the HOME key to set 'LARGE LOCK' on and be prompted for a hole diameter that will persist until you select another tool or tap HOME again. 
+         </b>
          
          <table border=0 width=300 style="float: right;">
          <tr>
@@ -488,8 +492,8 @@
                <li>Spiral out to desired diameter using either multipass depth layers, or a fuzzy calculated depth based on the bit diameter.
             </ol>   
             Change this option on the 
-            <b>Tools|PhlatBoys|Options|Hole feature options</b> menu<br>
-            <img src="images/holeoptions.png">
+            <a href="howto_options.html#a5"><b>Tools|PhlatBoys|Options|Hole feature options</b></a> menu<br>
+            <img src="images/options-holefeatures.png">
          </ol>
       </td>
    </tr>

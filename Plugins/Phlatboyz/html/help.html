@@ -113,7 +113,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4</b><br>October 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4</b><br>November 2015</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -171,7 +171,7 @@
          <div class="command-description" style="float: right; width: 220px; display: block; margin-left: 10px; font-size: 0.80em;">
             <b>Jump to:</b>
             <ul style="padding-left: 3px;">
-            <li><a href="afterinstall.html">After install - things to do</a>
+            <li><a href="afterinstall.html" style="color: red">After install - things to do</a>
             <li><a href="sketchucamtoolbar.html"><b>The Toolbar</b></a>  very important!
             </ul>
             <b>HOWTO:</b><br>
@@ -220,19 +220,19 @@
    <dt>Bug fixes
       <dd>
       <dl>
-         <dt>Fix for Phlatten tool
+         <dt>Fix for Phlatten tool.
             <dd>Since Make 2014, Phlatten has failed to actually phlatten due to not liking the order
             used for deleting faces.   Faces are now deleted separately from edge collection.
-         <dt>Fold/centerline/pocket tool depth in VCB
+         <dt>Fold/centerline/pocket tool depth in VCB.
             <dd>The depth can now be set to floating point number, eg 10.6% or 34.15% etc.
-         <dt>Inputbox error checking
+         <dt>Inputbox error checking.
             <dd> All input boxes use exception rescuing to detect errors in number formats and 'retry'. &nbsp;This is a step on the way to
             handling regionalized number formats.
             <dd>Note that a side effect of this is that the main parameters dialog will fail silently if it is given an invalid number and the
             corresponding variable will not be set.  For example if you type 45t for Safe Height the safe height 
             will not be changed AND you will not be notified.
-         <dt>Joiner tool - bug in long filenames
-            <dd>When the joiner tried to create a comment from a long filename, the chunking operation failed.  replaced with .scan()
+         <dt>Joiner tool - bug in long filenames.
+            <dd>When the joiner tried to create a comment from a long filename, the chunking operation failed.  Replaced with .scan().
       </dl>   
    <dt>Added features
       <dd><dl>
@@ -240,20 +240,23 @@
          <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
          a Gcode file as a parameter for preview.
          <dd>Tools|PhlatBoyz|Options|File options|Gcode plotter program
-         <dd>set to 'default' to use Gplot.exe the efault plotter
-         <dd>set to the full path and filename of your choice of plotter program, such at NC-Plot.
+         <dd>set to 'default' to use Gplot.exe the default plotter
+         <dd>set to the full path and filename of your choice of plotter program, such as NC-Plot.
 
       <dt><a href="sketchucamtoolbar.html#toolpocket">Multiselect pockets</a>
          <dd>If multiple faces are selected when the pocket tool is selected, all the faces will be pocketed.
          <dd>All selected entities will be Unselected after this process.
          <dd>If only one thing is selected, nothing is done, process is ignored.
          <dd> Make sure you have the correct pocket parameters before doing the multiselect operation!
-      <dt>Large plunge holes with sticky size   
+      
+      <dt><a href="sketchucamtoolbar.html#toolplunge">Large plunge holes with sticky size</a>
          <dd>Holding
 down shift when clicking for a plunge hole allows you to set size, but
 until now you had to do that for every hole. Now you can tap the HOME
 key to set 'LARGE LOCK' on and be prompted for a hole diameter that
-will persist until you select another tool or tap HOME again. <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
+will persist until you select another tool or tap HOME again. 
+   
+      <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
          <dd>Select the Plunge hole tool
          <dd>Hold down ALT and select the point for the bottom left hole
          <dd>You will be prompted for the spacing and number of holes

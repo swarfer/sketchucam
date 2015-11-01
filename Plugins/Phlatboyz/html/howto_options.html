@@ -106,7 +106,7 @@
 
 <br>
 <div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)
-	<div><b>SketchUcam Version 1.2a</b><br>Dec 2014</div>
+	<div><b>SketchUcam Version 1.4</b><br>Nov 2015</div>
 </div>
 <hr width="100%">
 <div class="intro">
@@ -152,7 +152,9 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
    <dd>Things affecting your machine type and size
 <dt><a href="#a4">Feature Options</a>
    <dd>Things you may want to change to get different G-code output options
-<dt><a href="#a5">File Options</a>
+<dt><a href="#a5">Hole Feature Options</a>   
+   <dd>Options that affect plunge hole boring
+<dt><a href="#a6">File Options</a>
    <dd>Default file naming options
 </dl>
 <br clear="all">
@@ -281,7 +283,7 @@ cuts = 3.3</pre>
          <b>NOTE 2:</b> This option is mostly to cater for GRBL.  Since GRBL does not accept long lines,
          all G-code has been shortened to keep lines as short as possible, and long comments will be folded across
          multiple lines to keep them shorter than 50 characters.
-   <dt>Use Comments
+   <dt>Output Comments
       <dd>When this option is set to FALSE, no comments will be output to the G-code file at all.
 </dl>
 
@@ -295,7 +297,8 @@ cuts = 3.3</pre>
          the machine will maintain the best possible speed for the cut even if the
          tool isn't true to the cut path. Rounded corners at low feedrates aren't
          very noticeable but anything over 200 starts to generate large radii so
-         that the momentum of the machine can be maintained.
+         that the momentum of the machine can be maintained.<br>
+         Turn this off for GRBL and related controllers.
             
    <dt>Always_show_safearea
       <dd>Set this to true, if you want the safe area to always show, when parameters are saved.<br>
@@ -350,15 +353,7 @@ cuts = 3.3</pre>
       <dt>End position Y
          <dd>Ending position for Y axis.
       </dl>   
-         
-   <dt>Use fuzzy hole stepover 
-      <dd>FALSE = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
-         This may create a very small depth of cut for the last cut.
-      <dd>TRUE = the stepover will be adjusted to give a whole number of steps of equal size.<br>
-         If stepover% is less than 50% then the number of steps will be rounded UP to give a smaller stepover, for hard materials.<br>
-         If stepover% is greater than 50% then the number of steps will be rounded DOWN, for soft materials.<br>
-         If stepover% is 50%, then no stepover rounding will be performed.
-
+   
    <dt>Use fuzzy pocket stepover
       <dd>TRUE = recalculate the zigzag stepover to prevent remainders at the end of the cut. <a href="sketchucamtoolbar.html#toolpocket">Read here for details</a>
       <DD>FALSE = use the exact stepover% given in the parameters dialog.
@@ -369,18 +364,42 @@ cuts = 3.3</pre>
       <dd><a href="howto_ramping.html">Read more about ramping</a>
    <dt>Use Ramping
       <dd>Set this to have the default for new drawings to use ramping for plunge moves.
-      
-   <dt>Output helixes as quarter arcs
-         <dd>TRUE (default) = output spiral boring helixes as quarter arcs, 4 arc segments per revolution.  This prevents
-         controllers getting confused about doing a full circle.
-         <dd>FALSE = output helixes as a full circle code.  Do not use this with LinuxCNC and test carefully before trusting.
-
    <dt>Force all G-codes on for Marlin         
       <dd>FALSE (default) = use optimized G-code output that does not repeat G commands if they are not needed
       <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
    </dl>
+
+<h2><a id="a5">Hole Feature Options</a></h2>
+<img src="images/options-holefeatures.png" style="float: right;">
+   Some options that plunge hole feature Gcode generation.<br>
+   Note that the Ramping and stepover% settings also affect how hole boring is generated.  <a href="sketchucamtoolbar.html#toolplunge">Read more here</a>
+<dl>
+<dt>Use fuzzy hole stepover 
+      <dd>FALSE = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
+         This may create a very small depth of cut for the last cut.
+      <dd>TRUE = the stepover will be adjusted to give a whole number of steps of equal size.<br>
+         If stepover% is less than 50% then the number of steps will be rounded UP to give a smaller stepover, for hard materials.<br>
+         If stepover% is greater than 50% then the number of steps will be rounded DOWN, for soft materials.<br>
+         If stepover% is 50%, then no stepover rounding will be performed.
+ <dt>Output helixes as quarter arcs
+         <dd>TRUE (default) = output spiral boring helixes as quarter arcs, 4 arc segments per revolution.  This prevents
+         controllers getting confused about doing a full circle.
+         <dd>FALSE = output helixes as a full circle code.  Do not use this with LinuxCNC and test carefully before trusting.
+ <dt>Use QuickPeck drill cycle
+   <dd>FALSE : plunge hole drill cycles will use full retract to above the surface of the material
+   <dd>TRUE :  plunge hole drill cycle will use a small (0.5mm) retract, staying below the material surface.  Effectively just a 'pause'.
+      This makes drilling faster, but may not clear chips properly in some materials, use with caution.   
+      Do not use with straight flute bits.
+<dt>Use Depth first(true) or Diam first(false)
+   <dd>This affects bored holes that are larger than the bit diameter
+   <dd>TRUE : use a depth first method.  For each step over of the bit, the hole will be helical bored to depth before doing the next step over.
+   <dd>FALSE : use a diameter first method.  First helical bore 2xbitdiam to final depth. Then, for each multipass depth, 
+      spiral out to final diameter before doing the next pass.   If multipass is off this will do a full depth spiral cut which is the fastest way to 
+      bore a large hole.   For harder materials with multipass this method is recommended.
+</dl>   
    
-<h2><a id="a5">File Options</a></h2>
+   
+<h2><a id="a6">File Options</a></h2>
 <img src="images/options-file.png" style="float: right;">
    Some options that affect saving G-code files.
 <dl>
