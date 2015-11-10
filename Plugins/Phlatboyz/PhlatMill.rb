@@ -382,10 +382,14 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
-            cncPrintC("(RETRACT limiting Z to @max_z)\n")
+            msg = "(RETRACT limiting Z to @max_z)\n"
+            cncPrintC(msg)
+            puts msg
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(RETRACT limiting Z to @min_z)\n")
+            msg = "(RETRACT limiting Z to @min_z)\n"
+            cncPrintC(msg)
+            puts msg
             zo = @min_z
          end
          command_out = ""
@@ -415,10 +419,14 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
-            cncPrintC("(PLUNGE limiting Z to max_z @max_z)\n")
+            msg = "(PLUNGE limiting Z to max_z @max_z)\n"
+            cncPrintC(msg)
+            puts msg
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(PLUNGE limiting Z to min_z @min_z)\n")
+            msg = "(PLUNGE limiting Z to min_z @min_z)\n"
+            cncPrintC(msg)
+            puts msg
             zo = @min_z
          end
          command_out = ""
@@ -1838,21 +1846,32 @@ module PhlatScript
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
+# if radius is <= 0.006.inch then output a linear move since really small radii cause issues with controllers and simulators
    def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
       #puts "g3: #{g3} cmd #{cmd}"
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
-      command_out += cmd if ((cmd != @cc) || @gforce)
-      @precision +=1  # circles like a bit of extra precision so output an extra digit
-      command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
-      command_out += (format_measure("Y", yo)) #if (yo != @cy)
-      command_out += (format_measure("Z", zo)) if (zo != @cz)
-      command_out += (format_measure("R", radius))
-      @precision -=1
-      command_out += (format_feed(so)) if (so != @cs)
-      command_out += "\n"
+      if (radius > 0.01.inch)  # is radius big enough?
+         command_out += cmd if ((cmd != @cc) || @gforce)
+         @precision +=1  # circles like a bit of extra precision so output an extra digit
+         command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
+         command_out += (format_measure("Y", yo)) #if (yo != @cy)
+         command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
+         command_out += (format_measure("R", radius))
+         @precision -=1
+         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n"
+      else  # output a linear move instead
+         command_out += "G01"
+         cmd = "G01"
+         command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
+         command_out += (format_measure("Y", yo)) #if (yo != @cy)
+         command_out += (format_measure("Z", zo)) if (zo != @cz)
+         command_out += (format_feed(so)) if (so != @cs)
+         command_out += "\n"
+      end
       cncPrint(command_out)
       @cx = xo
       @cy = yo

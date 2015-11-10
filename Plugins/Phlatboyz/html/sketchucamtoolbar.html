@@ -141,6 +141,7 @@
          <li><a href="#tooleraser"><img alt="" src="../images/erasetool_small.png" title="Phlatboyz Erase Tool" width="16">Eraser</a>
          <li><a href="#toolsafe"><img alt="" src="../images/safetool_small.png" title="Safetool" width="16">Safe Area mover</a>
          <li><a href="#toolreorder"><img alt="" src="../images/reorder_small.png" title="reorder tool" width="16">Group reorder</a>
+         <li><a href="#toolzero"><img alt="" src="../images/zerotool_small.png" title="zero tool" width="16">Zero Offset</a>
          <li><a href="#tooljoiner"><img alt="" src="../images/joiner_small.png" title="G-Code Joiner" width="16">G-code Joiner</a>         
          <li><a href="#toolgcode"><img alt="" src="../images/gcode_small.png" title="Phlatboyz G-Code" width="16">Generate G-code</a>
          <li><a href="#toolgoto"><img alt="" src="../images/Phlatboyz_homepage_small.png" title="Go To Phlatboyz Homepage" width="16">Goto Phlatforum</a>
@@ -715,9 +716,17 @@ stepover% <= 100%
          parameters dialog and allows dynamic placement of the "safe" cutting
          area rectangle. <br><br> G-code output will be generated only from designated
          Phlatboyz edges within this safe rectangle and will be relative to the
-         safe origin (bottom left corner).  <br><br>
+         safe origin (bottom left corner) unless moved using the <a href="#toolzero">'Set 0,0 offset'</a> tool.  <br><br>
+         
+         If any cut edges are <b>selected</b> within the Safe Area, only those selected edges will generate Gcode.
+         Use this when generating Gcode for large complicated drawings where a lot of lines are outside the Safe Area.
+         By selecting the items within the Safe Area that you want cut, SketchUcam can ignore all other lines and therefore
+         generate Gcode much faster.
+         <br><br>
          Note:  Even if the user doesn't use this tool to graphically define a safe area,
-         the safe cutting area still exists and assumed to be at sketchup's origin. &nbsp;
+         the safe cutting area still exists and assumed to be at sketchup's origin unless it is moved 
+         using the default settings in the <A href="howto_options.html#a3">Options|Machine Options</a> dialog.
+         &nbsp;
       </td>
    </tr>
 
@@ -737,6 +746,29 @@ stepover% <= 100%
    </td>
    </tr>
 
+    <tr>
+      <td class="command-image" valign=top id="toolzero">
+              <img alt="" src="../images/zerotool_large.png" title="Set Zero offset" width="32">
+      </td>
+      <td class="command-description">
+         <b>Set 0,0 offset</b> - 
+         Use this to set a X0,Y0 position for the Gcode that is somewhere other than the bottom left corner of the Safe Area.<br>
+         (However, it should still be within the Safe Area!)
+         <ol>
+         <li>Select the tool
+         <li>Select the position for the 0,0 point (for example the center of the part)
+         </ol>
+         To remove the offset
+         <ol>
+         <li>Select the tool
+         <li>Select the bottom left corner of the Safe Area
+         </ol>
+         Note that this offset is <b>relative to the Safe Area</b> and will move with the Safe Area when you move it.
+         &nbsp; 
+      </td>
+    </tr>
+   
+   
     <tr>
       <td class="command-image" valign=top id="tooljoiner">
               <img alt="" src="../images/joiner_large.png" title="G-Code Joiner" width="32">
