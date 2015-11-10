@@ -1095,6 +1095,15 @@ puts " new #{newedges[i-1]}\n"
       end
    end #millEdges
    
+   def GcodeUtil.getHZoffset
+      hzoffset = PhlatScript.isMetric ? 0.5.mm : 0.02.inch
+      if (hzoffset > (PhlatScript.multipassDepth/3))
+         hzoffset  = PhlatScript.multipassDepth/3
+         #aMill.cncPrintC("hzoffset set to #{hzoffset.to_mm}")
+      end
+      return hzoffset
+   end
+   
 #//////////////////   
    def GcodeUtil.millEdgesRamp(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
@@ -1133,11 +1142,8 @@ puts " new #{newedges[i-1]}\n"
 #      end
       @tab_top  = 100
 #offset for rapid plunge down to previous pass depth
-      hzoffset = PhlatScript.isMetric ? 0.5.mm : 0.02.inch
-      if (hzoffset > (PhlatScript.multipassDepth/2))
-         hzoffset  = PhlatScript.multipassDepth/2
-         aMill.cncPrintC("hzoffset set to #{hzoffset.to_mm}")
-      end
+      hzoffset = getHZoffset()
+      
 
       begin # multipass
          pass += 1
@@ -1542,12 +1548,8 @@ puts " new #{newedges[i-1]}\n"
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
-# this is the offset for the plunge down to previous pass depth      
-      hzoffset = PhlatScript.isMetric ? 0.5.mm : 0.02.inch
-      if (hzoffset > (PhlatScript.multipassDepth/2))
-         hzoffset  = PhlatScript.multipassDepth/2
-         aMill.cncPrintC("hzoffset set to #{hzoffset.to_mm}")
-      end
+# this is the offset for the plunge down to previous pass depth so the tool will not hit the surface     
+      hzoffset = getHZoffset()
 
       begin # multipass
          pass += 1
@@ -1627,6 +1629,7 @@ puts " new #{newedges[i-1]}\n"
                               retractp = false
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
                               #   puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
+                                 # if we are at the same point, do not retract
                                  if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
                                     aMill.cncPrintC("retract prevented")
                                     retractp = true
@@ -1634,27 +1637,27 @@ puts " new #{newedges[i-1]}\n"
                                     aMill.retract(@safeHeight)
                                     retractp = false
                                  end
-                                 
-                              else
+                              else  # only 1 segment, use optimal single direction cut path
                                  #            if multipass and 1 edge and not finished , then partly retract
                                  #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
                                  if PhlatScript.useMultipass? && (points == 1) && 
                                     (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
                                     #                                       puts "   part retract"
                                     #aMill.cncPrint("(PARTIAL RETRACT)\n")
-                                    aMill.retract(prev_pass_depth+ 0.5.mm )
+                                    aMill.retract(prev_pass_depth+ hzoffset )
                                     ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
                                  end
                               end
                               if ccmd
                                  #aMill.cncPrint("(RAPID #{ccmd})\n")
-                                 aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, "G0")
+                                 aMill.move(point.x, point.y, prev_pass_depth + hzoffset , PhlatScript.feedRate, "G0")
                                  ccmd = nil
                               else
 #                                 puts "moving #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
                                  aMill.move(point.x, point.y)
                               end
-                              aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")   
+                              #aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")   
+                              # can we rapid down to near the previous pass depth?
                               if ((!retractp) && (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
                                  aMill.cncPrintC("Plunging to previous pass")          #if (@debug)
                                  aMill.plung(prev_pass_depth + hzoffset ,1,'G0', false)
