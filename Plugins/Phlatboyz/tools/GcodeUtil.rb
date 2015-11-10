@@ -1132,6 +1132,13 @@ puts " new #{newedges[i-1]}\n"
 #         edges.reverse!
 #      end
       @tab_top  = 100
+#offset for rapid plunge down to previous pass depth
+      hzoffset = PhlatScript.isMetric ? 0.5.mm : 0.02.inch
+      if (hzoffset > (PhlatScript.multipassDepth/2))
+         hzoffset  = PhlatScript.multipassDepth/2
+         aMill.cncPrintC("hzoffset set to #{hzoffset.to_mm}")
+      end
+
       begin # multipass
          pass += 1
          aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
@@ -1254,25 +1261,30 @@ puts " new #{newedges[i-1]}\n"
 
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
                                  aMill.cncPrintC("points > 1")       if @debug
-                                 aMill.retract(@safeHeight)
-                                 aMill.move(point.x, point.y)
-                                 if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                    aMill.cncPrintC("plunging to previous pass")    if (@debug)
-                                    aMill.plung(prev_pass_depth,1,'G0')
+                                 if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
+                                    aMill.cncPrintC("retract prevented in ramp")                #if (@debug)
+                                 else
+                                    aMill.retract(@safeHeight)
+                                    aMill.move(point.x, point.y)
+                                    if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
+                                       aMill.cncPrintC("plunging to previous pass before ramp")    #if (@debug)
+                                       aMill.plung(prev_pass_depth + hzoffset ,1,'G0',false)
+                                    end
                                  end
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                               else
                                  aMill.cncPrintC("points = 1")          if @debug
                                  if PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
+                                    # do simple ramp to depth
                                     aMill.move(point.x, point.y)        if (pass == 1)
                                     aMill.cncPrintC("RAMP")             if @debug
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  else
-                                    aMill.cncPrintC(" normal move and ramp to cut_depth")    if @debug
+                                    aMill.cncPrintC(" normal move and ramp to cut_depth")    #if @debug
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                       aMill.cncPrintC("plunging to previous pass")    if (@debug)
-                                       aMill.plung(prev_pass_depth,1,'G0')
+                                       aMill.cncPrintC("plunging to previous pass")          #if (@debug)
+                                       aMill.plung(prev_pass_depth + hzoffset,1,'G0', false)
                                     end
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  end
@@ -1530,6 +1542,12 @@ puts " new #{newedges[i-1]}\n"
       prog = PhProgressBar.new(edges.length)
       prog.symbols("e","E")
       printPass = true
+# this is the offset for the plunge down to previous pass depth      
+      hzoffset = PhlatScript.isMetric ? 0.5.mm : 0.02.inch
+      if (hzoffset > (PhlatScript.multipassDepth/2))
+         hzoffset  = PhlatScript.multipassDepth/2
+         aMill.cncPrintC("hzoffset set to #{hzoffset.to_mm}")
+      end
 
       begin # multipass
          pass += 1
@@ -1557,6 +1575,7 @@ puts " new #{newedges[i-1]}\n"
 
                if PhlatScript.useMultipass?
                   #                     cut_depth = [cut_depth, (-1.0 * PhlatScript.multipassDepth * pass)].max
+                  prev_pass_depth = @zL - (PhlatScript.multipassDepth * (pass-1))
                   cut_depth = [cut_depth, @zL - (PhlatScript.multipassDepth * pass)].max
                   #                     puts " cut_depth #{cut_depth.to_mm}\n"
                   pass_depth = cut_depth
@@ -1604,8 +1623,18 @@ puts " new #{newedges[i-1]}\n"
                               # for these cuts we must retract else we get collisions with existing material
                               # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
                               # for pockets.
+                              
+                              retractp = false
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
-                                 aMill.retract(@safeHeight)
+                              #   puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
+                                 if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
+                                    aMill.cncPrintC("retract prevented")
+                                    retractp = true
+                                 else
+                                    aMill.retract(@safeHeight)
+                                    retractp = false
+                                 end
+                                 
                               else
                                  #            if multipass and 1 edge and not finished , then partly retract
                                  #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
@@ -1622,7 +1651,13 @@ puts " new #{newedges[i-1]}\n"
                                  aMill.move(point.x, point.y, prev_pass_depth + 0.5.mm , PhlatScript.feedRate, "G0")
                                  ccmd = nil
                               else
+#                                 puts "moving #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
                                  aMill.move(point.x, point.y)
+                              end
+                              aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")   
+                              if ((!retractp) && (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
+                                 aMill.cncPrintC("Plunging to previous pass")          #if (@debug)
+                                 aMill.plung(prev_pass_depth + hzoffset ,1,'G0', false)
                               end
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            else

@@ -413,7 +413,11 @@ module PhlatScript
       end
    end
 
-   def plung(zo, so=@speed_plung, cmd=@cmd_linear)
+   # zo is Z level to go to
+   # so is feed speed to use
+   # cmd = default cmd, normally G01
+   # fast = use fastappraoch , set to false to force it off
+   def plung(zo, so=@speed_plung, cmd=@cmd_linear, fast=true)
       #      cncPrintC("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
       if (zo == @cz)
          @no_move_count += 1
@@ -431,7 +435,7 @@ module PhlatScript
          end
          command_out = ""
          # if above material, G00 to near surface, fastapproach
-         if (@fastapproach)
+         if (fast && @fastapproach)
             if (@cz == @retract_depth) && (zo < @cz)
                offset = @is_metric ? 0.5.mm : 0.02.inch
                flag = false
