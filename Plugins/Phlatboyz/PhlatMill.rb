@@ -1507,7 +1507,7 @@ module PhlatScript
          end
          if (!@canneddrill) || (PhlatScript.mustramp?) 
             puts "pbd  reduced safe height #{sh.to_mm}\n"                     if @debug
-            command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+            command_out += "G00" + format_measure("Z", sh)    # fast feed down to safe height
             command_out += "\n"
          end
       else

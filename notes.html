@@ -354,11 +354,26 @@ List of things to fix/add for next release, in no particular order
    <dt>fold/centerline/pocket tool depth
       <dd>can now be set to floating point number, eg 10.6 or 34.15 etc
    <dt>inputbox error checking
-      <dd> all input boxes use exception rescueing to detect errors in number formats and 'retry'
+      <dd> all input boxes use exception rescuing to detect errors in number formats and 'retry'
    <dt>removed SHIFT for inverting cut edge in outside/inside cut.
    <dt>rapid approach to surface for plunge moves, similar to ramping
 </dl>  
+<h2>1.4a</h2>
+<dl>
+   <Dt>help updated
+   <dt>move use_reduced_safe_height to the hole feature options menu where it belongs
+   <dt>Centerline cuts: prevent retract when possible
+      <dd>  If doing multipass cuts, centerline cuts that form loops do not need to retract between passes since start and end point are equal. 
+      <dd>  This applies to all cuts based on centerline cuts, centerline, fold, and pockets. 
+   <dt>Fast approach:
+      <dd>  Approach the surface using G00 to within 0.5mm, then switch to G01 to begin cutting.
+      <dd>  This reduces cut time greatly when the safe height is relatively high, and to a lesser extent for normal safe heights. 
+      <dd>  (This was already implemented for ramping cuts, and has now been added to non-ramping cuts). 
+   <dt> Very small arcs converted to lines
+      <dd>  Arc segments with radius <= 0.010" can cause problems with some simulators and controllers. Convert them to line segments. Note that drawing such a small arc is almost impossible in Sketchup, but they can result from scaling a drawing, or from importing a scanned DXF file. 
 
+
+</dl>
         
 <hr>
 $Id: notes.html 98 2014-02-14 13:53:20Z swarfer $

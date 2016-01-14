@@ -139,6 +139,7 @@ However, this proved to be complicated by changes in Windows 7 and 8, differing 
 Thus the new Options Menu is an evolution of this default options mechanism and allow a user to set default settings that affect
 their computer or CNC machine  environment using simple menus as shown at right.
 </p>
+<hr>
 <h2>The Options menu</h2>
 <p>
 The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items with subitems as follows:
@@ -158,7 +159,7 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
    <dd>Default file naming options
 </dl>
 <br clear="all">
-
+<hr>
 <h2><a id="a1">Tool Options</a></h2>
 <p>   
 <img src="images/options-tool.png" style="float: right;">
@@ -197,7 +198,7 @@ These settings can easily be overridden by using the Tool Profiles save and load
       <dd>Set this to true to have pocket zigzags default to along Y axis, false for along X axis.
          This setting can be changed on the fly with the END key.
 </dl>
-
+<hr>
 <h2><a id="a2">Misc Options</a></h2>
 <p>
 <img src="images/options-misc.png" style="float: right;">
@@ -221,7 +222,7 @@ These settings can easily be overridden by using the Tool Profiles save and load
       Linux users running Sketchup under WINE can work around this issue by installing 'winetricks' and then issuing the command 'winetricks ie8'.  
       This will install IE8 and allow the Parameters dialog to work correctly with this setting set to false.
 </dl>   
-
+<hr>
 <h2><a id="a3">Machine Options</a></h2>
 <p>
 <img src="images/options-machine.png" style="float: right;">
@@ -286,7 +287,7 @@ cuts = 3.3</pre>
    <dt>Output Comments
       <dd>When this option is set to FALSE, no comments will be output to the G-code file at all.
 </dl>
-
+<hr>
 <h2><a id="a4">Feature Options</a></h2>
 <img src="images/options-feature.png" style="float: right;">
 <dl>
@@ -303,9 +304,6 @@ cuts = 3.3</pre>
    <dt>Always_show_safearea
       <dd>Set this to true, if you want the safe area to always show, when parameters are saved.<br>
          Otherwise the safe area will only show, if it's size has been changed.
-            
-   <dt>Use_reduced_safe_height
-      <dd>Set this to true to use 1/3 of the usual safe travel height during plunge boring moves.
             
    <dt>Use_pocket_CW
       <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
@@ -368,13 +366,15 @@ cuts = 3.3</pre>
       <dd>FALSE (default) = use optimized G-code output that does not repeat G commands if they are not needed
       <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
    </dl>
-
+<hr>
 <h2><a id="a5">Hole Feature Options</a></h2>
 <img src="images/options-holefeatures.png" style="float: right;">
    Some options that plunge hole feature Gcode generation.<br>
    Note that the Ramping and stepover% settings also affect how hole boring is generated.  <a href="sketchucamtoolbar.html#toolplunge">Read more here</a>
 <dl>
-<dt>Use fuzzy hole stepover 
+   <dt>Use_reduced_safe_height
+      <dd>Set this to true to use the minimum of 0.5mm or 1/3 of the usual safe travel height during plunge boring moves.
+   <dt>Use fuzzy hole stepover 
       <dd>FALSE = spiral hole boring will use the exact stepover percentage given in the parameters dialog.
          This may create a very small depth of cut for the last cut.
       <dd>TRUE = the stepover will be adjusted to give a whole number of steps of equal size.<br>
@@ -398,7 +398,7 @@ cuts = 3.3</pre>
       bore a large hole.   For harder materials with multipass this method is recommended.
 </dl>   
    
-   
+   <hr>
 <h2><a id="a6">File Options</a></h2>
 <img src="images/options-file.png" style="float: right;">
    Some options that affect saving G-code files.

@@ -113,7 +113,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4</b><br>November 2015</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4a</b><br>February 2016</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -176,11 +176,18 @@
             </ul>
             <b>HOWTO:</b><br>
             <ul style="padding-left: 2px;">
+               <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog is blank</a>
                <li><a class="index" href="howto_options.html">Change Default Options</a>
-               <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog blank</a>            
-               <li><a class="index" href="howto-changegplot.html">Change G-code plotter*</a>
-               <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
-               <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
+               <ul>
+                  <li><a href="howto_options.html#a1">Tool Options</a> 
+                  <li><a href="howto_options.html#a2">Misc Options</a> 
+                  <li><a href="howto_options.html#a3">Machine Options</a> 
+                  <li><a href="howto_options.html#a4">Feature Options</a> 
+                  <li><a href="howto_options.html#a5">Hole Feature Options</a>   
+                  <li><a href="howto_options.html#a6">File Options</a> 
+               </ul>
+               
+                           
                <li><a class="index" href="sketchucamtoolbar.html">Toolbar Icons</a>
                <ul>
                   <li><a href="sketchucamtoolbar.html#toolparameters"><img alt="" src="../images/parameterstool_small.png" title="Enter Phlatboyz Parameters" width="16"> Parameters</a>
@@ -201,7 +208,10 @@
                   <li><a href="sketchucamtoolbar.html#toolgoto"><img alt="" src="../images/Phlatboyz_homepage_small.png" title="Go To Phlatboyz Homepage" width="16"> Goto Phlatforum</a>
                   <li><a href="sketchucamtoolbar.html#toolhelp"><img alt="" src="../images/helptool_small.png" title="Open Phlatboyz Help" width="16"> Help</a>
                </ul>
-               <li><a class="index" href="quicktools.html">QuickTools Toolbar*</a>
+               <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
+               <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
+               <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
+               <li><a class="index" href="quicktools.html">QuickTools Toolbar</a>
                <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
                <li><a class="index" href="toolsmenu.html">Tools|PhlatBoyz Menu</a>
                <li><a class="index" href="howto_ramping.html"><b>How to use Ramping</b></a>
@@ -214,6 +224,34 @@
 <tbody>
 <tr>
    <td width="90%">
+   <div class="intro">
+      
+      <h4>New in V1.4a (Feb 2016)</h4>
+      <dl>   
+      <dt>Bug fixes
+         <dd>
+         <dl>
+         <dt>Additions to help.
+         </dl>
+         </dd>
+      <dt>New Features
+         <dd>
+         <dl>
+         <dt>Centerline cuts: prevent retract when possible
+            <dd>If doing multipass cuts, centerline cuts that form loops do not need to retract between passes since start and end  point are equal.
+            <dd>This applies to all cuts based on centerline cuts, centerline, fold, and pockets.
+         <dt>Fast approach:
+            <dd>Approach the surface using G00 to within 0.5mm, then switch to G01 to begin cutting.<br>
+            This reduces cut time greatly when the safe height is relatively high, and to a lesser extent for normal safe heights.
+            <dd>(This was already implemented for ramping cuts, and has now been added to non-ramping cuts).
+         <dt>Very small arcs converted to lines
+            <dd>Arc segments with radius <= 0.010" can cause problems with some simulators and controllers.   Convert them to line segments.
+            Note that drawing such a small arc is almost impossible in Sketchup, but they can result from scaling a drawing, or from importing
+            a scanned DXF file.
+         </dl>
+         </dd>
+      </dl>
+   </div>
    <div class="intro">
       
       <h4>New in V1.4 (Nov 2015)</h4>

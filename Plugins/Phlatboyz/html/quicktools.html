@@ -169,7 +169,7 @@
    
    
    <tr>
-      <td class="command-image" valign=top>
+      <td class="command-image" valign=top id=toolchange>
       <img src="../images/toolchange_large.png">
       </td>
       <td class="command-description" valign=top>
@@ -180,7 +180,17 @@
          achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
          For example, for GRBL you can set the tool offset with this line:<br>
          <pre>G38.1 Z%s</pre>
+         
+         And example toolchange script might look like
+         <pre>(toolchange)
+G28      (go to predefined position)
+M0       (pause for tool change)
+G38.1 Z%s   (set the tool offset, %s will be replaced by the offset set for this tool)
+(toolchange end)
+</pre>
+         
          <br>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+         <br>See also: <a href="sketchucamtoolbar.html#tooljoiner">Joining multiple Gcode files (one per tool!)</a>
       </td>
    </tr>
    

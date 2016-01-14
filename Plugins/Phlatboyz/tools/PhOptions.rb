@@ -60,7 +60,6 @@ module PhlatScript
          @use_vtab_speed_limit   =   (phoptions.use_vtab_speed_limit? ? '1' : '0')
          @use_exact_path         =   (phoptions.use_exact_path? ? '1' : '0')
          @always_show_safearea   =   (phoptions.always_show_safearea? ? '1' : '0')
-         @use_reduced_safe_height =  (phoptions.use_reduced_safe_height? ? '1' : '0')
          @use_pocket_cw          =   (phoptions.use_pocket_cw? ? '1' : '0')
          @use_plunge_cw          =   (phoptions.use_plunge_cw? ? '1' : '0')
          @use_outfeed            =   (phoptions.use_outfeed? ? '1' : '0')
@@ -75,6 +74,7 @@ module PhlatScript
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
          @gforce                 =   (phoptions.gforce? ? '1' : '0')
       #featuresforholes
+         @use_reduced_safe_height =  (phoptions.use_reduced_safe_height? ? '1' : '0')
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
          @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
          @quick_peck             =   (phoptions.quick_peck? ? '1' : '0')
@@ -1129,7 +1129,6 @@ end # class
          prompts=[
             'Use_exact_path (G61) ',
             'Always_show_safearea ',
-            'Use_reduced_safe_height ',
             'Use_pocket_CW ',
             'Use_plunge_CW ',
             'Use_outfeed ',
@@ -1148,7 +1147,6 @@ end # class
          defaults=[
             @options.use_exact_path?.inspect(),
             @options.always_show_safearea?.inspect(),
-            @options.use_reduced_safe_height?.inspect(),
             @options.use_pocket_cw?.inspect(),
             @options.use_plunge_cw?.inspect(),
             @options.use_outfeed?.inspect(),
@@ -1165,7 +1163,6 @@ end # class
             @options.gforce?.inspect(),
             ];
          list=[
-            'true|false',
             'true|false',
             'true|false',
             'true|false',
@@ -1192,27 +1189,26 @@ end # class
          if (input)
             @options.use_exact_path          = (input[0] == 'true')
             @options.always_show_safearea    = (input[1] == 'true')
-            @options.use_reduced_safe_height = (input[2] == 'true')
-            @options.use_pocket_cw           = (input[3] == 'true')
-            @options.use_plunge_cw           = (input[4] == 'true')
-            @options.use_outfeed             = (input[5] == 'true')
-            @options.use_vtab_speed_limit    = (input[6] == 'true')
-            @options.profile_save_material_thickness         = (input[7] == 'true')
-            @options.use_home_height         = (input[8] == 'true')
-            @options.default_home_height     = input[9] # length
+            @options.use_pocket_cw           = (input[2] == 'true')
+            @options.use_plunge_cw           = (input[3] == 'true')
+            @options.use_outfeed             = (input[4] == 'true')
+            @options.use_vtab_speed_limit    = (input[5] == 'true')
+            @options.profile_save_material_thickness         = (input[6] == 'true')
+            @options.use_home_height         = (input[7] == 'true')
+            @options.default_home_height     = input[8] # length
 
-            @options.use_end_position        = (input[10] == 'true')
+            @options.use_end_position        = (input[9] == 'true')
             if (@options.use_outfeed?)     # only one of them
                @options.use_end_position = false
             end
-            @options.end_x                   = input[11] #length
-            @options.end_y                   = input[12] #length
+            @options.end_x                   = input[10] #length
+            @options.end_y                   = input[11] #length
 
-            @options.use_fuzzy_pockets       = (input[13] == 'true')
+            @options.use_fuzzy_pockets       = (input[12] == 'true')
 
-            @options.ramp_angle              = input[14]  #float
-            @options.must_ramp               = (input[15] == 'true')
-            @options.gforce                  = (input[16] == 'true')
+            @options.ramp_angle              = input[13]  #float
+            @options.must_ramp               = (input[14] == 'true')
+            @options.gforce                  = (input[15] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save
@@ -1237,12 +1233,14 @@ end # class
 
          # prompts
          prompts=[
+            'Use_reduced_safe_height ',
             'Use fuzzy hole stepover ',
             'Output helixes as quarter arcs ',
             'Use QuickPeck drill cycle ',
             'Use Depth first(true) or Diam first(false) '
             ];
          defaults=[
+            @options.use_reduced_safe_height?.inspect(),
             @options.use_fuzzy_holes?.inspect(),
             @options.quarter_arcs?.inspect(),
             @options.quick_peck?.inspect(),
@@ -1252,16 +1250,18 @@ end # class
             'true|false',
             'true|false',
             'true|false',
+            'true|false',
             'true|false'
             ];
 
          input=UI.inputbox(prompts, defaults, list, 'Hole Feature Options (read the help!)')
          # input is nil if user cancelled
          if (input)
-            @options.use_fuzzy_holes         = (input[0] == 'true')
-            @options.quarter_arcs            = (input[1] == 'true')
-            @options.quick_peck              = (input[2] == 'true')
-            @options.depth_first             = (input[3] == 'true')
+            @options.use_reduced_safe_height = (input[0] == 'true')
+            @options.use_fuzzy_holes         = (input[1] == 'true')
+            @options.quarter_arcs            = (input[2] == 'true')
+            @options.quick_peck              = (input[3] == 'true')
+            @options.depth_first             = (input[4] == 'true')
             
             @options.save
          end # if input
