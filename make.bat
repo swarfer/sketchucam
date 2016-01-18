@@ -15,7 +15,18 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
 
    @rem Get the absolute path to the current directory, which is assumed to be the
    @rem Git installation root.
+   if exist C:\Users\david\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad goto aa
+   if exist C:\Users\david\AppData\Local\GitHub\PortableGit_c7e0cbde92ba565cb218a521411d0e854079a28c goto bb
+   :aa
    @set git_install_root=C:\Users\david\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad
+   goto spath
+   
+   :bb
+   @set git_install_root=C:\Users\david\AppData\Local\GitHub\PortableGit_c7e0cbde92ba565cb218a521411d0e854079a28c
+   goto spath
+   
+   
+   :spath
    @set PATH=%git_install_root%\bin;%git_install_root%\mingw\bin;%git_install_root%\cmd;%PATH%
 
    @set PLINK_PROTOCOL=ssh
