@@ -1268,12 +1268,12 @@ puts " new #{newedges[i-1]}\n"
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
                                  aMill.cncPrintC("points > 1")       if @debug
                                  if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
-                                    aMill.cncPrintC("retract prevented in ramp")                #if (@debug)
+                                    aMill.cncPrintC("retract prevented in ramp")                if (@debug)
                                  else
                                     aMill.retract(@safeHeight)
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                       aMill.cncPrintC("plunging to previous pass before ramp")    #if (@debug)
+                                       aMill.cncPrintC("plunging to previous pass before ramp")    if (@debug)
                                        aMill.plung(prev_pass_depth + hzoffset ,1,'G0',false)
                                     end
                                  end
@@ -1286,10 +1286,10 @@ puts " new #{newedges[i-1]}\n"
                                     aMill.cncPrintC("RAMP")             if @debug
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  else
-                                    aMill.cncPrintC(" normal move and ramp to cut_depth")    #if @debug
+                                    aMill.cncPrintC(" normal move and ramp to cut_depth")    if @debug
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                       aMill.cncPrintC("plunging to previous pass")          #if (@debug)
+                                       aMill.cncPrintC("plunging to previous pass")          if (@debug)
                                        aMill.plung(prev_pass_depth + hzoffset,1,'G0', false)
                                     end
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
@@ -1631,7 +1631,7 @@ puts " new #{newedges[i-1]}\n"
                               #   puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
                                  # if we are at the same point, do not retract
                                  if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
-                                    aMill.cncPrintC("retract prevented")
+                                    aMill.cncPrintC("retract prevented")      if (@debug)
                                     retractp = true
                                  else
                                     aMill.retract(@safeHeight)
@@ -1659,7 +1659,7 @@ puts " new #{newedges[i-1]}\n"
                               #aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")   
                               # can we rapid down to near the previous pass depth?
                               if ((!retractp) && (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                 aMill.cncPrintC("Plunging to previous pass")          #if (@debug)
+                                 aMill.cncPrintC("Plunging to previous pass")          if (@debug)
                                  aMill.plung(prev_pass_depth + hzoffset ,1,'G0', false)
                               end
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
