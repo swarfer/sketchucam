@@ -446,9 +446,32 @@
          This is a relatively slow way to cut a hole so holes that are greater than 3 times the diameter of the bit should rather be a circle with an inside cut to remove the waste.   
          However, if you are cutting soft material (large or no multipass) and using the 'diameter first' cut strategy, the cut will be quite quick.
          
-         <p>New in V1.4 is the ability to lock the large diameter setting so that you can easily create many holes with the same large diameter.
+         <p>
+         Feedrate in the helix will be the normal rate set for cuts.<br>
+         Downfeed will be limited to either
+         <ul>
+         <li>half the bit diameter per revolution</li>
+         <li>the multipass depth if multipass is on.</li>
+         <li>the calculated Z feed if ramp angle is set, in order to achieve the correct helix angle.
+         </ul>
+         </p>
+         
+         <p>
+         <i>New in V1.2a</i> : <b>Plunge holes are automatically grouped.</b> <br>
+            <p style="margin-left: 10px;">This (mostly) prevents underlying geometry from interfering with G-code generation. <br>
+            Only an <b>underlying horizontal line will interfere</b> but in this case it is very easy to delete the 
+            part that overlaps the colored 'hole' line, or, you can group the underlying line before placing the holes. <br>
+            Ordinary holes have no group name while enlarged holes are named with the diameter and depth. <br>
+            For example a plain 8mm hole will be named "_diam_8.0mm" and a depth restricted 9mm hole will be "_diam_9.0mm_depth_76.0".<br>
+            This implies that holes will be cut in group order so don't forget to set the order with the Group Reorder tool if you need to. 
+            </p>
+         </p>
+         
+         
+         <h4>Do many holes with large diameter</h4>
+         <p style="margin-left: 10px;">New in V1.4 is the ability to <i>lock the large diameter setting</i> so that you can easily create many holes with the same large diameter.<br>
          Tap the HOME key to set 'LARGE LOCK' on and be prompted for a hole diameter that will persist until you select another tool or tap HOME again. 
-         </b>
+         </p>
          
          <table border=0 width=300 style="float: right;">
          <tr>
@@ -462,6 +485,7 @@
             </td>
          </tr>
          </table>
+         <h4>Holes in a grid pattern</h4>
          <p>Hold down ALT or CTRL key to be prompted for a grid pattern of holes to drill.  They will all use the same
          parameters.  Note that the Horiz and Vert Count refer to the <b>number of holes</b>.   If you need to space a
          number of holes, say 7, along a length (say 52mm), then the spacing is calculated by<br>
@@ -470,13 +494,6 @@
          <p>If either Horiz or Vert count are '1' then you get only 1 row or column of holes.
          <img src="images/holepattern03.png">
          </p>
-         Feedrate will be the normal rate set for cuts.<br>
-         Downfeed will be limited to either
-         <ul>
-         <li>half the bit diameter per revolution</li>
-         <li>the multipass depth if multipass is on.</li>
-         <li>the calculated Z feed if ramp angle is set, in order to achieve the correct helix angle.
-         </ul>
          Notes:
          <ol class="newcolour">
          <li>Note that the various CNC controllers will perform this operation in different ways.
