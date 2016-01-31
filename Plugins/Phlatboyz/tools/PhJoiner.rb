@@ -104,7 +104,7 @@ module PhlatScript
             UI.messagebox("No output file selected, exiting.")
             return
          end
-         
+         outputfile += $phoptions.default_file_ext if (File.extname(outputfile).empty?)  #add default extension
          outf = File.new(outputfile, "w+")
          
          outf.puts("%")

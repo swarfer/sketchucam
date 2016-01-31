@@ -198,6 +198,10 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       if(enter_file_dialog(model))
         # first get the material thickness from the model dictionary
         material_thickness = PhlatScript.materialThickness
+        overcut = PhlatScript.cutFactor
+        if (overcut < 5.0)
+           UI.messagebox("OverCut% is less than 5%, it should be closer to 100%")
+        end
         if(material_thickness)
 
           begin

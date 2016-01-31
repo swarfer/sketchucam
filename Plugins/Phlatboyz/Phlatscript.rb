@@ -495,6 +495,9 @@ module PhlatScript
 
     require 'Phlatboyz/tools/RampTabTool.rb'
     addToolItem(RampTabTool.new())    
+    
+    require 'Phlatboyz/tools/ChamferWizard.rb'
+    addToolItem(ChamferTool.new())    
 	
     @@phlatboyz_tools_submenu.add_separator
        require 'PhlatBoyz/tools/PhOptions.rb'

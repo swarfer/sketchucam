@@ -372,7 +372,12 @@ List of things to fix/add for next release, in no particular order
    <dt> Very small arcs converted to lines
       <dd>  Arc segments with radius <= 0.010" can cause problems with some simulators and controllers. Convert them to line segments. Note that drawing such a small arc is almost impossible in Sketchup, but they can result from scaling a drawing, or from importing a scanned DXF file. 
 
-
+   <dt>Chamfer wizard
+      <dd>Tool to set cutter diam and depth for a chamfer cut
+      <dd>Tools|Phlatboyz|Set Chamfer parameters
+      <dd>Note: set the cutline AFTER using this tool, and delete and redo it if you change parameters.  Generate Gcode directly after creating cut line.
+   <dt>Joiner
+      <dd>adds default extension if not user supplied
 </dl>
         
 <hr>
