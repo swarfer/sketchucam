@@ -19,6 +19,10 @@ module PhlatScript
          deg * Math::PI / 180
       end  
 
+      def todeg(rad)
+         rad * 180 / Math::PI 
+      end
+
       def select
       
       #a wizard to set tool diameter and cut depth that will achieve a chamfer cut with a v bit
@@ -64,19 +68,37 @@ module PhlatScript
             td    = input[2]
             cd    = input[3]
             width = input[4]
+           
+#cross check, calculate the angle from the height width and tipwidth
+            wo = (d - td)/2   # width of half cutter
+            h = cd                # height of cutting portion
+            theta = 2 * todeg(Math::atan(wo/h))
+            puts "theta #{theta}"
+            if ( (theta - angle).abs > 1)
+               UI.messagebox("Angle mismatch, please check parameters")
+            end
             
+            #calculate virtual width and cut depth
             r1 = d/2 - td/2
             a = angle/2
             b = 90.0 -a
-            wo = (r1 - width) / 2
+            wo = (r1 - width) / 2 # we are centering cut on the cutter
             d0 = wo / Math::tan(torad(b))
             
             dd = cd - d0               # cut depth
             vd = d - 2*wo - 2*width    # virtual cutter diam
-            
+
+            puts "Virtual diameter #{vd.to_l.to_s}"
+            puts "Virtual cut depth #{dd.to_l.to_s}"
             
             PhlatScript.bitDiameter = vd
             PhlatScript.cutFactor = dd / PhlatScript.materialThickness * 100.0
+            if (PhlatScript.cutFactor > 100.0)
+               UI.messagebox("Cut factor% is too deep! #{PhlatScript.cutFactor}");
+            end
+            if (dd > cd)
+               UI.messagebox("Cut depth is greater than cutter depth!");
+            end
             
          end # if input
 
