@@ -46,7 +46,7 @@ rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
    
-   php move.php plugins\tp.zip SketchUcam-1_4.rbz
+   php move.php plugins\tp.zip SketchUcam-1_4a.rbz
 
 goto end
 

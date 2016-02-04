@@ -67,7 +67,7 @@ module PhlatScript
      def initialize
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
        self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating Phlatprinter g-code.' 
-       self.version = '1.4'   #after 0d2e
+       self.version = '1.4a'   #after 0d2e
        
        #try to find the phrev.dat file, if it exists add the version to the .version
        #this is purely internal, an ordinary user never sees this
