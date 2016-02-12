@@ -122,7 +122,19 @@ module PhlatScript
       #UI.messagebox(sprintf("  #{axis}%-10.*f", @precision, m2))
       #UI.messagebox("out mm: #{measure.to_mm} inch: #{measure.to_inch}")
       axis.upcase!
-      sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
+      out = sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
+      #strip trailing 0's to shorten line for GRBL
+      if (@precision > 3)
+         while out =~ /00$/
+            out = out.gsub(/00$/,'0')
+         end
+         if (out =~ /\.0/) == nil
+            if (out =~ /0$/) != nil
+               out = out.gsub(/0$/,'')
+            end
+         end
+      end
+      return out
     end
 
     def format_feed(f)
