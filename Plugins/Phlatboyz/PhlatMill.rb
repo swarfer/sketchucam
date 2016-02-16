@@ -80,6 +80,11 @@ module PhlatScript
     def tooshorttoramp
        @tooshorttoramp
     end
+    
+    #sketchup compares to 0.001" but that is too coarse, so we do it ourselves to 10 times that  (1.4a)
+    def notequal(a,b)
+       return (a-b).abs > 0.0001
+    end
 
     def cncPrint(*args)
       if(@mill_out_file)
@@ -354,15 +359,15 @@ module PhlatScript
          command_out = ""
          command_out += cmd if ((cmd != @cc) || @gforce)
          hasz = hasx = hasy = false
-         if (xo != @cx)
+         if ( notequal(xo, @cx) )
             command_out += (format_measure('X', xo))
             hasx = true
          end
-         if (yo != @cy)
+         if ( notequal(yo, @cy) )
             command_out += (format_measure('Y', yo))
             hasy = true
          end
-         if (zo != @cz)
+         if ( notequal(zo, @cz) )
             hasz = true
             command_out += (format_measure('Z', zo))
          end
@@ -507,10 +512,10 @@ module PhlatScript
       else
          # we are at a point @cx,@cy,@cz and need to ramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
          if (zo > @max_z)
-            cncPrintC("(RAMP limiting Z to max_z @max_z)\n")
+            cncPrintC("(RAMP limiting Z to max_z #{@max_z})\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(RAMP limiting Z to min_z @min_z)\n")
+            cncPrintC("(RAMP limiting Z to min_z #{@min_z})\n")
             zo = @min_z
          end
       
