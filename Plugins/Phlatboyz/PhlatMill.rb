@@ -866,7 +866,7 @@ module PhlatScript
 # generate code for a spiral bore and return the command string
 # if ramping is on, lead angle will be limited to rampangle
  #sh = safeheight, where @cz is now, usually
-   def SpiralAt(xo,yo,zstart,zend,yoff,sh)
+   def SpiralAt(xo,yo,zstart,zend,yoff)
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
       cmd =   @cw ? 'G02': 'G03';
@@ -874,9 +874,12 @@ module PhlatScript
       command_out += "   (SPIRAL #{xo.to_mm},#{yo.to_mm},#{(zstart-zend).to_mm},#{yoff.to_mm},#{cwstr})\n" if @debugramp
       command_out += "G00" + format_measure("X",xo) 
       command_out +=         format_measure("Y",yo-yoff) + "\n"
-      puts "zstart #{zstart}  @cz #{@cz.to_mm} sh #{sh.to_mm}"
-      command_out += "   " + format_measure("Z",sh) + "\n"  # rapid to near surface   NEED THIS?
-      do we need the line above?
+      if (@cz != (zstart + 0.5.mm))
+         command_out += "G00" if (@gforce)
+         command_out += "   " if (!@gforce)
+         command_out += format_measure("Z",zstart+0.5.mm) + "\n"  # rapid to near surface if not already there
+      end
+      
       command_out += "G01" + format_measure("Z",zstart)        # feed to surface
       feed = @speed_plung
       command_out += format_feed(feed)   #always feed at plunge rate
@@ -987,8 +990,15 @@ module PhlatScript
       cmd =   @cw ? 'G02': 'G03';
       command_out = ""
       command_out += "   (SPIRALQ #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)},#{sprintf('depth %0.2f',(zstart-zend).to_mm)},#{sprintf('yoff %0.2f',yoff.to_mm)},#{cwstr})\n" if @debug
-      command_out += "G00" + format_measure("Y",yo-yoff) + "\n"
-      command_out += "   " + format_measure("Z",zstart+0.03) + "\n"   # rapid to near surface
+      #have to do X again to have the extra precision we are now using
+      command_out += "G00" + format_measure("X",xo) 
+      command_out +=         format_measure("Y",yo-yoff) + "\n"    
+      if (@cz != (zstart + 0.5.mm))
+      puts "cz #{@cz} zstart #{zstart}"
+         command_out += "G00" if (@gforce)
+         command_out += "   " if (!@gforce)
+         command_out += format_measure("Z",zstart+ 0.5.mm) + "\n"   # rapid to near surface
+      end
       command_out += "G01" + format_measure("Z",zstart) # feed to surface
       feed = @speed_plung
       command_out += format_feed(feed)   #always feed at plunge rate
@@ -1502,7 +1512,7 @@ module PhlatScript
 #swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
 #handles multipass by itself, also handles ramping
    def plungeboredepth(xo,yo,zStart,zo,diam)
-#   @debug = true
+   #@debug = true
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
       cncPrintC("(plungebore #{zos} #{ds})\n")
@@ -1546,7 +1556,7 @@ module PhlatScript
                if (@quarters)
                   command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                else
-                  command_out += SpiralAt(xo,yo,zStart,zo, yoff, sh )
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
             else
                if (PhlatScript.stepover < 50)  # act for a hard material
@@ -1555,7 +1565,7 @@ module PhlatScript
                   if (@quarters)
                      command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                   else
-                     command_out += SpiralAt(xo,yo,zStart,zo, yoff, sh )
+                     command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
                end
             end
@@ -1619,7 +1629,7 @@ module PhlatScript
                if (@quarters)
                   command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                else
-                  command_out += SpiralAt(xo,yo,zStart,zo, yoff, sh )
+                  command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                end
             else
                if (PhlatScript.stepover < 50)  # act for a hard material, do initial spiral 
@@ -1629,7 +1639,7 @@ module PhlatScript
                   if (@quarters)
                      command_out += SpiralAtQ(xo,yo,zStart,zo, yoff )
                   else
-                     command_out += SpiralAt(xo,yo,zStart,zo, yoff, sh )
+                     command_out += SpiralAt(xo,yo,zStart,zo, yoff )
                   end
                end
             end
@@ -1701,7 +1711,7 @@ module PhlatScript
                puts "   nowyoffset #{nowyoffset.to_mm}\n"            if @debug
             end
             
-            command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,nowyoffset) : SpiralAt(xo,yo,zStart,zo,nowyoffset,sh)
+            command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,nowyoffset) : SpiralAt(xo,yo,zStart,zo,nowyoffset)
 
             #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
@@ -1771,6 +1781,7 @@ module PhlatScript
             puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
             command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
             command_out += "\n"
+            @cz = sh
          end
       else
          sh = @retract_depth

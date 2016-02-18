@@ -349,7 +349,7 @@ List of things to fix/add for next release, in no particular order
       <dd>depth is always overcut%      
       <dd>ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
    <dt>fix phlatten tool
-      <dd>since Make 2014 phlatten has failed to actually phlatten due ot not liking the order
+      <dd>since Make 2014 phlatten has failed to actually phlatten due to not liking the order
          used for deleting faces.   faces now deleted seperately from edge collection
    <dt>fold/centerline/pocket tool depth
       <dd>can now be set to floating point number, eg 10.6 or 34.15 etc
@@ -380,6 +380,9 @@ List of things to fix/add for next release, in no particular order
       <dd>adds default extension if not user supplied
    <dt>formatting
       <dd>remove trailing 0's in plunge holes to shorten lines
+   <dt>plunge holes
+      <dd>streamlined G00 moves when 'use reduced safe height' is true
+      <dd>added @gforce processing for spirals
 </dl>
         
 <hr>
