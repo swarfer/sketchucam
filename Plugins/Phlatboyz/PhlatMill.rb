@@ -22,6 +22,7 @@ module PhlatScript
       @canneddrill = false
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
+      @laser = false  #frikken lasers!
 #
       @max_x = 48.0
       @min_x = -48.0
@@ -217,6 +218,10 @@ module PhlatScript
       else
         cncPrintC("Optimization is OFF")
       end
+      if (@laser)    # swarfer - display laser mode status as part of header
+        cncPrintC("LASER is ON")
+      end
+      
       if (extra != "-")
          #puts extra
          extra.split(/\n/).each {|bit|  cncPrintC(bit) }
@@ -277,7 +282,9 @@ module PhlatScript
       if ($phoptions.useC?)
          cncPrint("G00 C", $phoptions.posC.to_s , "\n")
       end
-      cncPrint("M3 S", @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
+      if (@laser == false)
+         cncPrint("M3 S", @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
+      end
     end
 
    def job_finish
@@ -410,18 +417,22 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         if (@Limit_up_feed) && (cmd=="G0") && (zo > 0) && (@cz < 0)
-            cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
-            command_out += 'G01' + (format_measure('Z', 0))
-            command_out += (format_feed(@speed_plung))
-            command_out += "\n"
-            $cs = @speed_plung
-            #          G00 to zo
-            command_out += "G00" + (format_measure('Z', zo))
+         if (@laser)
+            command_out += "M05"
          else
-            #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
-            command_out += cmd    if ((cmd != @cc) || @gforce)
-            command_out += (format_measure('Z', zo))
+            if (@Limit_up_feed) && (cmd=="G0") && (zo > 0) && (@cz < 0)
+               cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
+               command_out += 'G01' + (format_measure('Z', 0))
+               command_out += (format_feed(@speed_plung))
+               command_out += "\n"
+               $cs = @speed_plung
+               #          G00 to zo
+               command_out += "G00" + (format_measure('Z', zo))
+            else
+               #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
+               command_out += cmd    if ((cmd != @cc) || @gforce)
+               command_out += (format_measure('Z', zo))
+            end
          end
          command_out += "\n"
          cncPrint(command_out)
@@ -451,34 +462,38 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         # if above material, G00 to near surface, fastapproach
-         if (fast && @fastapproach)
-            if (@cz == @retract_depth) && (zo < @cz)
-               offset = @is_metric ? 0.5.mm : 0.02.inch
-               flag = false
-               if (@table_flag)
-                  if ((@material_thickness + offset) < @retract_depth)
-                     @cz = @material_thickness + offset
-                     flag = true
+         if (@laser)
+            command_out += "M03"
+         else
+            # if above material, G00 to near surface, fastapproach
+            if (fast && @fastapproach)
+               if (@cz == @retract_depth) && (zo < @cz)
+                  offset = @is_metric ? 0.5.mm : 0.02.inch
+                  flag = false
+                  if (@table_flag)
+                     if ((@material_thickness + offset) < @retract_depth)
+                        @cz = @material_thickness + offset
+                        flag = true
+                     end
+                  else
+                     if offset < @retract_depth
+                        @cz = 0.0 + offset   
+                        flag = true
+                     end
                   end
-               else
-                  if offset < @retract_depth
-                     @cz = 0.0 + offset   
-                     flag = true
+                  if (flag)
+                     command_out += "G00" + format_measure('Z',@cz) +"\n"
+                     @cc = @cmd_rapid
                   end
-               end
-               if (flag)
-                  command_out += "G00" + format_measure('Z',@cz) +"\n"
-                  @cc = @cmd_rapid
                end
             end
+            command_out += cmd if ((cmd != @cc) || @gforce)
+            command_out += (format_measure('Z', zo))
+            so = @speed_plung  # force using plunge rate for vertical moves
+            #        sox = @is_metric ? so.to_mm : so.to_inch
+            #        cncPrintC("(plunge rate #{sox})\n")
+            command_out += (format_feed(so)) if (so != @cs)
          end
-         command_out += cmd if ((cmd != @cc) || @gforce)
-         command_out += (format_measure('Z', zo))
-         so = @speed_plung  # force using plunge rate for vertical moves
-         #        sox = @is_metric ? so.to_mm : so.to_inch
-         #        cncPrintC("(plunge rate #{sox})\n")
-         command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
          cncPrint(command_out)
          @cz = zo

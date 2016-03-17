@@ -39,7 +39,7 @@ Cadalog_Gear*
 centerpoint*
 DM*
 ExtrudeTools*
-Plugins/CNC_Files/temp.txt
+Plugins/CNC_Files/*
 Plugins/CNC-profile.rb
 Plugins/ChrisP_RadialMove_EN.rb
 Plugins/bezierspline.rb
@@ -75,3 +75,4 @@ Plugins/Phlatboyz/_MyConstants._rb
 Plugins/stray_lines.rb
 Plugins/jf_zoom_selection.rb
 Plugins/Phlatboyz/html/images/csink02a.png
+Plugins/SyncToy_*
