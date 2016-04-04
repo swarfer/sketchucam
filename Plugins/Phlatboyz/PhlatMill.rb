@@ -22,7 +22,7 @@ module PhlatScript
       @canneddrill = false
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
-      @laser = false  #frikken lasers!
+      @laser = true  #frikken lasers!
 #
       @max_x = 48.0
       @min_x = -48.0
@@ -463,7 +463,14 @@ module PhlatScript
          end
          command_out = ""
          if (@laser)
-            command_out += "M03"
+            # calculate 'laser brightness' as a percentage of material thickness
+            if (@table_flag)
+               depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
+            else
+               depth = (zo / -@material_thickness) * @spindle_speed
+            end
+            puts "laser depth #{depth.to_i}"
+            cncPrint("M3 S", depth.to_i)
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
