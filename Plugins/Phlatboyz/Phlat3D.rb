@@ -32,7 +32,7 @@ class GCodeGen3D
                 @matThick = PhlatScript.materialThickness.to_f #2.0
                 @safeLength = PhlatScript.safeWidth.to_f  #42.0
                 @safeWidth = PhlatScript.safeHeight.to_f #22.0
-                @multiPass = PhlatScript.useMultipass? # PhlatScript.multipassEnabled #false
+                @multiPass = PhlatScript.useMultipass? 
                 @multiPassDepth = PhlatScript.multipassDepth.to_f #0.1
                 @overcutPercent = PhlatScript.cutFactor #1.40
                 @phlat_SafeHeight = PhlatScript.safeTravel.to_f #2.50

@@ -103,15 +103,17 @@ module PhlatScript
 
       wd.setCaption('overheadgantry_id', PhlatScript.getString("Overhead Gantry"))
       wd.execute_script("setCheckbox('overheadgantry','"+PhlatScript.useOverheadGantry?.inspect()+"')")
+      wd.setCaption('laser_id', PhlatScript.getString("Laser Control"))
+      wd.execute_script("setCheckbox('laser','"+PhlatScript.useLaser?.inspect()+"')")
 
       wd.setCaption('multipass_id', PhlatScript.getString("Generate Multipass"))
       wd.execute_script("setCheckbox('multipass','"+PhlatScript.useMultipass?.inspect()+"')")
 
       wd.setCaption('multipassdepth_id', PhlatScript.getString("Multipass Depth"))
       wd.setValue('multipassdepth', format_length(PhlatScript.multipassDepth))
-      if !PhlatScript.multipassEnabled?
-        wd.execute_script("hideMultipass()")
-      end
+#      if !PhlatScript.multipassEnabled?
+#        wd.execute_script("hideMultipass()")
+#      end
 
       wd.setCaption('gen3D_id', PhlatScript.getString("Generate 3D GCode"))
       wd.execute_script("setCheckbox('gen3D','"+PhlatScript.gen3D.inspect()+"')")
@@ -146,15 +148,18 @@ module PhlatScript
       PhlatScript.safeHeight = Sketchup.parse_length(wd.get_element_value("safeheight"))
       wd.execute_script("isChecked('overheadgantry')")
       PhlatScript.useOverheadGantry = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
-
-      if PhlatScript.multipassEnabled?
+#laser
+      wd.execute_script("isChecked('laser')")
+      PhlatScript.useLaser = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
+      
+#      if PhlatScript.multipassEnabled?
         wd.execute_script("isChecked('multipass')")
         PhlatScript.useMultipass = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
         tmp = Sketchup.parse_length(wd.get_element_value("multipassdepth"))
         if (tmp > 0)
            PhlatScript.multipassDepth = tmp
         end
-      end
+#      end
       wd.execute_script("isChecked('gen3D')")
       PhlatScript.gen3D = (wd.get_element_value('checkbox_hidden') == "true") ? true : false
       tmp = wd.get_element_value("stepover").to_f
@@ -198,12 +203,13 @@ module PhlatScript
                PhlatScript.getString("Safe Travel"),
                PhlatScript.getString("Safe Length"),
                PhlatScript.getString("Safe Width"),
-               PhlatScript.getString("Overhead Gantry")]
+               PhlatScript.getString("Overhead Gantry"),
+               PhlatScript.getString("Laser control")      ]               
 
-         if PhlatScript.multipassEnabled?
+#         if PhlatScript.multipassEnabled?
             prompts.push(PhlatScript.getString("Generate Multipass"))
             prompts.push(PhlatScript.getString("Multipass Depth"))
-         end
+#         end
          prompts.push(PhlatScript.getString("Generate 3D GCode"))
          prompts.push(PhlatScript.getString("StepOver Percentage"))
          prompts.push(PhlatScript.getString("Show Gcode"))
@@ -226,12 +232,14 @@ module PhlatScript
              PhlatScript.safeTravel.to_l,
              Sketchup.format_length(PhlatScript.safeWidth),
              Sketchup.format_length(PhlatScript.safeHeight),
-             PhlatScript.useOverheadGantry?.inspect()]
+             PhlatScript.useOverheadGantry?.inspect(),
+             PhlatScript.useLaser?.inspect()             
+             ]
 
-         if PhlatScript.multipassEnabled?
+#         if PhlatScript.multipassEnabled?
             defaults.push(PhlatScript.useMultipass?.inspect())
             defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
-         end
+#         end
          defaults.push(PhlatScript.gen3D.inspect())
          defaults.push(PhlatScript.stepover)
          defaults.push(PhlatScript.showGplot?.inspect())
@@ -241,11 +249,11 @@ module PhlatScript
          defaults.push(encoded_comment_text)
 
          # dropdown options can be added here
-         if PhlatScript.multipassEnabled?
+#         if PhlatScript.multipassEnabled?
             list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true","false|true","false|true","",""]
-         else
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true","false|true","",""]
-         end
+#         else
+#            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true","false|true","",""]
+#         end
          begin
             input = UI.inputbox(prompts, defaults, list, PhlatScript.getString("Parameters"))
          rescue ArgumentError => error
@@ -270,32 +278,33 @@ module PhlatScript
             PhlatScript.safeWidth = Sketchup.parse_length(input[9])
             PhlatScript.safeHeight = Sketchup.parse_length(input[10])
             PhlatScript.useOverheadGantry = (input[11] == 'true')
+            PhlatScript.useLaser = (input[12] == 'true')            
 
-            if PhlatScript.multipassEnabled?
-               PhlatScript.useMultipass = (input[12] == 'true')
-               tmp = Sketchup.parse_length(input[13]).to_f
+#            if PhlatScript.multipassEnabled?
+               PhlatScript.useMultipass = (input[13] == 'true')
+               tmp = Sketchup.parse_length(input[14]).to_f
                if (tmp > 0)
                   PhlatScript.multipassDepth = tmp
                end
-               PhlatScript.gen3D = (input[14] == 'true')
-               tmp = input[15].to_f
+               PhlatScript.gen3D = (input[15] == 'true')
+               tmp = input[16].to_f
                if (tmp > 0) && (tmp <= 100)
                   PhlatScript.stepover = tmp
                end
-               PhlatScript.showGplot = (input[16] == 'true')
-               PhlatScript.tabletop = (input[17] == 'true')
-               PhlatScript.mustramp = (input[18] == 'true')
-               PhlatScript.rampangle = input[19].to_f
-               PhlatScript.commentText = input[20].to_s
-            else
-               PhlatScript.gen3D = (input[12] == 'true')
-               PhlatScript.stepover = input[13].to_f
-               PhlatScript.showGplot = (input[14] == 'true')
-               PhlatScript.tabletop = (input[15] == 'true')
-               PhlatScript.mustramp = (input[16] == 'true')
-               PhlatScript.rampangle = input[17].to_f
-               PhlatScript.commentText = input[18].to_s
-            end
+               PhlatScript.showGplot = (input[17] == 'true')
+               PhlatScript.tabletop = (input[18] == 'true')
+               PhlatScript.mustramp = (input[19] == 'true')
+               PhlatScript.rampangle = input[20].to_f
+               PhlatScript.commentText = input[21].to_s
+#            else
+#               PhlatScript.gen3D = (input[12] == 'true')
+#               PhlatScript.stepover = input[13].to_f
+#               PhlatScript.showGplot = (input[14] == 'true')
+#               PhlatScript.tabletop = (input[15] == 'true')
+#               PhlatScript.mustramp = (input[16] == 'true')
+#               PhlatScript.rampangle = input[17].to_f
+#               PhlatScript.commentText = input[18].to_s
+#            end
          end # if input
       else #---------------------------webdialog--------------------------------------------
         view = model.active_view
@@ -349,6 +358,7 @@ module PhlatScript
 
             web_dialog.setValue('commenttext', $phoptions.default_comment_remark)
             web_dialog.execute_script("setCheckbox('overheadgantry','"+ $phoptions.default_overhead_gantry?.inspect()+"')")
+            web_dialog.execute_script("setCheckbox('laser','"+          $phoptions.default_laser?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('multipass','"+      $phoptions.default_multipass?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('showgplot','"+      $phoptions.default_show_gplot?.inspect()+"')")
             web_dialog.execute_script("setCheckbox('gen3D','"+          $phoptions.default_gen3d?.inspect()+"')")

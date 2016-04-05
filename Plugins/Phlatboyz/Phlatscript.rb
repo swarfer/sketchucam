@@ -319,6 +319,15 @@ module PhlatScript
     Sketchup.active_model.set_attribute(Dict_name, Dict_overhead_gantry, og)
   end
 
+  def PhlatScript.useLaser?
+    Sketchup.active_model.get_attribute(Dict_name, Dict_laser, $phoptions.default_laser?)
+  end
+
+  def PhlatScript.useLaser=(og)
+    Sketchup.active_model.set_attribute(Dict_name, Dict_laser, og)
+  end
+  
+  
   def PhlatScript.pocketDirection?
     Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)
   end
@@ -327,9 +336,9 @@ module PhlatScript
     Sketchup.active_model.set_attribute(Dict_name, Dict_pocket_direction, newd)
   end
 
-  def PhlatScript.multipassEnabled?
-    Use_multipass
-  end
+#  def PhlatScript.multipassEnabled?
+#    Use_multipass
+#  end
 
   #swarfer, Phlat3d needs to know
   def PhlatScript.useexactpath?
@@ -387,7 +396,7 @@ module PhlatScript
   end
 
   def PhlatScript.useMultipass?
-    Use_multipass ? Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, $phoptions.default_multipass?) : false
+    Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, $phoptions.default_multipass?) 
   end
 
   def PhlatScript.useMultipass=(mp)

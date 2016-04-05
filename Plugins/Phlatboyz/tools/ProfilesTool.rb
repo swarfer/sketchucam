@@ -228,10 +228,10 @@ class ProfilesLoadTool < ProfilesTool
       Sketchup.format_length(PhlatScript.safeHeight),
       PhlatScript.useOverheadGantry?.inspect()]
 
-      if PhlatScript.multipassEnabled?
+#      if PhlatScript.multipassEnabled?
          defaults.push(PhlatScript.useMultipass?.inspect())
          defaults.push(Sketchup.format_length(PhlatScript.multipassDepth))
-      end
+#      end
       defaults.push(PhlatScript.gen3D.inspect())
       defaults.push(PhlatScript.stepover)
       defaults.push(PhlatScript.showGplot?.inspect())

@@ -169,24 +169,41 @@
       <td class="command-description">
       <img align=right src="images/params.png" title="params" border="0" style="margin-left: 10px;" alt="params menu">
          <p>
-         Enter <b>Phlatboyz Parameters</b> to set: [spindle speed, feed rate, plunge rate, safe travel,
-         material thickness, bit diameter, tab width, tab depth factor, the safe
-         cutting area size and comment text] which will appear in
-         the generated g-code. All g-code output uses the safe cutting
-         area's local origin(the bottom left corner) and only
-         edges within the safe cutting area will generate g-code. This will
-         allow designs requiring multiple sheets to be contained within one
+         Enter <b>Phlatboyz Parameters</b> to set: <br>
+         [spindle speed, <br>
+         feed rate, <br>
+         plunge rate, <br>
+         safe travel,<br>
+         material thickness, <br>
+         bit diameter,  <br>
+         tab width, tab depth factor, <br>
+         the safe cutting area size and comment text] <br>
+         which will appear in the generated g-code. 
+         <p>
+         All g-code output uses the safe cutting
+         area's local origin(the bottom left corner) <b>or</b> the origin set by the offset tool
+         and only
+         edges <b>entirely</b> within the safe cutting area will generate g-code. <br>
+         </p>
+         <p>
+         You can also SELECT cut lines within the safe area and only those selected edges will cut.
+         </p>
+         <p>
+         This will allow designs requiring multiple sheets to be contained within one
          SketchUp file and the cut codes processed as one sheet at a time for
-         separate g-code files for each sheet.  The safe area is assumed to be
-         at sketchup's origin, unless placed elsewhere using the Safe Area Tool.</p>
+         separate g-code files for each sheet.  The safe area is defaults to 
+         Sketchup's origin, unless placed elsewhere using the Safe Area Tool.</p>
 
-         Also, there are 2 check boxes for additional options: <br>
-         1) "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
+         Also, there are check boxes for additional options: <br>
+         <ol>
+         <li> "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
          by cutting multiple thin layers. <br>
-         2) "<u>Overhead Gantry</u>".  The original 2
+         <li> "<u>Overhead Gantry</u>".  The original 2
          Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
          cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
          See the <a href="howto_options.html">Options Menu help</a> for setting this as a default
+         <li style="color: red;">Laser ...
+         </ol>
          <br><br>
 
          <p><u>Note</u>: When you press "OK", these settings will be saved as attributes to your

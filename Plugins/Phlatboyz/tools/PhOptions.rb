@@ -49,6 +49,7 @@ module PhlatScript
          @default_safe_width     =  PhlatScript.conformat(phoptions.default_safe_width)
          @default_safe_height    =  PhlatScript.conformat(phoptions.default_safe_height)
          @default_overhead_gantry =  (phoptions.default_overhead_gantry? ? '1' : '0')
+         @default_laser           =  (phoptions.default_laser? ? '1' : '0')
          @default_multipass      =   (phoptions.default_multipass? ? '1' : '0')
          @default_multipass_depth =  PhlatScript.conformat(phoptions.default_multipass_depth)
          @default_stepover       =   phoptions.default_stepover.to_i.to_s
@@ -115,6 +116,7 @@ module PhlatScript
          @default_safe_width = Default_safe_width
          @default_safe_height = Default_safe_height
          @default_overhead_gantry = Default_overhead_gantry
+         @default_laser = false
          @default_multipass = Default_multipass
          @default_multipass_depth = Default_multipass_depth
          @default_stepover = Default_stepover
@@ -219,6 +221,10 @@ module PhlatScript
             value = -1
             value = getvalue(optin['default_overhead_gantry'])                if (optin.has_key?('default_overhead_gantry'))
             @default_overhead_gantry = value > 0 ? true :  false              if (value != -1)
+            #default_laser
+            value = -1
+            value = getvalue(optin['default_laser'])                if (optin.has_key?('default_laser'))
+            @default_laser = value > 0 ? true :  false              if (value != -1)
 
             # Default_multipass = false
             value = -1
@@ -567,6 +573,14 @@ module PhlatScript
          @default_overhead_gantry = newval
       end
 
+      def default_laser?
+         @default_laser
+      end
+      def default_laser=(newval)
+         @default_laser = newval
+      end
+      
+      
       def default_multipass?
          @default_multipass
       end
@@ -1049,6 +1063,7 @@ end # class
             'Default_safe_width (X) ',
             'Default_safe_height (Y) ',
             'Default_overhead_gantry ',
+            'Default_laser ',
             'Default_multipass ',
             'Default_multipass_depth ',
             'Default_stepover % ',
@@ -1063,6 +1078,7 @@ end # class
             @options.default_safe_width.to_l,
             @options.default_safe_height.to_l,
             @options.default_overhead_gantry?.inspect(),
+            @options.default_laser?.inspect(),
             @options.default_multipass?.inspect(),
             @options.default_multipass_depth.to_l,
             @options.default_stepover.to_f,
@@ -1076,6 +1092,7 @@ end # class
             '',
             '',
             '',
+            'true|false',
             'true|false',
             'true|false',
             '',
@@ -1099,13 +1116,14 @@ end # class
             @options.default_safe_width      = input[2];
             @options.default_safe_height     = input[3];
             @options.default_overhead_gantry = (input[4] == 'true');
-            @options.default_multipass       = (input[5] == 'true');
-            @options.default_multipass_depth = input[6];
-            @options.default_stepover        = input[7]  if (input[7] > 0)
-            @options.min_z                   = input[8];
-            @options.max_z                   = input[9];
-            @options.bracket                 = (input[10] == 'true');
-            @options.usecomments             = (input[11] == 'true');
+            @options.default_laser           = (input[5] == 'true');
+            @options.default_multipass       = (input[6] == 'true');
+            @options.default_multipass_depth = input[7];
+            @options.default_stepover        = input[8]  if (input[7] > 0)
+            @options.min_z                   = input[9];
+            @options.max_z                   = input[10];
+            @options.bracket                 = (input[11] == 'true');
+            @options.usecomments             = (input[12] == 'true');
 
             @options.save
          end # if input

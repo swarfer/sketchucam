@@ -128,6 +128,7 @@ Dict_vtab = "vtab"
 Dict_multipass = "multipass"
 Dict_multipass_depth = "multipass_depth"
 Dict_overhead_gantry = "overhead_gantry"
+Dict_laser = "laser"
 Dict_gen3d = "gen3D"
 Dict_stepover = "stepover"
 Dict_construction_mark = "construction_mark"
@@ -207,7 +208,8 @@ Use_compatible_dialogs = false
 # Set this to true to enable multipass fields in the parameters dialog. When it is false
 # you will not be prompted to use multipass. When true you will be able to turn it off and
 # on in the parameters dialog
-Use_multipass = true
+#Use_multipass = true
+#as of 1.4a - removed, always on
 
 # Set this to true if you have an older version of Mach that does not slow down
 # to the Z maximum speed during helical linear interpolation (G2/3 with Z

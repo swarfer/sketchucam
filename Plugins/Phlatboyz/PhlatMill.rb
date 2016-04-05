@@ -22,7 +22,7 @@ module PhlatScript
       @canneddrill = false
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
-      @laser = true  #frikken lasers!
+      @laser = PhlatScript.useLaser?         #frikken lasers!
 #
       @max_x = 48.0
       @min_x = -48.0
