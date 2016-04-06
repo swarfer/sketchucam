@@ -17,12 +17,17 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
    @rem Git installation root.
    if exist C:\Users\david\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad goto aa
    if exist C:\Users\david\AppData\Local\GitHub\PortableGit_c7e0cbde92ba565cb218a521411d0e854079a28c goto bb
+   if exist C:\Users\david\AppData\Local\GitHub\PortableGit_25d850739bc178b2eb13c3e2a9faafea2f9143c0 goto cc
    :aa
    @set git_install_root=C:\Users\david\AppData\Local\GitHub\PortableGit_c2ba306e536fdf878271f7fe636a147ff37326ad
    goto spath
    
    :bb
    @set git_install_root=C:\Users\david\AppData\Local\GitHub\PortableGit_c7e0cbde92ba565cb218a521411d0e854079a28c
+   goto spath
+
+   :cc
+   @set git_install_root=C:\Users\david\AppData\Local\GitHub\PortableGit_25d850739bc178b2eb13c3e2a9faafea2f9143c0
    goto spath
    
    

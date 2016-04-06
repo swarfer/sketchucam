@@ -45,3 +45,5 @@ stray*.rb
 test
 tt_*
 utilities.rb
+Sync*
+_*
