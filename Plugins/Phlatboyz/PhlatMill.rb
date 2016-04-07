@@ -466,11 +466,11 @@ module PhlatScript
             # calculate 'laser brightness' as a percentage of material thickness
             if (@table_flag)
                depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
-            else
+            else  # zo is negative
                depth = (zo / -@material_thickness) * @spindle_speed
             end
-            puts "laser depth #{depth.to_i}"
-            cncPrint("M3 S", depth.to_i)
+            #puts "laser depth #{depth.to_i}"
+            cncPrint("M3 S", depth.abs.to_i)
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
@@ -1348,20 +1348,33 @@ module PhlatScript
       return ystep
    end
    
+   # do a plunge hole for laser engraving, just make a spot, laser on, delay, laser off
+   # should have a laseron() and laseroff() call, and a parameter for the delay
+   def plungelaser(xo,yo,zStart,zo,diam)   
+      out  = "M03\n"
+      out += "G4 P250\n"
+      out += "M05\n"
+      cncPrint(out)
+   end
+   
    #select between the plungebore options and call the correct method
    def plungebore(xo,yo,zStart,zo,diam, ang=0, cdiam = 0, cdepth = 0)   
-      if (ang > 0)
-         plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)      if (cdiam > 0.0)
-         UI.messagebox('ERROR: cdiam < 0 in plungecsink')   if (cdiam < 0.0)
+      if (@laser)
+         plungelaser(xo,yo,zStart,zo,diam)   
       else
-         if (ang < 0)
-            plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam,cdepth)  if ((cdiam > 0.0) &&  (cdepth > 0.0))
-            UI.messagebox('ERROR: cdiam < 0 in plungecBore')      if ((cdiam < 0.0) &&  (cdepth < 0.0))
+         if (ang > 0)
+            plungecsink(xo,yo,zStart,zo,diam, ang, cdiam)      if (cdiam > 0.0)
+            UI.messagebox('ERROR: cdiam < 0 in plungecsink')   if (cdiam < 0.0)
          else
-            if @depthfirst then
-               plungeboredepth(xo,yo,zStart,zo,diam)
+            if (ang < 0)
+               plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam,cdepth)  if ((cdiam > 0.0) &&  (cdepth > 0.0))
+               UI.messagebox('ERROR: cdiam < 0 in plungecBore')      if ((cdiam < 0.0) &&  (cdepth < 0.0))
             else
-               plungeborediam(xo,yo,zStart,zo,diam)
+               if @depthfirst then
+                  plungeboredepth(xo,yo,zStart,zo,diam)
+               else
+                  plungeborediam(xo,yo,zStart,zo,diam)
+               end
             end
          end
       end

@@ -180,6 +180,13 @@ module PhlatScript
       if (PhlatScript.rampangle > 45)
          PhlatScript.rampangle =  PhlatScript.rampangle % 46
       end
+      if (PhlatScript.useLaser?)             
+         PhlatScript.useMultipass = false    # cannot multipass either
+         PhlatScript.mustramp = false        # cannot ramp if laser is in use
+         PhlatScript.gen3D = false           # cant do this either
+      end
+
+      
       comment_text = wd.get_element_value("commenttext").delete("'\"")
       encoded_comment_text = ""
       comment_text.each_line { |line| encoded_comment_text += line.chomp()+"$/"}
