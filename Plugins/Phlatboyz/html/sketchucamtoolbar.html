@@ -164,7 +164,7 @@
    <tbody>
    <tr>
       <td class="command-image" valign=top id="toolparameters">
-         <img alt="" src="../images/parameterstool_large.png" title="Enter Phlatboyz Parameters" width="32">
+         <img alt="Parameters dialog" src="../images/parameterstool_large.png" title="Enter Phlatboyz Parameters" width="32">
       </td>
       <td class="command-description">
       <img align=right src="images/params.png" title="params" border="0" style="margin-left: 10px;" alt="params menu">
@@ -201,10 +201,26 @@
          <li> "<u>Overhead Gantry</u>".  The original 2
          Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
          cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
-         See the <a href="howto_options.html">Options Menu help</a> for setting this as a default
-         <li style="color: red;">Laser ...
+         
+         <p>When this option is:<br>
+         <b>Ticked:</b> outside cuts will cut anticlockwise<br>(a conventional cut)<br>
+         <b>Unticked:</b>  outside cuts will cut clockwise<br>(a climb cut)
+         </p>
+         
+         See the <a href="howto_options.html">Options Menu help</a> for setting this as a default<br><br>
+         <li><u>"Laser Control"</u> [checkbox] <i>New in 1.4a</i>
+            <ul>
+            <li>Check this to control a laser engraver
+            <li>works with both Z-Zero options
+            <li>No Z motion will be in the Gcode output
+            <li>M03 (spindle on) and M05 (spindle off) will control the laser
+            <li>The S word will be set to control the brightness via PWM spindle control.
+            <li>The S word is set to a proportion of the current spindle speed, according to the depth of the cut.<br>
+               Thus a 50% deep centerline cut will set the S word to 50% of the spindle speed.
+            <li>If your laser needs on/off control, then simply always use 100% deep cuts and max spindle speed (1000rpm for default GRBL 0.9 settings).
+               With these settings the PWM control will effectively only turn hard on and hard off.
+            </ul>
          </ol>
-         <br><br>
 
          <p><u>Note</u>: When you press "OK", these settings will be saved as attributes to your
          sketchup model.  So each sketchup file will retain their individual settings.
@@ -212,12 +228,12 @@
          <br clear=all>
          <h3>Profiles</h3>
          <p class="newcolour">
-         <img alt="" src="images/profiles.png" align=right border=1  style="margin-left: 10px;">
+         <img alt="profiles" src="images/profiles.png" align=right border=1  style="margin-left: 10px;">
          New in 1.1c is the ability to save and restore tool profiles.  
          This allows you to quickly restore a tool setup that relates to a type of material or operation.  
          For example one might store the settings for a drilling operation with multipass on, low feed speeds etc.
          For a foam milling tool one can store high feed speeds, not multipass and so on.<br>
-         <img alt="" src="images/profilesave.png" align="right" border="0" style="margin-left: 10px;">
+         <img alt="profile save" src="images/profilesave.png" align="right" border="0" style="margin-left: 10px;">
          Clicking the <b>'Save'</b> button will produce a prompt for a profile name. 
          Profile names must not have spaces or punctuation in them.
          The following settings will be saved</p>
@@ -289,10 +305,34 @@
            
            <dt>Ramp in Z</dt>
            <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment of the cut.   
-           Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.
-           The Plunge Feed Rate will be used for ramp moves.<br>
-           Note that ramping will not affect plunge holes, the center hole will still be plunged for holes larger than 2x bit diameter
-           so if your milling bit cannot plunge DO NOT use it for holes, do a separate drilling program with a drill bit.
+           Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.<br><br>
+           The Plunge Feed Rate will be used for ramp moves.<br><br>
+           
+           Note that <b>ramping</b> will affect <b>plunge holes</b> like this:
+           
+          <table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff">
+          <tr>
+            <th>&nbsp;</th>
+            <th>dia = tooldia</th>
+            <th>tooldiam < dia <= 2D</th>
+            <th>dia > 2D</th>
+          </tr>
+          <tr>
+            <th>Stepover% < 50%</th>
+            <td style="color: red;">Will Plunge</td>
+            <td>no plunge, 2 spirals</td>
+            <td>no plunge, 2 or more spirals</td>
+          </tr>
+          <tr>
+            <th>stepover% > 50%</th>
+            <td style="color: red;">Will Plunge</td>
+            <td>no plunge, single spiral</td>
+            <td>no plunge, 2 or more spirals</td>
+          </table>
+           <p>
+           If you are making holes equal to the bit diameter in hard materials then you should use a <u>real drill bit</u> and 
+           do a seperate drilling cycle.
+           </p>
            </dd>
 
            <dt>Ramp angle limit</dt>
@@ -465,16 +505,16 @@
          
          <p>
          Feedrate in the helix will be the normal rate set for cuts.<br>
-         Downfeed will be limited to either
+         Downfeed will be limited to either</p>
          <ul>
          <li>half the bit diameter per revolution</li>
          <li>the multipass depth if multipass is on.</li>
          <li>the calculated Z feed if ramp angle is set, in order to achieve the correct helix angle.
          </ul>
-         </p>
+         
          
          <p>
-         <i>New in V1.2a</i> : <b>Plunge holes are automatically grouped.</b> <br>
+         <i>New in V1.2a</i> : <b>Plunge holes are automatically grouped.</b> </p>
             <p style="margin-left: 10px;">This (mostly) prevents underlying geometry from interfering with G-code generation. <br>
             Only an <b>underlying horizontal line will interfere</b> but in this case it is very easy to delete the 
             part that overlaps the colored 'hole' line, or, you can group the underlying line before placing the holes. <br>
@@ -482,7 +522,7 @@
             For example a plain 8mm hole will be named "_diam_8.0mm" and a depth restricted 9mm hole will be "_diam_9.0mm_depth_76.0".<br>
             This implies that holes will be cut in group order so don't forget to set the order with the Group Reorder tool if you need to. 
             </p>
-         </p>
+         
          
          
          <h4>Do many holes with large diameter</h4>
@@ -490,15 +530,15 @@
          Tap the HOME key to set 'LARGE LOCK' on and be prompted for a hole diameter that will persist until you select another tool or tap HOME again. 
          </p>
          
-         <table border=0 width=300 style="float: right;">
+         <table border=0 width=300 style="float: right;" summary="hoel patterns">
          <tr>
             <td>
-            <img src="images/holepattern01.png" align=right>
+            <img alt="hole pattern 1" src="images/holepattern01.png" align=right>
             </td>
          </tr>
          <tr>
             <td>
-            <img src="images/holepattern02.png" align=right>
+            <img alt="hole pattern 2" src="images/holepattern02.png" align=right>
             </td>
          </tr>
          </table>
@@ -509,7 +549,7 @@
          52/(7-1) =  52/6 = 8.666mm.
          </p>
          <p>If either Horiz or Vert count are '1' then you get only 1 row or column of holes.
-         <img src="images/holepattern03.png">
+         <img alt="hole pattern 3" src="images/holepattern03.png">
          </p>
          Notes:
          <ol class="newcolour">
@@ -530,18 +570,18 @@
                <li>Spiral out to desired diameter using either multipass depth layers, or a fuzzy calculated depth based on the bit diameter.
             </ol>   
             Change this option on the 
-            <a href="howto_options.html#a5"><b>Tools|PhlatBoys|Options|Hole feature options</b></a> menu<br>
-            <img src="images/options-holefeatures.png">
+            <a href="howto_options.html#a5"><b>Tools|PhlatBoys|Options|Hole feature options</b></a> menu<br><br>
+            <img alt="hole features" src="images/options-holefeatures.png">
          </ol>
       </td>
    </tr>
 
    <tr>
       <td class="command-image" valign=top id="toolcsink">
-         <img alt="" src="../images/csinktool_large.png" title="Phlatboyz Countersink Tool" width="32">
+         <img alt="countersink iamge" src="../images/csinktool_large.png" title="Phlatboyz Countersink Tool" width="32">
       </td>
       <td class="command-description">
-         <img src="images/csinkwooda.png" align=right>
+         <img alt="countersink in wood" src="images/csinkwooda.png" align=right>
          <b>CounterSink/CounterBore hole Tool</b> - (V1.4)
          This tool is used to create a plunge point WITH a CounterSINK or CounterBORE at any given cursor position.  
          <p>The example pictured at right was created using a 9mm straight flute bit.  The hole is 12mm diameter, 15mm deep, 
@@ -551,7 +591,7 @@
          
          <br clear=all>
          <p>
-         <img src="images/csink03.png" align=right width="55%">
+         <img alt ="countersink 3" src="images/csink03.png" align=right width="55%">
          When you click the icon to select this tool, you will see a dialog box as pictured at right.<br>
 
          This permits you to set the values you want for your CounterSINK/BORE holes.<br>  
@@ -561,7 +601,7 @@
          
             
          <h4>The Countersink tool</h4>
-         <p><img src="images/csink01.png" align=right >
+         <p><img alt="countersink tool" src="images/csink01.png" align=right >
          The <b>Countersink</b> tool creates a grouped symbol of 2 circles with a blue radius line extending from the center to the outside diameter of the inner circle.<br>
          The inner circle is the current bit diameter, or the hole diameter given in the dialog, which must be greater than the bit diameter.<br>
          The outer circle is 8 sided, coloured blue, and represents the diameter given for the countersink portion of the hole. 
@@ -574,11 +614,11 @@
          Use the one that matches your screws! Angle is limited to >= 70 and < 180 degrees.
          </p>
          <br clear=all>
-         <table border=0 align=right>
+         <table border=0 align=right summary="countersink patterns">
          <tr>
             <td>
-            <img src="images/csink02.png"><br>
-            <img src="images/csink04.png">
+            <img alt="csink 02" src="images/csink02.png"><br>
+            <img alt="csink 04" src="images/csink04.png">
             </td>
          </tr>
          </table>
