@@ -290,13 +290,12 @@ than for the final diameter cuts.  This is particularly noticeable at low ramp l
 <p>
 When ramping is on the plunge hole routine will try hard to <i>not plunge</i> directly into the work.
 Obviously, if the plunge hole is the same diameter as the toolbit, it will have to plunge.<br>
- In this case
-it may be better to do a seperate drawing with just these holes on it, and generate G-code with either:<br>
+ In this case it may be better to do a seperate drawing with just these holes on it, and generate G-code with either:<br>
 &nbsp;&nbsp;&nbsp;Multipass set to a much smaller multipass depth than would be used for the normal cuts<br>
 or<br>
 &nbsp;&nbsp;&nbsp;normal multipass depth, but use a real drill bit for the cuts, and run this file before the normal cut file (see <a href="toolsmenu.html">G-code joiner</a>).
 </p>
-<p>For holes with <b>diameter larger than the toolbit</b>, plunging the center hole will be avoided as follows:</p>
+<p>For holes with <b>diameter larger than the toolbit</b>, plunging the center hole will be <b>avoided</b> as follows:</p>
 <dl>
 <dd>
    <p>For holes <b>less than 2xBitDiam</b> it will use the setting of the 'Stepover%' to decide whether or not to do an initial
@@ -324,6 +323,59 @@ or<br>
    
    
 </dl>
+<br clear=all>
+            In summary then:
+            <dl>
+            <dt>With <u>depth first</u> option selected <a href="howto_options.html#a5">'Tools|Phlatboyz|Options|Hole Feature Options'</a>
+            <dd><table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff" style="margin-top: 5px;">
+               <tr>
+                  <th>&nbsp;</th>
+                  <th>dia = tooldia</th>
+                  <th>tooldiam < dia <= 2D</th>
+                  <th>dia > 2D</th>
+               </tr>
+               <tr>
+                  <th>Stepover% < 50%</th>
+                  <td style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, 2 helical bores</td>
+                  <td>no plunge, 2 or more helical bores</td>
+               </tr>
+               <tr>
+                  <th>stepover% > 50%</th>
+                  <td style="color: red;">Will Plunge</td>
+                  <td>no plunge, single helical bore</td>
+                  <td>no plunge, 2 or more helical bores</td>
+               </table>
+               <br>
+          
+            <dt>With <u>diameter first</u> option selected <a href="howto_options.html#a5">'Tools|Phlatboyz|Options|Hole Feature Options'</a>
+            <dd><table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff" style="margin-top: 5px;">
+               <tr>
+                  <th width="19%">&nbsp;</th>
+                  <th width="14%" class="left">dia = tooldia</th>
+                  <th class="left">tooldiam < dia <= 2D</th>
+                  <th class="left">dia > 2D</th>
+               </tr>
+               <tr>
+                  <th class="left">stepover% < 50%</th>
+                  <td class="left" style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, 2 helical bores</td>
+                  <td class="left">no plunge, 1 helical bore, then spiral out to diam</td>
+               </tr>
+               <tr>
+                  <th class="left">stepover% > 50%</th>
+                  <td class="left" style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, single helical bore</td>
+                  <td class="left">no plunge, 1 helical bore, then spiral out to diam</td>
+               </tr>   
+               </table>
+            </dl>
+           <p>
+           If you are making holes equal to the bit diameter in hard materials then you should use a <u>real drill bit</u> and 
+           do a seperate drilling cycle with either full retract or quickpeck (partial retract) selected.
+           </p>
+           </dd>
+
 
 <br clear=all>
 </div>

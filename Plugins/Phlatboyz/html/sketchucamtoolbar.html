@@ -98,6 +98,9 @@
    td {
       text-align: justify;
       }
+   th.left, td.left {    
+      text-align: left;
+      }
    dt {
       margin-top: 5px;
       }
@@ -297,38 +300,63 @@
             The Phlatprinter is designed to cut through sheet material so normal cuts must go deeper than the material thickness.  
             This is normally about 140%, ie through the material and 40% out the other side to account for wavy dollar tree blue foam.   
             If you are using an overhead gantry and do not want to cut into your spoil board then set this value to 100% and zero your toolbit end accurately.
-           <dt>Plunge rate:</dt>
-           <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
+            <dt>Plunge rate:</dt>
+            <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
            
-           <dt>Table top is Z-Zero</dt>
-           <dd>If this is checked then Z zero level is on the table top, if unchecked, Z-Zero is on the top of the material (the default).</dd>
+            <dt>Table top is Z-Zero</dt>
+            <dd>If this is checked then Z zero level is on the table top, if unchecked, Z-Zero is on the top of the material (the default).</dd>
            
-           <dt>Ramp in Z</dt>
-           <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment of the cut.   
-           Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.<br><br>
-           The Plunge Feed Rate will be used for ramp moves.<br><br>
+            <dt><a href="howto_ramping.html">Ramp in Z</a></dt>
+            <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment of the cut.   
+            Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.<br><br>
+            The Plunge Feed Rate will be used for ramp moves.<br><br>
            
-           Note that <b>ramping</b> will affect <b>plunge holes</b> like this:
-           
-          <table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff">
-          <tr>
-            <th>&nbsp;</th>
-            <th>dia = tooldia</th>
-            <th>tooldiam < dia <= 2D</th>
-            <th>dia > 2D</th>
-          </tr>
-          <tr>
-            <th>Stepover% < 50%</th>
-            <td style="color: red;">Will Plunge</td>
-            <td>no plunge, 2 spirals</td>
-            <td>no plunge, 2 or more spirals</td>
-          </tr>
-          <tr>
-            <th>stepover% > 50%</th>
-            <td style="color: red;">Will Plunge</td>
-            <td>no plunge, single spiral</td>
-            <td>no plunge, 2 or more spirals</td>
-          </table>
+            Note that <b>ramping</b> will affect <b>plunge holes</b> like this:
+            <dl>
+            <dt>With <u>depth first</u> option selected <a href="howto_options.html#a5">'Tools|Phlatboyz|Options|Hole Feature Options'</a>
+            <dd><table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff" style="margin-top: 5px;">
+               <tr>
+                  <th>&nbsp;</th>
+                  <th>dia = tooldia</th>
+                  <th>tooldiam < dia <= 2D</th>
+                  <th>dia > 2D</th>
+               </tr>
+               <tr>
+                  <th>Stepover% < 50%</th>
+                  <td style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, 2 helical bores</td>
+                  <td>no plunge, 2 or more helical bores</td>
+               </tr>
+               <tr>
+                  <th>stepover% > 50%</th>
+                  <td style="color: red;">Will Plunge</td>
+                  <td>no plunge, single helical bore</td>
+                  <td>no plunge, 2 or more helical bores</td>
+               </table>
+               <br>
+          
+            <dt>With <u>diameter first</u> option selected <a href="howto_options.html#a5">'Tools|Phlatboyz|Options|Hole Feature Options'</a>
+            <dd><table border=1 cellpadding="5" cellspacing=0 summary="effects of plunge hole setting combinations" bgcolor="#ddeeff" style="margin-top: 5px;">
+               <tr>
+                  <th width="19%">&nbsp;</th>
+                  <th width="14%" class="left">dia = tooldia</th>
+                  <th class="left">tooldiam < dia <= 2D</th>
+                  <th class="left">dia > 2D</th>
+               </tr>
+               <tr>
+                  <th class="left">stepover% < 50%</th>
+                  <td class="left" style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, 2 helical bores</td>
+                  <td class="left">no plunge, 1 helical bore, then spiral out to diam</td>
+               </tr>
+               <tr>
+                  <th class="left">stepover% > 50%</th>
+                  <td class="left" style="color: red;">Will Plunge</td>
+                  <td class="left">no plunge, single helical bore</td>
+                  <td class="left">no plunge, 1 helical bore, then spiral out to diam</td>
+               </tr>   
+               </table>
+            </dl>
            <p>
            If you are making holes equal to the bit diameter in hard materials then you should use a <u>real drill bit</u> and 
            do a seperate drilling cycle.

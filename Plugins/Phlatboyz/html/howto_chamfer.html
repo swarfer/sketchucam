@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO use Ramping</title>
+<meta name="id" content="$Id: howto_options.html 88 2015-02-12 14:26:13Z swarfer@gmail.com $">
+<style type="text/css">
+	body, div, span {
+			font-family: Verdana;
+	}
+	body {
+			background-color: grey;
+			text-align: center;
+			width: 1024px;
+			padding-left:0.5%;
+			padding-right:0.5%;
+	}
+	div.shell {
+			/*background-color: #eee;*/
+			background-color: #ddeeff;
+			/*background-color: white;*/
+			font-size: 1.05em;
+	}
+
+	div.intro-name {
+			text-align:center;
+			font-size: 1.20em;
+			font-weight: bold;
+			padding-top:25px;
+	}
+	div.intro-name div {
+			font-size: 0.60em;
+			font-weight: normal;
+	}
+	div.intro-title {
+			text-align:center;
+			margin:10px;
+			font-size: 1.10em;
+			font-weight: bold;
+			padding-top: 15px;
+	}
+	div.intro {
+			text-align:left;
+			margin:5px;
+			padding: 5px;
+			font-size: 0.90em;
+	}
+
+	.command-image {
+			/*background-color: #ededed;*/
+			background-color: #ddeeff;
+			height: 100px;
+			font-weight: bold;
+			font-size: 0.90em;
+			vertical-align:center;
+			padding:10px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+	}
+	.command-description {
+			/*background-color: #ededed;*/
+			background-color: #eaecfa;
+			/*margin: 2px;*/
+			padding: 15px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+			font-size: 0.90em;
+	}
+
+	.command-title {
+			font-size: 1.00em;
+			font-weight: bold;
+			/*border-bottom: thin solid blue;*/
+			text-align: center;
+			padding-top: 25px;
+			border-top: thin solid white;
+			border-left: thin solid white;
+			border-right: thin solid #cccccc;
+			border-bottom: thin solid #cccccc;
+			text-decoration: underline;
+	}
+	.command-subtitle {
+			font-size: 0.70em;
+			font-style: italic;
+	}
+   hr {
+      background-color: #6699ff; 
+      height: 2px; 
+      border: 0; 
+      }
+   li {
+      margin-top: 10px;
+      }
+   dt {
+      margin-top: 7px;
+      font-weight: bold;
+      font-size: smaller;
+      }
+</style>
+
+</head>
+<body>
+
+
+<div class="shell">
+
+<br>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)
+	<div><b>SketchUcam Version 1.4a</b><br>May 2016</div>
+</div>
+<hr width="100%">
+<div class="intro">
+<span style="float: right;"><a href="help.html">Back to help index</a></span>
+<h2>HOWTO use the Chamfer Wizard</h2>
+
+   <p>In order to achieve a particular width of chamfer you need to set the correct tool depth and width such that a cutline
+   at the correct distance from the object is created.</p>
+   
+   <p>While it is possible to guess or calculate these values manually, it is much easier to use the chamfer wizard!</p>
+   
+   <p>This wizard calculates a 'virtual diameter' and cut depth (as a percetnage of current material thickness) and sets these parameters for you.
+   After this, all you need to do is apply the cut lines to your drawing and generate G-code.</p>
+   
+   <p><b>NOTE:</b> you will want to save your current tool as a tool profile so that it is easy to restore after the wizard changes the setttings for the chamfer.
+   You may also wat to save the chamfer settings as a tool profile so that it is easy to re-use the already calculated setttings.</p>
+
+   How to use the tool:
+   <ol>
+   <li>Here are my tool settings for my normal cuts, 10mm material and a 6mm bit<br>
+      <img alt="" src="images/chamfer01.png" align=top>
+   <li>Access the wizard via <b>Tools|Phlatboyz|Set Chamfer parameters</b> menu
+   <li><img alt ="" src="images/chamfer02.png" align=top><br>
+      The default parameters for the tool are for a chamfer tool this writer owns.<br>
+      Here I have set my desired chamfer width to 2mm.
+   <li>After clicking OK on the Chamfer Wizard, the settings are changed to those shown below:<br>
+      <img alt="" src="images/chamfer03.png"><br>
+      As you can see, the Overcut% has been set to 35% and the Bit Diameter has been set to 5mm.<br>
+      The combination of these settings will result in a 2mm wide chamfer on the part.
+   <li>Now set Outside and Inside cutlines on a copy of your part.
+   <li>Generate G-code for this copy of the part.
+   </ol>
+   
+   Notes:
+   <ul>
+   <li>set the cutline AFTER using this tool, and delete and redo it if you change parameters. Generate Gcode directly after creating cut line. 
+   <li>The chamfer cutter may plow a groove that is wider than the tool used for the outlines, thus cutting into the
+   waste material outside of the part.   You may want to use <b>multipass cuts</b> with ramping since the V shaped bit can
+   use up a lot of power unexpectedly.  You also need to leave room around the part for this overlapping chamfer cut.
+   
+   <li>You cannot cut a chamfer that is wider than the chamfer bit.  
+      In the above case chamfers are limited to 5mm as that is the height 
+      (and width) of the chamfered portion of the bit.
+   </ul>
+   
+   <h3>Example simulated cuts using the above data:</h3>
+   <img alt="" src="images/chamfer-s1.png" style="float: left;">
+   This is the part after the cut by the straight 6mm bit.
+   <br clear="all">
+   
+   <img alt="" src="images/chamfer-s2.png" style="float: left;">
+   This shows the result after the chamfer cut with a 90 degree chamfer bit.  Chamfer is 2mm wide.
+   <br clear="all">
+   <img alt="" src="images/chamfer-s3.png" style="float: left;">
+   Here is a detail view of the chamfer cut in progress.   You can see that the chamfer bit is cutting on both sides
+   if the initial slot cut.    As the chamfer gets wider this effect gets worse and the chamfer can end up taking quite a large cut.
+   <br clear="all">
+
+<br clear=all>
+</div>
+<hr><br>
+</div>
+</body>
+</html>
