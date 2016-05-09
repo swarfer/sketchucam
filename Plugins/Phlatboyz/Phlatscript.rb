@@ -326,7 +326,11 @@ module PhlatScript
   def PhlatScript.useLaser=(og)
     Sketchup.active_model.set_attribute(Dict_name, Dict_laser, og)
   end
-  
+
+  # vastly increases large file load time if this is false, default for 1.4a
+   def tryUpgrade?
+      return false
+   end
   
   def PhlatScript.pocketDirection?
     Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)

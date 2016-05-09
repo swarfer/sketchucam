@@ -54,31 +54,31 @@ module PhlatScript
       }
     end
 
-    def upgrade_918
+   def upgrade_918
       groups = []
       aborted = false
       Sketchup.active_model.start_operation "Upgrading 918", true
       items = Sketchup.active_model.active_path
       items.length.downto(0) { Sketchup.active_model.close_active } if items
       begin
-        Sketchup.active_model.entities.each { |e|
-          if e.kind_of?(Sketchup::Group)
-            groups.push(e)
-          elsif e.kind_of?(Sketchup::Edge)
-            process_edge_918(e)
-          end
-        }
-        groups.each { |g| process_group_918(g) }
+         Sketchup.active_model.entities.each { |e|
+            if e.kind_of?(Sketchup::Group)
+               groups.push(e)
+            elsif e.kind_of?(Sketchup::Edge)
+               process_edge_918(e)
+            end
+            }
+         groups.each { |g| process_group_918(g) }
       rescue
-        Sketchup.active_model.abort_operation
-        aborted = true
+         Sketchup.active_model.abort_operation
+         aborted = true
       end
       if (@upgrade && !aborted)
-        Sketchup.active_model.commit_operation 
+         Sketchup.active_model.commit_operation 
       else
-        Sketchup.active_model.abort_operation
+         Sketchup.active_model.abort_operation
       end
-    end
+   end
 
   end
 end

@@ -12,7 +12,9 @@ module PhlatScript
     end
 
     def onOpenModel(model)
-      PSUpgrader.upgrade
+      if PhlatScript.tryUpgrade?   # defaults to false as of V1.4a
+         PSUpgrader.upgrade
+      end
       PhlatScript.setModelOptions(model)
       model.add_observer(PhlatScript.modelChangeObserver)
     end
