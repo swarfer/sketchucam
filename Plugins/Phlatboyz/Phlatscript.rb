@@ -328,7 +328,7 @@ module PhlatScript
   end
 
   # vastly increases large file load time if this is false, default for 1.4a
-   def tryUpgrade?
+   def PhlatScript.tryUpgrade?
       return false
    end
   
