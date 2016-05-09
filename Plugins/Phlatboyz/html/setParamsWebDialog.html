@@ -10,7 +10,7 @@ body {
 td.buttons {
    font-family: Verdana, Arial, Helvetica, Sans-serif;
    text-align: center;
-   font-size: 0.90em;
+   font-size: 0.85em;
    }
 td {
    font-family: Verdana, Arial, Helvetica, Sans-serif;
@@ -22,8 +22,8 @@ td.caption{
    }
 .button {
    font-family: Verdana, Arial, Helvetica, Sans-serif;
-   font-size: 0.90em;
-   margin: 5px;
+   font-size: 0.85em;
+   margin: 3px;
    padding: 3px;
    }
 
@@ -34,16 +34,17 @@ tr.profile {
 td.tooltip {outline:none; }
 td.tooltip strong {line-height:30px;}
 td.tooltip:hover {text-decoration: none;}
-td.tooltip span { z-index:10; display:none; padding:2px 2px; top:380px; left:250px; width:275px; font-size: smaller; }
+td.tooltip span { z-index:10; display:none; padding:2px 2px; top:360px; left:255px; width:275px; font-size: smaller; }
 td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px solid #DCA; background:#ffCE9F;}
 -->
   </style>
 </head>
 <body>
    <p><a href="mailto:phlatboyz@phlatboyz.com">
-      <img style="border: 0px solid ; width: 400px; height: 135px; margin-left: auto; margin-right: auto; display: block;"
-      alt="SketchUCam" src="images/SketchUcam-Window-Logo.png">
-   </a><br></p>
+      <img style="border: 0px solid ; width: 400px; height: 130px; margin-left: auto; margin-right: auto; display: block;"
+         alt="SketchUCam" src="images/SketchUcam-Window-Logo.png">
+   </a>
+   </p>
 <form name="param_form" action="#" style="margin-left: auto; margin-right: auto;">
   
   <table border=0 cellpadding=1 cellspacing=0 style="margin-left: auto; margin-right: auto;">
@@ -59,7 +60,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
     </tr>
 
       <tr>
-        <td width="35%" id="spindlespeed_id" class="caption">&nbsp;</td>
+        <td width="40%" id="spindlespeed_id" class="caption">&nbsp;</td>
         <td  class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
         <td width="35%">&nbsp;</td>
         <td >&nbsp;</td>
@@ -118,8 +119,7 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
       <tr>
         <td id="overheadgantry_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="overheadgantry" id="overheadgantry" value=""  type="checkbox"><span>Sets direction of cuts,<br>ticked = outside cut is anticlockwise,<br>unticked = clockwise</span></td>
-        <td id="laser_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="laser" id="laser" value=""  type="checkbox"><span>Turns on Laser engraving control Gcode</span></td>
+
       </tr>
 
       <tr id="multipass_row1">
@@ -130,15 +130,35 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
       </tr>
 
       <tr>
-        <td id="gen3D_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="gen3D" id="gen3D" value=""  type="checkbox"><span>Generate a 3D cut path over a 3D object</span></td>
+         <td></td>
+         <td></td>
         <td id="stepover_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="stepover" id="stepover" value=""  type="text" size="8"><span>Percentage of bitdiameter to step over</span></td>
+      </tr>
+      <tr style="height: 5px;">
+         <td style="height: 5px;"></td>
+         <td></td>
+         <td></td>
+         <td></td>
+      </tr>
+<tr>
+        <td id="gen3D_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="gen3D" id="gen3D" value=""  type="checkbox"><span>Generate a 3D cut path over a 3D object</span></td>
+        <td id="laser_id" class="caption">&nbsp;</td>
+        <td class="tooltip"><input name="laser" id="laser" value=""  type="checkbox"><span>Turns on Laser engraving control Gcode</span></td>
+</tr>      
+     
+      <tr style="height: 4px;">
+         <td style="height: 4px;"></td>
+         <td></td>
+         <td></td>
+         <td></td>
       </tr>
 
       <tr>
         <td id="showgplot_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="showgplot" id="showgplot" value=""  type="checkbox"><span>Launch Gplot after generating G-code</span></td>
+        
       </tr>
 
       <tr>
@@ -146,13 +166,13 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
         <td colspan=3><textarea name="commenttext" rows="4" cols="40"></textarea></td>
       </tr>
       <tr>
-        <td colspan="4" class="buttons">
+         <td colspan="2" class="buttons">
             <input  value="OK" onclick="callPhlatboyz('save')" class="button" type="button">
             <input value="Cancel"  onclick="callPhlatboyz('cancel')" class="button"  type="button">
             <input value="Restore Defaults"  onclick="callPhlatboyz('restore_defaults')" class="button"  type="button">
-        </td>
-      </tr>
-      <tr><td colspan=4 id="version_id" class="caption" >&nbsp;</td>      </tr>
+         </td>
+         <td colspan=2 id="version_id" class="caption" >&nbsp;</td>      
+         </tr>
     </tbody>
   </table>
 </form>
