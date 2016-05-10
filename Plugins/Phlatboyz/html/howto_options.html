@@ -392,12 +392,17 @@ cuts = 3.3</pre>
    <dd>TRUE :  plunge hole drill cycle will use a small (0.5mm) retract, staying below the material surface.  Effectively just a 'pause'.
       This makes drilling faster, but may not clear chips properly in some materials, use with caution.   
       Do not use with straight flute bits.
-<dt>Use Depth first(true) or Diam first(false)
-   <dd>This affects bored holes that are larger than the bit diameter
-   <dd>TRUE : use a depth first method.  For each step over of the bit, the hole will be helical bored to depth before doing the next step over.
-   <dd>FALSE : use a diameter first method.  First helical bore 2xbitdiam to final depth. Then, for each multipass depth, 
-      spiral out to final diameter before doing the next pass.   If multipass is off this will do a full depth spiral cut which is the fastest way to 
-      bore a large hole.   For harder materials with multipass this method is recommended.
+   <dt>Use Depth first(true) or Diam first(false)
+      <dd>This affects bored holes that are larger than the bit diameter
+      <dd>TRUE : use a depth first method.  For each step over of the bit, the hole will be helical bored to depth before doing the next step over.
+      <dd>FALSE : use a diameter first method.  First helical bore 2xbitdiam to final depth. Then, for each multipass depth, 
+         spiral out to final diameter before doing the next pass.   If multipass is off this will do a full depth spiral cut which is the fastest way to 
+         bore a large hole.   For harder materials with multipass this method is recommended.
+   <dt>LASER - plunge hole dwell time (ms)
+      <dd>When laser controll G-code is generated, plunge holes (of all sizes) become a single burnt dot.
+      <dd>The depth of the burn will depend on the time spent stationary at that position.
+      <dd>Set the default dwell time here, in milliseconds (1000 = 1 second).
+      <dd>See more about <a href="sketchucamtoolbar.html#toolparameters">Laser control</a>
 </dl>   
    
    <hr>

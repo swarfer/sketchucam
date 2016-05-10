@@ -80,6 +80,7 @@ module PhlatScript
          @quarter_arcs           =   (phoptions.quarter_arcs? ? '1' : '0')
          @quick_peck             =   (phoptions.quick_peck? ? '1' : '0')
          @depth_first            =   (phoptions.depth_first? ? '1' : '0')
+         @laserdwell             =   phoptions.laser_dwell.to_i.to_s
       end
    end
 
@@ -152,6 +153,7 @@ module PhlatScript
          @posC                   = 0.0
          @quick_peck             = false
          @depth_first            = true
+         @laserdwell             = 250  # just an int
          
          @toolnum                = -1        # also not saved, awaiting extension of tool profile code
          @useg43                 = false
@@ -330,6 +332,8 @@ module PhlatScript
             value = -1
             value = getvalue(optin['depth_first'])             if (optin.has_key?('depth_first'))
             @depth_first = value > 0 ? true :  false            if (value != -1)
+         #laser plunge dwell time
+            @laserdwell            =   getvalue(optin['laserdwell']).to_i    if (optin.has_key?('laserdwell'))            
          end
 
       end #initialize
@@ -809,6 +813,13 @@ module PhlatScript
          @depth_first = newval == true
       end
       
+      def laser_dwell
+         @laserdwell
+      end
+      def laser_dwell=(newval)
+         @laserdwell=newval.to_i
+      end
+      
       def quick_peck?
          @quick_peck
       end
@@ -1255,24 +1266,32 @@ end # class
             'Use fuzzy hole stepover ',
             'Output helixes as quarter arcs ',
             'Use QuickPeck drill cycle ',
-            'Use Depth first(true) or Diam first(false) '
+            'Use Depth first(true) or Diam first(false) ',
+            'LASER - plunge hole dwell time (ms) '
             ];
          defaults=[
             @options.use_reduced_safe_height?.inspect(),
             @options.use_fuzzy_holes?.inspect(),
             @options.quarter_arcs?.inspect(),
             @options.quick_peck?.inspect(),
-            @options.depth_first?.inspect()
+            @options.depth_first?.inspect(),
+            @options.laser_dwell.to_i
             ];
          list=[
             'true|false',
             'true|false',
             'true|false',
             'true|false',
-            'true|false'
+            'true|false',
+            ''
             ];
-
-         input=UI.inputbox(prompts, defaults, list, 'Hole Feature Options (read the help!)')
+         begin
+            input=UI.inputbox(prompts, defaults, list, 'Hole Feature Options (read the help!)')
+         rescue ArgumentError => error
+            UI.messagebox(error.message)
+            retry
+         end         # input is nil if user cancelled
+            
          # input is nil if user cancelled
          if (input)
             @options.use_reduced_safe_height = (input[0] == 'true')
@@ -1280,6 +1299,7 @@ end # class
             @options.quarter_arcs            = (input[2] == 'true')
             @options.quick_peck              = (input[3] == 'true')
             @options.depth_first             = (input[4] == 'true')
+            @options.laser_dwell             = input[5]
             
             @options.save
          end # if input

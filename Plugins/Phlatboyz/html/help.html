@@ -263,7 +263,8 @@
             <dd>streamlined G00 moves when 'use reduced safe height' is true
             <dd>added 'force all Gcodes on' processing for spirals in plunge holes
          <dt id="laser">Laser cutter/engraver control   
-            <dd>Tick the Laser Control box on the parameters dialog and G-code will be output suitable for laser cutting.<br>
+            <dd>Tick the Laser Control box on the 
+            <a href="sketchucamtoolbar.html#toolparameters">parameters dialog</a> and G-code will be output suitable for laser cutting on a machine that uses spindle commands to control the laser.<br>
             The current control scheme replaces all Z movements (start and end of cuts) with M03 and M05 spindle motor on/off commands.<br>
             The M03 is combined with an S word giving PWM control of the laser power.<br>
             This value is set to the cut depth percentage of the current 'Spindle speed' set in the parameters dialog.<br><br>
@@ -282,6 +283,9 @@
             speed as well) and the spindle control output will always be either on or off.</p>
             
             <p>DO NOT select 'multipass', 'ramping' nor 'Gen3D' when Laser Control is desired.</p>
+            
+            <p>Plunge holes will only create a dot at the center of the hole.   The length of the delay at this dot can be
+            adjusted via the <A href="howto_options.html#a5">Hole Feature Options dialog</a>.
          <dt>Large file load speed
             <dd>A very old version of SketchUcam (Phlatscript 0.918) used attributes that had to be upgraded for 0.919 and up.
             <dd>This upgrade checks every edge and takes a long time for large files.

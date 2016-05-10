@@ -1350,9 +1350,10 @@ module PhlatScript
    
    # do a plunge hole for laser engraving, just make a spot, laser on, delay, laser off
    # should have a laseron() and laseroff() call, and a parameter for the delay
+   # laser_dwell must be in milliseconds
    def plungelaser(xo,yo,zStart,zo,diam)   
       out  = "M03\n"
-      out += "G4 P250\n"
+      out += "G4 P#{$phoptions.laser_dwell.to_i}\n"  #to_i because dwell time cannot be a float
       out += "M05\n"
       cncPrint(out)
    end
