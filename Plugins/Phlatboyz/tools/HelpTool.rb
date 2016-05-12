@@ -63,7 +63,7 @@ module PhlatScript
 #         path = ENV['APPDATA'] + "\\Sketchup"
          path = PhlatScript.toolsProfilesPath()
          if File.exist?(path)
-            UI.openURL(path)
+            UI.openURL("file://" + path)
          else
             UI.messagebox('First you need to save a profile before you can display the folder that contains it')
          end

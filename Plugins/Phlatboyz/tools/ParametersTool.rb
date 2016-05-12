@@ -53,9 +53,23 @@ module PhlatScript
 #          print "newdec #{newdec}\n"
           if newdec > currentdec
              Sketchup.active_model.options["UnitsOptions"]["LengthPrecision"] = newdec
-             puts "precision set to #{newdec}\n"
+#             puts "precision set to #{newdec}\n"
           end
+       else
+         if (bits.length == 1)  # then we don't have any decimal numbers so if we previously set it large, lets reduce it
+            if (currentdec > 3)
+               if (PhlatScript.isMetric)
+                  newdec = 2
+               else
+                  newdec = 4
+               end
+               Sketchup.active_model.options["UnitsOptions"]["LengthPrecision"] = newdec
+#               puts "precision set down to #{newdec}\n"
+            end
+         end
+         
        end
+       
     end
 
     def setValues(wd) # set values from ruby into java for given web_dialog(wd)
@@ -138,6 +152,7 @@ module PhlatScript
       PhlatScript.cutFactor = wd.get_element_value("cutfactor") # don't use parse_length for percentages
       CheckDecimals(wd.get_element_value("bitdiameter"))
       tmp = Sketchup.parse_length(wd.get_element_value("bitdiameter"))
+      tmp = tmp.to_l
       if (tmp > 0)
          PhlatScript.bitDiameter = tmp
       end
@@ -315,7 +330,7 @@ module PhlatScript
          end # if input
       else #---------------------------webdialog--------------------------------------------
         view = model.active_view
-        width = 550
+        width = 600
         height = 715
         x = (view.vpwidth - width)/2
         y = (view.vpheight - height)/2
