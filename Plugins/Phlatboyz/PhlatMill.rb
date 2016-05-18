@@ -332,6 +332,11 @@ module PhlatScript
         UI.messagebox("Failed to store output file. (File may be opened by another application.)")
       end
     end
+   
+   #output a generic warning about exceeded limits
+   def moveWarning(axis,dest,comp,max)
+      cncPrintC("Warning move #{axis}=" + dest.to_l.to_s.sub(/~ /,'') + " #{comp} of " + max.to_l.to_s + "\n")
+   end   
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
      #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
@@ -353,29 +358,29 @@ module PhlatScript
       else
          if (xo > @max_x)
             #puts "xo big"
-            cncPrintC("move x=" + sprintf("%10.6f",xo) + " GT max of " + @max_x.to_s + "\n")
+            moveWarning('x',xo,'GT max',@max_x)
             xo = @max_x
          elsif (xo < @min_x)
             #puts "xo small"
-            cncPrintC("move x="+ sprintf("%10.6f",xo)+ " LT min of "+ @min_x.to_s+ "\n")
+            moveWarning('X',xo,'LT min',@min_x)
             xo = @min_x
          end
 
          if (yo > @max_y)
             #puts "yo big"
-            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " GT max of "+ @max_y.to_s+ "\n")
+            moveWarning('Y',yo,'GT max',@max_y)
             yo = @max_y
          elsif (yo < @min_y)
             #puts "yo small"
-            cncPrintC("move y="+ sprintf("%10.6f",yo)+ " LT min of "+ @min_y.to_s+ "\n")
+            moveWarning('Y',yo,'LT min',@min_y)
             yo = @min_y
          end
 
          if (zo > @max_z)
-            cncPrintC("(move z="+ sprintf("%8.6f",zo)+ " GT max of "+ @max_z.to_s+ ")\n")
+            moveWarning('Z',zo,'GT max',@max_z)
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(move Z="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z.to_s+ ")\n")
+            moveWarning('Z',zo,'LT min',@min_z)
             zo = @min_z
          end
          command_out = ""
@@ -466,12 +471,12 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
-            msg = "(PLUNGE limiting Z to max_z #{@max_z})\n"
+            msg = "(PLUNGE Warning: limiting Z to max_z #{@max_z.to_l.to_s})\n"
             cncPrintC(msg)
             puts msg
             zo = @max_z
          elsif (zo < @min_z)
-            msg = "(PLUNGE limiting Z to min_z #{@min_z})\n"
+            msg = "(PLUNGE Warning: limiting Z to min_z #{@min_z.to_l.to_s})\n"
             cncPrintC(msg)
             puts msg
             zo = @min_z
