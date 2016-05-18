@@ -122,6 +122,30 @@ module PhlatScript
       end
    end
 
+   #strip trailing zeros from the string
+   def stripzeros(inp,ignore = false)
+      out = inp
+      if ((@precision > 3) || (ignore) )
+         while out =~ /00$/
+            out = out.gsub(/00$/,'0')
+         end
+         if (!ignore)  # for normal trims
+            if (out =~ /\.0/) == nil
+               puts "1 " + out
+               if (out =~ /0$/) != nil
+                  out = out.gsub(/0$/,'')
+                  puts "2 " + out
+               end
+            end
+         else  # if ignore is true, then trim all trailing zeros
+            if (out =~ /\.0$/)  # if ends in a .0, remove it
+               out = out.gsub(/\.0$/,'')
+            end
+         end
+      end
+      return out
+   end
+
     def format_measure(axis, measure)
       #UI.messagebox("in #{measure}")
       m2 = @is_metric ? measure.to_mm : measure.to_inch
@@ -130,16 +154,7 @@ module PhlatScript
       axis.upcase!
       out = sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
       #strip trailing 0's to shorten line for GRBL
-      if (@precision > 3)
-         while out =~ /00$/
-            out = out.gsub(/00$/,'0')
-         end
-         if (out =~ /\.0/) == nil
-            if (out =~ /0$/) != nil
-               out = out.gsub(/0$/,'')
-            end
-         end
-      end
+      out = stripzeros(out)
       return out
     end
 
@@ -357,10 +372,10 @@ module PhlatScript
          end
 
          if (zo > @max_z)
-            cncPrintC("(move z="+ sprintf("%10.6f",zo)+ " GT max of "+ @max_z.to_s+ ")\n")
+            cncPrintC("(move z="+ sprintf("%8.6f",zo)+ " GT max of "+ @max_z.to_s+ ")\n")
             zo = @max_z
          elsif (zo < @min_z)
-            cncPrintC("(move ="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z.to_s+ ")\n")
+            cncPrintC("(move Z="+ sprintf("%8.3f",zo)+ " LT min of "+ @min_z.to_s+ ")\n")
             zo = @min_z
          end
          command_out = ""
@@ -451,12 +466,12 @@ module PhlatScript
          @no_move_count += 1
       else
          if (zo > @max_z)
-            msg = "(PLUNGE limiting Z to max_z @max_z)\n"
+            msg = "(PLUNGE limiting Z to max_z #{@max_z})\n"
             cncPrintC(msg)
             puts msg
             zo = @max_z
          elsif (zo < @min_z)
-            msg = "(PLUNGE limiting Z to min_z @min_z)\n"
+            msg = "(PLUNGE limiting Z to min_z #{@min_z})\n"
             cncPrintC(msg)
             puts msg
             zo = @min_z
@@ -471,6 +486,7 @@ module PhlatScript
             end
             #puts "laser depth #{depth.to_i}"
             cncPrint("M3 S", depth.abs.to_i)
+            so = 1 #make sure feed rate gets output on next move
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
@@ -1350,10 +1366,13 @@ module PhlatScript
    
    # do a plunge hole for laser engraving, just make a spot, laser on, delay, laser off
    # should have a laseron() and laseroff() call, and a parameter for the delay
-   # laser_dwell must be in milliseconds
+   # laser_dwell must be output as seconds, can be float
+   # laser_dwell is stored as microseconds in the options
    def plungelaser(xo,yo,zStart,zo,diam)   
-      out  = "M03\n"
-      out += "G4 P#{$phoptions.laser_dwell.to_i}\n"  #to_i because dwell time cannot be a float
+      out = "M3 S" + @spindle_speed.to_i.to_s + "\n"     #must have a spindle speed since it may not have bee set befor this, set max
+      dwell = sprintf("P%-5.*f", @precision, $phoptions.laser_dwell/1000.0)      
+      dwell = stripzeros(dwell,true)                     #want a plain integer if possible, keeps gplot happy
+      out += "G4 #{dwell}\n"                             #dwell time in seconds, can be less than 1
       out += "M05\n"
       cncPrint(out)
    end

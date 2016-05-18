@@ -26,7 +26,7 @@ module PhlatScript
       end
 
       def select
-         msg = "Summary of your settings from (My)Constants.rb\n" +
+         msg = "Summary of your settings from MyOptions.ini\n" +
             "  Default_show_gplot = #{$phoptions.default_show_gplot?}\n" +
             "  Default_pocket_direction = #{$phoptions.default_pocket_direction?}\n" +
             "  Min_z = #{$phoptions.min_z}\n" +
