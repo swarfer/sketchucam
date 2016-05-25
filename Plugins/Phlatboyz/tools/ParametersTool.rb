@@ -196,7 +196,7 @@ module PhlatScript
          PhlatScript.rampangle =  PhlatScript.rampangle % 46
       end
       if (PhlatScript.useLaser?)             
-         PhlatScript.useMultipass = false    # cannot multipass either
+         #PhlatScript.useMultipass = false    # cannot multipass either
          PhlatScript.mustramp = false        # cannot ramp if laser is in use
          PhlatScript.gen3D = false           # cant do this either
       end

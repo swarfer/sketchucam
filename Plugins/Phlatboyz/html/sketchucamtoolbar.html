@@ -175,16 +175,19 @@
          Enter <b>Phlatboyz Parameters</b> to set: <br>
          [spindle speed, <br>
          feed rate, <br>
-         plunge rate, <br>
-         safe travel,<br>
+         <A href="#p2">plunge rate,</a> (also used for ramp moves) <br>
          material thickness, <br>
-         bit diameter,  <br>
-         tab width, tab depth factor, <br>
+         <a href="#p3">ramping options</a>,<br>
+         <a href="#p1">Inside/outside overcut%</a>,<br>
+         bit diameter,  <A href="#p4">Stepover%</a>,<br>
+         <A href="#p5">tab width</a>, tab depth factor, <br>
+         Multipass options,<br>
          the safe cutting area size and comment text] <br>
          which will appear in the generated g-code. 
          <p>
          All g-code output uses the safe cutting
-         area's local origin(the bottom left corner) <b>or</b> the origin set by the offset tool
+         area's local origin(the bottom left corner) <b>or</b> the origin set by the 
+         <a href="sketchucamtoolbar.html#toolzero">offset tool</a>
          and only
          edges <b>entirely</b> within the safe cutting area will generate g-code. <br>
          </p>
@@ -194,13 +197,14 @@
          <p>
          This will allow designs requiring multiple sheets to be contained within one
          SketchUp file and the cut codes processed as one sheet at a time for
-         separate g-code files for each sheet.  The safe area is defaults to 
-         Sketchup's origin, unless placed elsewhere using the Safe Area Tool.</p>
+         separate g-code files for each sheet.  The safe area defaults to 
+         Sketchup's origin, unless placed elsewhere using the 
+         <a href="sketchucamtoolbar.html#toolsafe">Safe Area Tool</a>.</p>
 
          Also, there are check boxes for additional options: <br>
          <ol>
          <li> "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
-         by cutting multiple thin layers. <br>
+         by cutting multiple thin layers. <br><br>
          <li> "<u>Overhead Gantry</u>".  The original 2
          Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
          cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
@@ -211,6 +215,9 @@
          </p>
          
          See the <a href="howto_options.html">Options Menu help</a> for setting this as a default<br><br>
+         
+         <li>"<u>Table top is Z-zero</u>" - tick this to use the table surface as the zero reference point for Z.<br>
+         If this is OFF then the top of the material is the Z zero reference point.<br><br>
          
          <li><u>"Laser Control"</u> [checkbox] <i>New in 1.4a</i>
             <ul>
@@ -298,21 +305,38 @@
          
          <b>Some points to note:</b>         
          <dl>
-            <dt>Inside/Outside overcut%
+            <dt><A id="p1">Inside/Outside overcut%</a>
             <dd>This value is used as a multiplier on the material thickness.   
             The Phlatprinter is designed to cut through sheet material so normal cuts must go deeper than the material thickness.  
             This is normally about 140%, ie through the material and 40% out the other side to account for wavy dollar tree blue foam.   
             If you are using an overhead gantry and do not want to cut into your spoil board then set this value to 100% and zero your toolbit end accurately.
-            <dt>Plunge rate:</dt>
-            <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials</dd>
+            
+            <dt><a id="p2">Plunge rate:</a></dt>
+            <dd>used for vertical down moves of the Z axis.  Set this lower than the feed rate for hard materials.<br>
+               This is also used for ramping moves, and while it can be much faster than plunging, in harder materials it shoudl be slower than
+               the normal cut feed rate.
+            </dd>
            
             <dt>Table top is Z-Zero</dt>
             <dd>If this is checked then Z zero level is on the table top, if unchecked, Z-Zero is on the top of the material (the default).</dd>
            
-            <dt><a href="howto_ramping.html">Ramp in Z</a></dt>
-            <dd>If this is unchecked Z will be plunged, if it is checked, Z will ramp into the workpiece along the first segment of the cut.   
-            Be aware that this cut may be very short and you may need to adjust cut order to get the cut to start on a longer segment.<br><br>
+            <dt><A id="p3">Ramp in Z</a> <a href="howto_ramping.html">more HOWTO help here</a></dt>
+            <dd>If this is unchecked Z will be plunged, if it is checked, Z will <b>ramp</b> into the workpiece 
+               along the first segment of the cut (yes, even arcs will ramp, some controllers cannot do helical arcs so check this
+               before a big job).   <br>
+               The angle set in 'Ramp angle limit' will be used.   <br>
+               If  this is '0' then there is no limit, otherwise you can enter a value from 1 to 45 degrees.<br><br>
+            Be aware that this cut may be very short (and therefore steep angle if not limited) .<br>
+            and you may need to adjust cut order to get the cut to start on a longer segment.<br><br>
             The Plunge Feed Rate will be used for ramp moves.<br><br>
+            
+            If a cutline has no segments that are longer than half the bit diameter then a plunge will be generated
+            instead of a ramping move.   The cut start point optimizer will try to find a long enough segment but if it fails then 
+            a plunge will be generated.   If you have comments turned on, you will see a message like<br>
+            <b>(ramplimit end, translated to plunge)</b><br>
+            warning you that the G-code will plunge cut.<br>
+            <i style="color: red;">If your tool cannot plunge cut then it is critical that you
+            check the Gcode for such messages before using the G-code.</i><br><br>
            
             Note that <b>ramping</b> will affect <b>plunge holes</b> like this:
             <dl>
@@ -354,13 +378,13 @@
                </tr>
                <tr>
                   <th class="left">stepover% > 50%</th>
-                  <td class="left" style="color: red;">Will Plunge</td>
+                 <td class="left" style="color: red;">Will Plunge</td>
                   <td class="left">no plunge, single helical bore</td>
                   <td class="left">no plunge, 1 helical bore, then spiral out to diam</td>
                </tr>   
                </table>
             </dl>
-           <p>
+           <p style="color: blue;">
            If you are making holes equal to the bit diameter in hard materials then you should use a <u>real drill bit</u> and 
            do a seperate drilling cycle.
            </p>
@@ -372,11 +396,13 @@
            If set to an angle from 1 to 45 the ramp angle will be limited to this value, ie it might be less for a long segments, but will never be more.
            Multiple ramp moves will be generated to achieve this angle, while the total number of ramp moves will be rounded to always be an even number, ensuring that the limiting angle is not exceeded.
            </dd>
-           <dt>Step Over %</dt>
-           <dd>This percentage is used by the 3D code generator and by the <b>Pocket Tool</b> to determine how much of the bit diameter to overlap each cut pass.
+           <dt><a id="p4">Step Over %</a></dt>
+           <dd>This percentage is used by the by the <b>Pocket Tool</b> and <b>Plunge Hole tool</b> (and 3D code generator) 
+               to determine how much of the bit diameter to overlap each cut pass.<br>
                Tool manufacturers recommend using 1-30% or 70 to 100%, but not 30-70% as this range increases tool wear.
            <br><b>Only select 'Generate 3D Code' for an actual 3D model.  If selected for a plain flat drawing, Sketchup Will Stop Responding</b></dd>
-            <dt>Tab width
+
+           <dt><A id="p5">Tab width</a>
             <dd>Half the bit diameter will be removed from each end of the tab.  Thus a tab width equal or less than the bit diameter will not leave a useful tab at all.
            
            <dt>Tab Depth %
@@ -389,7 +415,7 @@
            Note that Sketchup 2013 onward requires you to click on the drawing, or select a new tool, before the G-code program will be displayed.
            </dd>
          </dl>
-         Tooltips will displayed for each edit box with simplified help.  
+         Tooltips will be displayed for each edit box with simplified help as you hover over each item in the dialog.  
       </td>
    </tr>
 
