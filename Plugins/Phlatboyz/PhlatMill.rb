@@ -439,6 +439,7 @@ module PhlatScript
          command_out = ""
          if (@laser)
             command_out += "M05"
+            cmd = "g1"  # force output of motion command at next move
          else
             if (@Limit_up_feed) && (cmd=="G0") && (zo > 0) && (@cz < 0)
                cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
@@ -492,6 +493,7 @@ module PhlatScript
             #puts "laser depth #{depth.to_i}"
             cncPrint("M3 S", depth.abs.to_i)
             so = 1 #make sure feed rate gets output on next move
+            cmd = "g1"   # force output of motion commands at next move
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
