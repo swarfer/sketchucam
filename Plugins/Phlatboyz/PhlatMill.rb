@@ -131,10 +131,10 @@ module PhlatScript
          end
          if (!ignore)  # for normal trims
             if (out =~ /\.0/) == nil
-               puts "1 " + out
+               puts "1 " + out               if (@debug)
                if (out =~ /0$/) != nil
                   out = out.gsub(/0$/,'')
-                  puts "2 " + out
+                  puts "2 " + out            if (@debug)
                end
             end
          else  # if ignore is true, then trim all trailing zeros
@@ -342,7 +342,7 @@ module PhlatScript
      #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
      #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
       if cmd != @cmd_rapid
-         if @retract_depth == zo
+         if (!notequal(@retract_depth, zo))
             cmd=@cmd_rapid
             so=0
             @cs=0
@@ -352,7 +352,7 @@ module PhlatScript
       end
 
       #print "( move xo=", xo, " yo=",yo,  " zo=", zo,  " so=", so,")\n"
-      if (xo == @cx) && (yo == @cy) && (zo == @cz)
+      if (!notequal(xo, @cx)) && (!notequal(yo,@cy)) && (!notequal(zo, @cz))
          #print "(move - already positioned)\n"
          @no_move_count += 1
       else
@@ -422,7 +422,7 @@ module PhlatScript
       #      if (zo == nil)
       #        zo = @retract_depth
       #      end
-      if (@cz == zo)
+      if (!notequal(@cz, zo) )
          @no_move_count += 1
       else
          if (zo > @max_z)
@@ -467,7 +467,7 @@ module PhlatScript
    # fast = use fastappraoch , set to false to force it off
    def plung(zo, so=@speed_plung, cmd=@cmd_linear, fast=true)
       #      cncPrintC("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
-      if (zo == @cz)
+      if (!notequal(zo, @cz) )
          @no_move_count += 1
       else
          if (zo > @max_z)
@@ -495,7 +495,7 @@ module PhlatScript
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
-               if (@cz == @retract_depth) && (zo < @cz)
+               if (!notequal(@cz, @retract_depth) ) && (zo < @cz)
                   offset = @is_metric ? 0.5.mm : 0.02.inch
                   flag = false
                   if (@table_flag)
@@ -550,7 +550,7 @@ module PhlatScript
 ## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
    def ramplimit(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
-      if (zo == @cz)
+      if (!notequal(zo, @cz) )
          @no_move_count += 1
       else
          # we are at a point @cx,@cy,@cz and need to ramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
@@ -564,7 +564,7 @@ module PhlatScript
       
          command_out = ""
          # if above material, G00 to near surface to save time
-         if (@cz == @retract_depth)
+         if (!notequal(@cz, @retract_depth) )
             if (@table_flag)
                @cz = @material_thickness + 0.2.mm
             else
@@ -599,7 +599,7 @@ module PhlatScript
             puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
             bz = distance * Math::tan( torad(limitangle) )
             if (bz == 0)
-               puts "distance=#{distance} bz=#{bz}"
+               puts "distance=#{distance} bz=#{bz}"     if (@debugramp)
                passes =4
             else
                passes = ((zo-@cz)/bz).abs
@@ -613,7 +613,7 @@ module PhlatScript
             end
             if (passes > 100)
                cncPrintC("clamping ramp passes to 100, segment very short")
-               puts "clamping ramp passes to 100"
+               puts "clamping ramp passes to 100"  if (@debugramp)
                passes = 100
             end
             bz = (zo-@cz).abs / passes
@@ -685,9 +685,10 @@ module PhlatScript
 ## this may end up being quite a steep ramp if the distance is short
    def rampnolimit(op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp "+ sprintf("%10.6f",zo)+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
-      if (zo == @cz)
+      if (!notequal(zo,@cz) )
          @no_move_count += 1
-         cncPrintC("rampnolimit no move")
+#         cncPrintC("rampnolimit no move")
+         #puts "nomove zo #{zo} @cz #{@cz}"
       else
          # we are at a point @cx,@cy and need to ramp to op.x,op.y,zo/2 then back to @cx,@cy,zo
          if (zo > @max_z)
@@ -699,7 +700,7 @@ module PhlatScript
          end
          command_out = ""
          # if above material, G00 to surface
-         if (@cz == @retract_depth)
+         if (!notequal(@cz, @retract_depth) )
             if (@table_flag)
                @cz = @material_thickness + 0.2.mm
             else
@@ -719,7 +720,7 @@ module PhlatScript
             @cz = zo
             @cs = so
             @cc = @cmd_linear
-            cncPrintC("rampnolimit end, plunging\n")
+            cncPrintC("rampnolimit end, plunged\n")
             return
          end
          
@@ -770,7 +771,7 @@ module PhlatScript
       end
       cncPrintC("ramplimitArc")  if (@debugramparc)
       cncPrintC("(ramp arc limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramparc) 
-      if (zo == @cz)
+      if (!notequal(zo, @cz) )
          @no_move_count += 1
       else
          # we are at a point @cx,@cy,@cz and need to arcramp to op.x,op.y, limiting angle to rampangle ending at @cx,@cy,zo
@@ -785,7 +786,7 @@ module PhlatScript
       
          command_out = ""
          # if above material, G00 to near surface to save time
-         if (@cz == @retract_depth)
+         if (!notequal(@cz, @retract_depth) )
             if (@table_flag)
                @cz = @material_thickness + 0.2.mm
             else
@@ -860,7 +861,7 @@ module PhlatScript
             command_out += cmd
             cnt += 1
             if cnt > 1000
-               puts "high count break" 
+               puts "ramp arc high count break" 
                command_out += "ramp arc loop high count break, do not cut this code\n"
                break
             end
@@ -923,7 +924,7 @@ module PhlatScript
          command_out += format_measure("Z",zstart+0.5.mm) + "\n"  # rapid to near surface if not already there
       end
       
-      command_out += "G01" + format_measure("Z",zstart)        # feed to surface
+      command_out += "G01" + format_measure("Z",zstart + 0.02.mm)        # feed to surface
       feed = @speed_plung
       command_out += format_feed(feed)   #always feed at plunge rate
       command_out += "\n"
@@ -1037,12 +1038,12 @@ module PhlatScript
       command_out += "G00" + format_measure("X",xo) 
       command_out +=         format_measure("Y",yo-yoff) + "\n"    
       if (@cz != (zstart + 0.5.mm))
-      puts "cz #{@cz} zstart #{zstart}"
+         puts "cz #{@cz} zstart #{zstart}" if (@debug)
          command_out += "G00" if (@gforce)
          command_out += "   " if (!@gforce)
          command_out += format_measure("Z",zstart+ 0.5.mm) + "\n"   # rapid to near surface
       end
-      command_out += "G01" + format_measure("Z",zstart) # feed to surface
+      command_out += "G01" + format_measure("Z",zstart + 0.02.mm) # feed to surface
       feed = @speed_plung
       command_out += format_feed(feed)   #always feed at plunge rate
       command_out += "\n"
@@ -1268,7 +1269,7 @@ module PhlatScript
          cnt += 1
          if (cnt > 1000)
             puts "SpiralOut high count break"
-            cncPrint("Error: spiralout high coutn break")
+            cncPrint("Error: spiralout high count break")
             break
          end
       end
@@ -2006,7 +2007,7 @@ module PhlatScript
 
 
     def home
-      if (@cz == @retract_depth) && (@cy == 0) && (@cx == 0)
+      if (!notequal(@cz, @retract_depth)) && (!notequal(@cy, 0)) && (!notequal(@cx, 0) )
         @no_move_count += 1
       else
         retract(@retract_depth)
