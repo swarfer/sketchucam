@@ -179,14 +179,41 @@
          <br>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
          achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
          For example, for GRBL you can set the tool offset with this line:<br>
-         <pre>G38.1 Z%s</pre>
+         <pre>G43.1 Z%s</pre>
          
-         And example toolchange script might look like
+         An example toolchange script might look like this:<br>
+         using G28 predefined position as the tool change position
          <pre>(toolchange)
+M5
+G49
 G28      (go to predefined position)
 M0       (pause for tool change)
-G38.1 Z%s   (set the tool offset, %s will be replaced by the offset set for this tool)
+G43.1 Z%s   (set the tool offset, %s will be replaced by the offset set for this tool)
 (toolchange end)
+</pre>
+
+or like this: 
+<br>this uses G59 work co-ordinates 0,0,0 as the position for the tool change
+and assumes you are using G54 for your workpiece.
+<pre>
+M5
+G49         ; tool offset off
+G59         ; use G59 co-ordinates
+G0 X0 Y0 Z0 ; go to 0,0,0
+M0          ; pause until resume
+G43.1 Z%s   ; set tool length offset
+G54         ; go back to G54 co-ordinates
+</pre>
+
+or like this:<br>
+using machine co-ordinates for the tool change
+<pre>
+M05         ; turn spindle off
+G49         ; cancel tool length offsets
+G53 X200 Y0 Z100   ; go somewhere in machine co-ordinates where tool change can be done
+M0          ; wait till resume, NEVER USE a timed delay!
+G43.1 Z%s   ; %s will be replaced by the length offset for this tool that you entered
+G0 Z0       ;  this may be needed to make sure the tool offset it in effect.
 </pre>
          
          <br>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
