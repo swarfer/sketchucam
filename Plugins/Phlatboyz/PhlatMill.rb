@@ -338,6 +338,16 @@ module PhlatScript
    def moveWarning(axis,dest,comp,max)
       cncPrintC("Warning move #{axis}=" + dest.to_l.to_s.sub(/~ /,'') + " #{comp} of " + max.to_l.to_s + "\n")
    end   
+   
+   def laserbright(zo)
+         # calculate 'laser brightness' as a percentage of material thickness
+      if (@table_flag)
+         depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
+      else  # zo is negative
+         depth = (zo / -@material_thickness) * @spindle_speed
+      end
+      return depth
+   end
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
      #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
@@ -345,7 +355,7 @@ module PhlatScript
       if cmd != @cmd_rapid
          if (!notequal(@retract_depth, zo))
             cmd=@cmd_rapid
-            so=0
+#            so=0
             @cs=0
          else
             cmd=@cmd_linear
@@ -385,7 +395,7 @@ module PhlatScript
             zo = @min_z
          end
          command_out = ""
-         command_out += cmd if ((cmd != @cc) || @gforce)
+         command_out += cmd if ((cmd != @cc) || @gforce || @laser)
          hasz = hasx = hasy = false
          if ( notequal(xo, @cx) )
             command_out += (format_measure('X', xo))
@@ -395,10 +405,27 @@ module PhlatScript
             command_out += (format_measure('Y', yo))
             hasy = true
          end
-         if ( notequal(zo, @cz) )
-            hasz = true
-            command_out += (format_measure('Z', zo))
-         end
+         
+         if (@laser) # then set PWM power if changed
+            # calculate 'laser brightness' as a percentage of material thickness
+            depth = laserbright(zo)
+            #insert the pwm command before current move
+            if ( notequal(zo, @cz) )
+               #cncPrintC("move Z laser")
+               if (hasx || hasy)
+                  command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+               else
+                  command_out = "M3 S" + depth.abs.to_i.to_s
+               end
+#               @cs = 3.14 #make sure feed rate gets output on next move
+               cmd = "M3"   # force output of motion commands at next move
+            end   
+         else
+            if ( notequal(zo, @cz) )
+               hasz = true
+               command_out += (format_measure('Z', zo))
+            end
+         end   
 
          if (!hasx && !hasy && hasz) # if only have a Z motion
             if (zo < @cz) || (@Limit_up_feed)  # if going down, or if overridden
@@ -486,11 +513,7 @@ module PhlatScript
          command_out = ""
          if (@laser)
             # calculate 'laser brightness' as a percentage of material thickness
-            if (@table_flag)
-               depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
-            else  # zo is negative
-               depth = (zo / -@material_thickness) * @spindle_speed
-            end
+            depth = laserbright(zo)
             #puts "laser depth #{depth.to_i}"
             cncPrint("M3 S", depth.abs.to_i)
             so = 1 #make sure feed rate gets output on next move
@@ -1991,7 +2014,7 @@ module PhlatScript
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
-# if radius is <= 0.006.inch then output a linear move since really small radii cause issues with controllers and simulators
+# if radius is <= 0.01.inch then output a linear move since really small radii cause issues with controllers and simulators
    def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
       #puts "g3: #{g3} cmd #{cmd}"
@@ -2003,7 +2026,15 @@ module PhlatScript
          @precision +=1  # circles like a bit of extra precision so output an extra digit
          command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
          command_out += (format_measure("Y", yo)) #if (yo != @cy)
-         command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
+         if (@laser)
+            if (notequal(zo , @cz))
+               depth = laserbright(zo)
+               #insert the pwm command before current move
+               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+            end   
+         else
+            command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
+         end
          command_out += (format_measure("R", radius))
          @precision -=1
          command_out += (format_feed(so)) if (so != @cs)
@@ -2013,7 +2044,15 @@ module PhlatScript
          cmd = "G01"
          command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
          command_out += (format_measure("Y", yo)) #if (yo != @cy)
-         command_out += (format_measure("Z", zo)) if (zo != @cz)
+         if (@laser)
+            if (notequal(zo , @cz))
+               depth = laserbright(zo)
+               #insert the pwm command before current move
+               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+            end
+         else
+            command_out += (format_measure("Z", zo)) if (zo != @cz)
+         end
          command_out += (format_feed(so)) if (so != @cs)
          command_out += "\n"
       end

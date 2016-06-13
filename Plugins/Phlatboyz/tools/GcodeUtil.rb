@@ -1513,7 +1513,6 @@ puts " new #{newedges[i-1]}\n"
    def GcodeUtil.millEdgesPlain(aMill, edges, material_thickness, reverse=false)
       if (edges) && (!edges.empty?)
       begin
-      
       #puts "millEdgesPlain reverse=#{reverse}"
       
       mirror = P.get_safe_reflection_translation()
@@ -1702,7 +1701,8 @@ puts " new #{newedges[i-1]}\n"
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
 #something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
                         g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                        puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}" if (@debug)
+                        cutkind = phlatcut.class                                                         if (@debug)
+                        puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if (@debug)
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
 #                        center = phlatcut.center
