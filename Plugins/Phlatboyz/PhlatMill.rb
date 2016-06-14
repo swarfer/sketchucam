@@ -434,7 +434,7 @@ module PhlatScript
             end
          end
          #          cncPrintC("(   #{hasx} #{hasy} #{hasz})\n")
-         command_out += (format_feed(so)) if (so != @cs)
+         command_out += (format_feed(so))             if ( (so != @cs) && (cmd != @cmd_rapid) )
          command_out += "\n"
          cncPrint(command_out)
          @cx = xo

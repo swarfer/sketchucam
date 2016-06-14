@@ -272,7 +272,7 @@ module PhlatScript
 
          # dropdown options can be added here
 #         if PhlatScript.multipassEnabled?
-            list = ["","","","","","","","","","","","false|true","false|true","","false|true","","false|true","false|true","false|true","",""]
+            list = ["","","","","","","","","","","","false|true","false|true","false|true","","false|true","","false|true","false|true","false|true","",""]
 #         else
 #            list = ["","","","","","","","","","","","false|true","false|true","","false|true","false|true","false|true","",""]
 #         end
