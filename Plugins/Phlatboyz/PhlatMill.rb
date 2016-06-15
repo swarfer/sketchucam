@@ -1869,7 +1869,7 @@ module PhlatScript
       command_out += "(plungeboredepth - return to center retract done)\n" if (@debug)
       cncPrint(command_out)
       
-      cncPrintC("plungebore end #{cz}")
+      cncPrintC("plungebore end")
 
       @cx = xo
       @cy = yo
