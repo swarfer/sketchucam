@@ -498,6 +498,7 @@ module PhlatScript
    # cmd = default cmd, normally G01
    # fast = use fastappraoch , set to false to force it off
    def plung(zo, so=@speed_plung, cmd=@cmd_linear, fast=true)
+      #      cncPrintC("plung "+ sprintf("%10.6f",zo.to_mm)+ ", @cs="+ @cs.to_mm.to_s+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"\n")
       if (!notequal(zo, @cz) )
          @no_move_count += 1
       else
