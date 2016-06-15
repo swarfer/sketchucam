@@ -352,11 +352,11 @@ module PhlatScript
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
      #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
      #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
-      if cmd != @cmd_rapid
+      if (cmd != @cmd_rapid)
          if (!notequal(@retract_depth, zo))
             cmd=@cmd_rapid
 #            so=0
-            @cs=0
+            @cs = 0
          else
             cmd=@cmd_linear
          end
@@ -434,13 +434,16 @@ module PhlatScript
             end
          end
          #          cncPrintC("(   #{hasx} #{hasy} #{hasz})\n")
-         command_out += (format_feed(so))             if ( (so != @cs) && (cmd != @cmd_rapid) )
+         if ( notequal(so, @cs) && (cmd != @cmd_rapid) )
+            command_out += (format_feed(so))             
+            @cs = so                                  
+         end
          command_out += "\n"
          cncPrint(command_out)
          @cx = xo
          @cy = yo
          @cz = zo
-         @cs = so
+         
          @cc = cmd
       end
    end
@@ -467,14 +470,14 @@ module PhlatScript
          command_out = ""
          if (@laser)
             command_out += "M05"
-            cmd = "g1"  # force output of motion command at next move
+            cmd = "M05"  # force output of motion command at next move
          else
             if (@Limit_up_feed) && (cmd=="G0") && (zo > 0) && (@cz < 0)
                cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
                command_out += 'G01' + (format_measure('Z', 0))
                command_out += (format_feed(@speed_plung))
                command_out += "\n"
-               $cs = @speed_plung
+               @cs = @speed_plung
                #          G00 to zo
                command_out += "G00" + (format_measure('Z', zo))
             else
@@ -495,7 +498,6 @@ module PhlatScript
    # cmd = default cmd, normally G01
    # fast = use fastappraoch , set to false to force it off
    def plung(zo, so=@speed_plung, cmd=@cmd_linear, fast=true)
-      #      cncPrintC("(plung ", sprintf("%10.6f",zo), ", so=", so, " cmd=", cmd,")\n")
       if (!notequal(zo, @cz) )
          @no_move_count += 1
       else
@@ -546,12 +548,14 @@ module PhlatScript
             so = @speed_plung  # force using plunge rate for vertical moves
             #        sox = @is_metric ? so.to_mm : so.to_inch
             #        cncPrintC("(plunge rate #{sox})\n")
-            command_out += (format_feed(so)) if (so != @cs)
+            if notequal(so, @cs)
+               command_out += (format_feed(so)) 
+               @cs = so
+            end
          end
          command_out += "\n"
          cncPrint(command_out)
          @cz = zo
-         @cs = so
          @cc = cmd
       end
    end
@@ -680,7 +684,7 @@ module PhlatScript
                curdepth = zo
             end   
             command_out += format_measure('z',curdepth)
-            command_out += (format_feed(so)) if (so != @cs)
+            command_out += (format_feed(so))             if (notequal(so,@cs))
             @cs = so
             command_out += "\n";
 
@@ -757,7 +761,7 @@ module PhlatScript
          command_out += format_measure('y',op.y)
          bz = (zo-@cz)/2 + @cz
          command_out += format_measure('z',bz)
-         command_out += (format_feed(so)) if (so != @cs)
+         command_out += (format_feed(so))          if notequal(so, @cs)
          command_out += "\n";
          # cut to @cx,@cy,zo
          command_out += cmd   if ((cmd != @cc) || @gforce)
@@ -907,7 +911,7 @@ module PhlatScript
             end   
             command_out += format_measure('z',curdepth)
             command_out += format_measure('r',rad)
-            command_out += (format_feed(so)) if (so != @cs)
+            command_out += (format_feed(so))       if notequal(so, @cs)
             @cs = so
             command_out += "\n";
 
@@ -1691,7 +1695,7 @@ module PhlatScript
                command_out += format_measure("Z",zo )
                command_out += format_measure("R",sh )                         # retract height
                command_out += format_measure("Q",PhlatScript.multipassDepth)  # peck depth
-               if (so != @cs)
+               if notequal(so, @cs)
                   command_out += (format_feed(so))
                   @cs = so
                end
@@ -1704,7 +1708,7 @@ module PhlatScript
                      zonow = zo
                   end
                   command_out += "G01" + format_measure("Z",zonow)  # plunge the center hole
-                  if (so != @cs)
+                  if notequal(so ,@cs)
                      command_out += (format_feed(so)) 
                      @cs = so
                   end
@@ -1773,7 +1777,7 @@ module PhlatScript
                command_out += format_measure("R",sh )
 #               command_out += format_measure("P",0.2/25.4)               # dwell 1/5 second
 #               command_out += format_measure("Q",PhlatScript.multipassDepth)
-               if (so != @cs)
+               if notequal(so, @cs)
                   command_out += (format_feed(so)) 
                   @cs = so
                end
@@ -1782,7 +1786,7 @@ module PhlatScript
             else
                command_out += "(plungeboredepth - center hole)\n" if (@debug)
                command_out += "G01" + format_measure("Z",zo)  # plunge the center hole
-               if (so != @cs)
+               if notequal(so, @cs)
                   command_out += format_feed(so)
                   @cs = so
                end
@@ -1793,7 +1797,6 @@ module PhlatScript
                command_out += "(plungeboredepth - center hole done)\n" if (@debug)
             end
             @cs = so
-
          end
       end
 
@@ -1971,7 +1974,7 @@ module PhlatScript
          #arc from center to start point
          command_out += "G03" +  format_measure('Y', yo - @bit_diameter/2) + format_measure('I0.0 J', -@bit_diameter/4)
          @precision -= 1
-         if (so != @cs)
+         if notequal(so, @cs)
             puts "so #{so}  @cs #{@cs}"      if @debug
             command_out += format_feed(so)
             @cs = so
@@ -2037,7 +2040,7 @@ module PhlatScript
          end
          command_out += (format_measure("R", radius))
          @precision -=1
-         command_out += (format_feed(so)) if (so != @cs)
+         command_out += (format_feed(so)) if notequal(so, @cs)
          command_out += "\n"
       else  # output a linear move instead
          command_out += "G01"
@@ -2053,7 +2056,7 @@ module PhlatScript
          else
             command_out += (format_measure("Z", zo)) if (zo != @cz)
          end
-         command_out += (format_feed(so)) if (so != @cs)
+         command_out += (format_feed(so)) if notequal(so, @cs)
          command_out += "\n"
       end
       cncPrint(command_out)
@@ -2081,7 +2084,7 @@ module PhlatScript
       command_out += (format_measure("I", i))
       command_out += (format_measure("J", j))
       @precision -=1
-      command_out += (format_feed(so)) if (so != @cs)
+      command_out += (format_feed(so))    if notequal(so, @cs)
       command_out += "\n"
       cncPrint(command_out)
       @cx = xo
@@ -2113,34 +2116,3 @@ module PhlatScript
   end # class PhlatMill
 
 end # module PhlatScript
-# A forum member was struggling with a 1mm bit cutting 1mm hard material in that
-# the plunge cuts after tabs were at full speed not plunge speed
-# This file solves that, and is different from the first version published in that
-# all upward Z moves are at fullspeed, only downward cuts are at plunge speed
-# Vtabs are at full speed as usual.
-# $Id$
-
-=begin
-      places = Array.new
-      while rNow > rEnd do
-         zNow -= downS
-         if (zNow - zEnd) <= 0.001
-            puts "not going deeper than material"
-            break
-         end
-         puts "circle znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
-         #output += circle(xo,yo,zNow,rNow)
-         places.push(zNow,rNow)
-         rNow -= xf
-      end # while
-
-      while places.length > 0 do
-         rNow = places.pop
-         zNow = places.pop
-         puts "places znow #{zNow.to_mm} Rnow #{rNow.to_mm}"
-         #output += circle(xo,yo,zNow,rNow)
-         output += SpiralAtQ(xo,yo,zStart,zNow,rNow)
-         output += "g00" + format_measure("Z",zStart+0.02) + "\n"   # rapid to near surface - should be a hole there!
-         output += "g01" + format_measure("Z",zStart) + format_feed(@speed_plung) + "\n"
-      end # while places
-=end      
