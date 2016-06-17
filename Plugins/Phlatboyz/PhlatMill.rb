@@ -305,6 +305,7 @@ module PhlatScript
     end
 
    def job_finish
+      cncPrint("M05\n") # M05 - Spindle off
       if ($phoptions.useA? || $phoptions.useB? || $phoptions.useC?)
          cncPrint("G00")
          if ($phoptions.useA?)
@@ -319,7 +320,6 @@ module PhlatScript
          cncPrint("\n")
       end
          
-      cncPrint("M05\n") # M05 - Spindle off
       cncPrint("M30\n") # M30 - End of program/rewind tape
       cncPrint("%\n")
       if(@mill_out_file)
@@ -1252,6 +1252,7 @@ module PhlatScript
 # this one does center out to diameter, an outward spiral at zo depth
 # must give it the final yoff, call it after doing the initial 2D bore.
 # if cboreinner > 0 then use that for starting diam
+# will set feed to speed_curr
    def SpiralOut(xo,yo,zstart,zend,yoff,ystep)
    #@debugramp = true
       @precision += 1
@@ -1298,7 +1299,12 @@ module PhlatScript
 #         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
 #         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
          #IJ format - displays correctly in OpenSCAM, not Gplot
-         command_out += 'G03' + format_measure('Y',yother) + " I0" + format_measure('J', (yother-ynow)/2) +"\n"
+         command_out += 'G03' + format_measure('Y',yother) + " I0" + format_measure('J', (yother-ynow)/2) 
+         if (@cs != @speed_curr)
+            command_out += format_feed(@speed_curr)    
+            @cs = @speed_curr
+         end
+         command_out += "\n"
          command_out += 'G03' + format_measure('Y',ynew)   + " I0" + format_measure('J', -(yother-ynew)/2 ) +"\n"
 
          ynow = ynow - ystep
@@ -1570,7 +1576,10 @@ module PhlatScript
                output += "(ARC TO EXISTING HoLE)\n"
                output += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n"
                output += 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
-               output += "G03" +  format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr) + "\n"
+               output += "G03" +  format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr) 
+               output += format_feed(@speed_curr)    if (@cs != @speed_curr)
+               output += "\n"
+               @cs = @speed_curr
             else
                output += "(STEPPED FOR #{rNow.to_mm} )\n"                                 if @debug
                output += 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
