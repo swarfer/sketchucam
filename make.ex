@@ -47,3 +47,9 @@ tt_*
 utilities.rb
 Sync*
 _*
+voro*
+pointtool*
+as_face*
+centerpoint*
+delau*
+MyConst*
