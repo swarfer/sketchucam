@@ -77,3 +77,7 @@ Plugins/jf_zoom_selection.rb
 Plugins/Phlatboyz/html/images/csink02a.png
 Plugins/SyncToy_*
 Plugins/sr_cutlist*
+Plugins/as_facecentroid*
+Plugins/PointTool*
+Plugins/voronoi*
+Plugins/delauney3.rb
