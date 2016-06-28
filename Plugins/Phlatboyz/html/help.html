@@ -230,20 +230,31 @@
    <div class="intro">
       <h4>New in V1.4b (June 2016)</h4>
       <dl>
-         <dt>TABs in laser cut   
-            <dd>Tabs and Vtabs fixed for laser cutting
-            <dd>do not use V-tabs, only half of a V-tab will be cut
-            <dd>set tab depth to 0% 'to be removed' if you want the laser OFF during the tab cut
-         <dt>Fix for compatibility menu
-            <dd>The order of multipass options was incorrect, preventing depth setting
+         <dd>
+         <dl>
+            <dt>TABs in laser cut mode
+               <dd>Tabs and Vtabs fixed for laser cutting.
+               <dd>Do not use V-tabs, only half of a V-tab will be cut.
+               <dd>Set tab depth to 0% 'to be removed' if you want the laser OFF during the tab cut.
+            <dt>Fix for compatibility menu
+               <dd>The order of multipass options was incorrect, preventing depth setting.
+            <dt>Streamlined Countersinks and Counterbores
+               <dd>They now avoid recutting the hole that has already been cut if it is larger than 2xBitdiam.
+               <dd>Feed speeds adjusted.
+            <dt>Feedrates
+               <dd>Sometimes a required feedrate was not output because of using the wrong comparison method.  
+               Now using notequal() to compare to 0.0001".
+               <dd>Initial plungefeed rate will be output on the G90... header line so that there is always a defined feedrate.
+            <dt>Toolchange
+               <dd>Help updated with improved examples.
+         </dl>
       </dl>
-      
       <h4>New in V1.4a (June 2016)</h4>
       <dl>   
       <dt>Bug fixes
          <dd>
          <dl>
-         <dt>Many additions to help.
+         <dd>Many additions to help.
          </dl>
          </dd>
       <dt>New Features
