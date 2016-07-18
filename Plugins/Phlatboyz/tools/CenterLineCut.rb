@@ -40,7 +40,7 @@ module PhlatScript
       model.start_operation "Creating Center Line", true
       @edge = edge
       @edge.material = Color_centerline_cut
-      @edge.set_attribute Dict_name, Dict_edge_type, Key_centerline_cut
+      @edge.set_attribute(Dict_name, Dict_edge_type, Key_centerline_cut)
       model.commit_operation
     end
 
