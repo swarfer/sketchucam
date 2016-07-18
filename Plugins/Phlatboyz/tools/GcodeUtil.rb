@@ -556,7 +556,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #for centerlines, must check cut_reversed? for each cut
    def GcodeUtil.cutConnected(aMill, sortedcuts, material_thickness)
       #create an array of all connected cuts and cut them, until no more cuts found
-#todo: there is something wrong with this, on multipass it stuffs up the cut order for centerlines, sometimes
+#done: there is something wrong with this, on multipass it stuffs up the cut order for centerlines, sometimes
       debugcutc = true
       centers = []
       cnt = 1
@@ -646,7 +646,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
    end
 
    def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = false
+      debugmln = true
       @level += 1
       puts "millLoopNode #{@level}" if (debugmln)
       # always mill the child loops first
@@ -693,8 +693,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             }
          if !folds.empty?
 				puts "   all folds #{folds.length}"          if (debugmln)
-            #cutConnected(aMill,folds, material_thickness)
-            millEdges(aMill,folds, material_thickness)
+            cutConnected(aMill,folds, material_thickness)
+            #millEdges(aMill,folds, material_thickness)
             #folds.each { |sc| millEdges(aMill, [sc], material_thickness) }
          end
          if !centers.empty?
@@ -1543,10 +1543,10 @@ puts " new #{newedges[i-1]}\n"
       printPass = true
 # this is the offset for the plunge down to previous pass depth so the tool will not hit the surface
       hzoffset = getHZoffset()
-
+      backtack = false     # for debugging
       begin # multipass
          pass += 1
-         puts "pass #{pass}\n";
+         puts "pass #{pass}\n" if (backtack)
          aMill.cncPrintC("Pass: #{pass.to_s}") if (PhlatScript.useMultipass? && printPass)
          ecnt = 0
          edges.each { | phlatcut |
@@ -1558,7 +1558,7 @@ puts " new #{newedges[i-1]}\n"
             cut_depth = @zL   #not always 0
             #              puts "cut_depth #{cut_depth}\n"
 
-            thestart = false
+            thestart = false  
             reverse_points = false
             point_s = point_e = nil  # make sure they exist
 
@@ -1584,7 +1584,7 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
-               backtack = false
+              
                # Jul2016 - trying to fix backtacking on centerlines -
                # if we detect that this segment ends at the end of the last segment, then swap ends
                if (phlatcut.kind_of? CenterLineCut) #this will mess up inside/outside cuts, so only use on centerlines
