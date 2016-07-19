@@ -351,7 +351,7 @@ module PhlatScript
    end
 
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
-     #cncPrintC("(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n")
+     #cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n") 
      #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
       if (cmd != @cmd_rapid)
          if (!notequal(@retract_depth, zo))
@@ -502,6 +502,7 @@ module PhlatScript
       #      cncPrintC("plung "+ sprintf("%10.6f",zo.to_mm)+ ", @cs="+ @cs.to_mm.to_s+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"\n")
       if (!notequal(zo, @cz) )
          @no_move_count += 1
+         return false
       else
          if (zo > @max_z)
             msg = "(PLUNGE Warning: limiting Z to max_z #{@max_z.to_l.to_s})\n"
@@ -559,6 +560,7 @@ module PhlatScript
          cncPrint(command_out)
          @cz = zo
          @cc = cmd
+         return true
       end
    end
 

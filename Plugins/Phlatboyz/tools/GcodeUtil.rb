@@ -123,7 +123,8 @@ module PhlatScript
       @limitangle = 0      # if > 0 will limit to this ramp angle
       @debug = false
       @level = 0
-    def initialize
+   def initialize
+      super
       @tooltype = 3
       @tooltip = PhlatScript.getString("Phlatboyz GCode")
       @largeIcon = "images/gcode_large.png"
@@ -131,7 +132,6 @@ module PhlatScript
       @statusText = PhlatScript.getString("Phlatboyz GCode")
       @menuItem = PhlatScript.getString("GCode")
       @menuText = PhlatScript.getString("GCode")
-
    end
 
    def select
@@ -168,7 +168,7 @@ module PhlatScript
             #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
       # by doing this we can have Z0 on the table surface, or at top of material
       @tabletop = PhlatScript.tabletop?
-
+      
       if (@tabletop)
          @safeHeight =  PhlatScript.materialThickness + PhlatScript.safeTravel.to_f
          @materialTop = PhlatScript.materialThickness
@@ -557,7 +557,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
    def GcodeUtil.cutConnected(aMill, sortedcuts, material_thickness)
       #create an array of all connected cuts and cut them, until no more cuts found
 #done: there is something wrong with this, on multipass it stuffs up the cut order for centerlines, sometimes
-      debugcutc = true
+# needed to check cut_reversed?
+      debugcutc = false
       centers = []
       cnt = 1
       prev = nil
@@ -614,7 +615,8 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                if !centers.empty?
                   puts "cutc: CUTTING connected centers #{rev} #{centers.size}"  if (debugcutc)
 #                        centers.reverse! if rev
-                  if (rev)
+                  if (rev && !pkrev)
+                     puts "cuts: reversing array"   if (debugcutc)
                      centers.reverse!
                      rev = false
                   end
@@ -638,15 +640,16 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 #                     centers.each { |ed|
 #                        puts " #{c} #{ed.edge.start.position} #{ed.edge.end.position}"
 #                        }
-         centers.reverse!
-         rev = false
+            puts "cuts: reversing array"   if (debugcutc)
+            centers.reverse!
+            rev = false
          end
          millEdges(aMill, centers, material_thickness, rev)
       end
    end
 
    def GcodeUtil.millLoopNode(aMill, loopNode, material_thickness)
-      debugmln = true
+      debugmln = false
       @level += 1
       puts "millLoopNode #{@level}" if (debugmln)
       # always mill the child loops first
@@ -1131,13 +1134,10 @@ puts " new #{newedges[i-1]}\n"
       prog.symbols("e","E")
       printPass = true
 
-#      if edges[0].kind_of?(CenterLineCut) && (edges.length > 1)
-#         edges.reverse!
-#      end
       @tab_top  = 100
 #offset for rapid plunge down to previous pass depth
       hzoffset = getHZoffset()
-
+      backtack = false     # for debugging
 
       begin # multipass
          pass += 1
@@ -1151,7 +1151,11 @@ puts " new #{newedges[i-1]}\n"
             point = nil
             cut_depth = @zL   #not always 0
             #              puts "cut_depth #{cut_depth}\n"
-
+            #stuff for backtack fix
+            thestart = true
+            reverse_points = false
+            point_s = point_e = nil  # make sure they exist
+            
             phlatcut.cut_points(reverse) { |cp, cut_factor|
                prev_pass_depth = pass_depth
                #cut = ZL - (cutfactor * MT)
@@ -1175,6 +1179,45 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
+               
+               # Jul2016 - trying to fix backtacking on centerlines -
+               # if we detect that this segment ends at the end of the last segment, then swap ends
+               #this will mess up inside/outside cuts, so only use on centerlines
+               if ( (phlatcut.kind_of? CenterLineCut)  && (points > 1) )
+                  if (thestart)
+                     # transformed start and end position
+                     if (phlatcut.cut_reversed?)
+                        point_e = (trans ? (phlatcut.edge.start.position.transform(trans)) : phlatcut.edge.start.position)
+                        point_s = (trans ? (phlatcut.edge.end.position.transform(trans)) : phlatcut.edge.end.position)
+                     else
+                        point_s = (trans ? (phlatcut.edge.start.position.transform(trans)) : phlatcut.edge.start.position)
+                        point_e = (trans ? (phlatcut.edge.end.position.transform(trans)) : phlatcut.edge.end.position)
+                     end
+                     puts ";#{point_s} #{point_e}   #{save_point} reverse #{reverse} cut_reversed #{phlatcut.cut_reversed?}\n" if (backtack)
+                     reverse_points = false
+                     if (save_point != nil) # ignore if 1 edge
+                        if ( ((point_s.x != save_point.x) || (point_s.y != save_point.y)) &&
+                             ((point_e.x == save_point.x) && (point_e.y == save_point.y))  )
+                           puts ";   REVERSE points\n"    if (backtack)
+                           reverse_points = true
+                           point.x = point_e.x     # use the end point first
+                           point.y = point_e.y
+                        else
+                           reverse_points = false
+                        end
+                     end
+                     thestart = false
+                  else
+                     if (reverse_points)           # use the start point second
+                        puts ";   second #{point_s}\n"   if (backtack)
+                        point.x = point_s.x
+                        point.y = point_s.y
+                        reverse_points = false
+                     end
+                  end
+                  puts ";   cp=#{cp}  point #{point}\n"   if (backtack)
+               end
+               
 
 # for ramping we need to know the point at the other end of the current edge
                rev = reverse
@@ -1188,9 +1231,9 @@ puts " new #{newedges[i-1]}\n"
                end
                otherpoint = (trans ? (otherpoint.transform(trans)) : otherpoint)
 
-               if (phlatcut.kind_of? CenterLineCut)
-                  puts "#{phlatcut} start#{point} end#{otherpoint} x#{point.x.to_mm} y#{point.y.to_mm} rv#{reverse}" if (@debug)
-               end
+#               if (phlatcut.kind_of? CenterLineCut)
+#                  puts "#{phlatcut} start#{point} end#{otherpoint} x#{point.x.to_mm} y#{point.y.to_mm} rv#{reverse}" if (@debug)
+#               end
 
                # retract if this cut does not start where the last one ended
                if ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y) || (save_point.z != cut_depth))
@@ -1226,38 +1269,6 @@ puts " new #{newedges[i-1]}\n"
                               # for these cuts we must retract else we get collisions with existing material
                               # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
                               # for pockets.
-=begin
-                              if (points > 1) #if cutting more than 1 edge at a time, must retract
-                                 aMill.retract(@safeHeight)
-                              else
-                                 #            if multipass and 1 edge and not finished , then partly retract
-                                 #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
-                                 if PhlatScript.useMultipass? && (points == 1) &&
-                                    (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
-                                    puts "   part retract p_pass_depth #{prev_pass_depth.to_mm} #{cut_depth.to_mm}" if (@debug)
-                                    #                                       aMill.cncPrint("(PARTIAL RETRACT)\n")
-                                    if (PhlatScript.multipassDepth <= 0.5.mm)
-                                       cloffset = PhlatScript.multipassDepth / 2
-                                    else
-                                       cloffset = 0.5.mm
-                                    end
-                                    aMill.retract(prev_pass_depth+ cloffset )
-                                    ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
-                                 end
-                              end
-                              if ccmd
-                                 #                                    aMill.cncPrint("(RAPID #{ccmd})\n")
-                                 aMill.move(point.x, point.y, prev_pass_depth + cloffset , PhlatScript.feedRate, 'G0')
-                                 ccmd = nil
-                              else
-                                 aMill.move(point.x, point.y)
-                                 if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                    aMill.cncPrintC("plunging to previous pass")    if (@debug)
-                                    aMill.plung(prev_pass_depth,1,'G0')
-                                 end
-                              end
-                              aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
-=end
 
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
                                  aMill.cncPrintC("points > 1")       if @debug
@@ -1267,8 +1278,9 @@ puts " new #{newedges[i-1]}\n"
                                     aMill.retract(@safeHeight)
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                       aMill.cncPrintC("plunging to previous pass before ramp")    if (@debug)
-                                       aMill.plung(prev_pass_depth + hzoffset ,1,'G0',false)
+                                       if (aMill.plung(prev_pass_depth + hzoffset ,1,'G0',false))
+                                          aMill.cncPrintC("plunged to previous pass before ramp")    if (@debug)
+                                       end
                                     end
                                  end
                                  aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
@@ -1277,14 +1289,15 @@ puts " new #{newedges[i-1]}\n"
                                  if PhlatScript.useMultipass? && (phlatcut.kind_of?(CenterLineCut) )
                                     # do simple ramp to depth
                                     aMill.move(point.x, point.y)        if (pass == 1)
-                                    aMill.cncPrintC("RAMP")             if @debug
+                                    aMill.cncPrintC("RAMP to depth")             if @debug
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  else
                                     aMill.cncPrintC(" normal move and ramp to cut_depth")    if @debug
                                     aMill.move(point.x, point.y)
                                     if ((prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                       aMill.cncPrintC("plunging to previous pass")          if (@debug)
-                                       aMill.plung(prev_pass_depth + hzoffset,1,'G0', false)
+                                       if (aMill.plung(prev_pass_depth + hzoffset,1,'G0', false) )
+                                          aMill.cncPrintC("plunged to previous pass")          if (@debug)
+                                       end
                                     end
                                     aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                  end
@@ -1558,7 +1571,7 @@ puts " new #{newedges[i-1]}\n"
             cut_depth = @zL   #not always 0
             #              puts "cut_depth #{cut_depth}\n"
 
-            thestart = false  
+            thestart = true
             reverse_points = false
             point_s = point_e = nil  # make sure they exist
 
@@ -1587,7 +1600,8 @@ puts " new #{newedges[i-1]}\n"
               
                # Jul2016 - trying to fix backtacking on centerlines -
                # if we detect that this segment ends at the end of the last segment, then swap ends
-               if (phlatcut.kind_of? CenterLineCut) #this will mess up inside/outside cuts, so only use on centerlines
+               #this will mess up inside/outside cuts, so only use on centerlines
+               if ( (phlatcut.kind_of? CenterLineCut)  && (points > 1) )
                   if (thestart)
                      # transformed start and end position
                      if (phlatcut.cut_reversed?)
@@ -1597,12 +1611,12 @@ puts " new #{newedges[i-1]}\n"
                         point_s = (trans ? (phlatcut.edge.start.position.transform(trans)) : phlatcut.edge.start.position)
                         point_e = (trans ? (phlatcut.edge.end.position.transform(trans)) : phlatcut.edge.end.position)
                      end
-                     puts "#{point_s} #{point_e}   #{save_point} reverse #{reverse} cut_reversed #{phlatcut.cut_reversed?}\n" if (backtack)
+                     puts ";#{point_s} #{point_e}   #{save_point} reverse #{reverse} cut_reversed #{phlatcut.cut_reversed?}\n" if (backtack)
                      reverse_points = false
-                     if (save_point != nil)
+                     if (save_point != nil) # ignore if 1 edge
                         if ( ((point_s.x != save_point.x) || (point_s.y != save_point.y)) &&
                              ((point_e.x == save_point.x) && (point_e.y == save_point.y))  )
-                           puts "   REVERSE points\n"    if (backtack)
+                           puts ";   REVERSE points\n"    if (backtack)
                            reverse_points = true
                            point.x = point_e.x     # use the end point first
                            point.y = point_e.y
@@ -1613,13 +1627,13 @@ puts " new #{newedges[i-1]}\n"
                      thestart = false
                   else
                      if (reverse_points)           # use the start point second
-                        puts "   second #{point_s}\n"   if (backtack)
+                        puts ";   second #{point_s}\n"   if (backtack)
                         point.x = point_s.x
                         point.y = point_s.y
                         reverse_points = false
                      end
                   end
-                  puts "   cp=#{cp}  point #{point}\n"   if (backtack)
+                  puts ";   cp=#{cp}  point #{point}\n"   if (backtack)
                end
 
                # retract if this cut does not start where the last one ended
@@ -1661,7 +1675,7 @@ puts " new #{newedges[i-1]}\n"
 
                               retractp = false
                               if (points > 1) #if cutting more than 1 edge at a time, must retract
-                              #   puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
+                                 # puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
                                  # if we are at the same point, do not retract
                                  if (!save_point.nil?) && ( (save_point.x == point.x) && (save_point.y == point.y)  )
                                     aMill.cncPrintC("retract prevented")      if (@debug)
@@ -1671,18 +1685,18 @@ puts " new #{newedges[i-1]}\n"
                                     retractp = false
                                  end
                               else  # only 1 segment, use optimal single direction cut path
-                                 #            if multipass and 1 edge and not finished , then partly retract
-                                 #                                    puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
+                                 # if multipass and 1 edge and not finished , then partly retract
+                                 # puts "#{PhlatScript.useMultipass?} #{points==1} #{pass>1} #{(pass_depth-max_depth).abs >= 0} #{phlatcut.kind_of?(CenterLineCut)}"
                                  if PhlatScript.useMultipass? && (points == 1) &&
-                                    (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && (phlatcut.kind_of?(CenterLineCut) )
-                                    #                                       puts "   part retract"
-                                    #aMill.cncPrint("(PARTIAL RETRACT)\n")
+                                    (pass > 1) && ((pass_depth-max_depth).abs >= 0.0) && 
+                                    (phlatcut.kind_of?(CenterLineCut) )
+                                    aMill.cncPrint("(PARTIAL RETRACT)\n")
                                     aMill.retract(prev_pass_depth+ hzoffset )
                                     ccmd = "G00" #must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
                                  end
                               end
                               if ccmd
-                                 #aMill.cncPrint("(RAPID #{ccmd})\n")
+                                 aMill.cncPrint("(RAPID #{ccmd})\n")
                                  aMill.move(point.x, point.y, prev_pass_depth + hzoffset , PhlatScript.feedRate, "G0")
                                  ccmd = nil
                               else
@@ -1692,8 +1706,9 @@ puts " new #{newedges[i-1]}\n"
                               #aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")
                               # can we rapid down to near the previous pass depth?
                               if ((!retractp) && (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth))
-                                 aMill.cncPrintC("Plunging to previous pass")          if (@debug)
-                                 aMill.plung(prev_pass_depth + hzoffset ,1,'G0', false)
+                                 if (aMill.plung(prev_pass_depth + hzoffset ,1,'G0', false) )
+                                    aMill.cncPrintC("Plunged to previous pass")       
+                                 end
                               end
                               aMill.plung(cut_depth, PhlatScript.plungeRate)
                            else
