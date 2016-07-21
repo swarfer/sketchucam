@@ -755,14 +755,24 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
    def GcodeUtil.optimize(edges,reverse,trans,aMill)
       if (@g_save_point != nil)
          #puts "optimize: last point  #{@g_save_point}"
-         #swarfer: find closest point that is not a tabcut and re-order edges to start there
+         #swarfer: find closest point -that is not a tabcut- and re-order edges to start there
          cnt = edges.size;
          idx = 0
          mindist = 100000
          idxsave = -1
-
-         if (edges[0].kind_of? PhlatScript::CenterLineCut)
-            return edges
+         if (edges.length > 1)  
+            if (edges[0].kind_of? PhlatScript::CenterLineCut)
+               # if the first 2 segments would be backtacked, force the first segment to reverse
+               # the backtack code then fixes the rest of the segments
+               if (edges[0].edge.start.position == edges[1].edge.end.position)
+                  if (edges[0].cut_reversed? == nil)
+                     edges[0].cut_reversed = true
+                  else
+                     edges[0].cut_reversed = !edges[0].cut_reversed
+                  end
+               end
+               return edges
+            end
          end
 =begin       attempts at optmizing centerlines....
 	 puts "before"
@@ -1556,7 +1566,7 @@ puts " new #{newedges[i-1]}\n"
       printPass = true
 # this is the offset for the plunge down to previous pass depth so the tool will not hit the surface
       hzoffset = getHZoffset()
-      backtack = false     # for debugging
+      backtack = false    # for debugging
       begin # multipass
          pass += 1
          puts "pass #{pass}\n" if (backtack)
@@ -1597,7 +1607,7 @@ puts " new #{newedges[i-1]}\n"
 
                # transform the point if a transformation is provided
                point = (trans ? (cp.transform(trans)) : cp)
-              
+               puts "point #{point}\n" if (backtack)
                # Jul2016 - trying to fix backtacking on centerlines -
                # if we detect that this segment ends at the end of the last segment, then swap ends
                #this will mess up inside/outside cuts, so only use on centerlines
@@ -1605,12 +1615,21 @@ puts " new #{newedges[i-1]}\n"
                   if (thestart)
                      # transformed start and end position
                      if (phlatcut.cut_reversed?)
+                        puts "reversed "  if (backtack)
                         point_e = (trans ? (phlatcut.edge.start.position.transform(trans)) : phlatcut.edge.start.position)
                         point_s = (trans ? (phlatcut.edge.end.position.transform(trans)) : phlatcut.edge.end.position)
                      else
+                        puts "not reversed "   if (backtack)
                         point_s = (trans ? (phlatcut.edge.start.position.transform(trans)) : phlatcut.edge.start.position)
                         point_e = (trans ? (phlatcut.edge.end.position.transform(trans)) : phlatcut.edge.end.position)
                      end
+                     puts "got _s #{point_s} _e #{point_e}\n" if (backtack)
+#                     if (reverse)
+#                        puts "   reversing ps pe\n" if (backtack)
+#                        pe = point_e
+#                        point_e = point_s
+#                        point_s = pe
+#                     end
                      puts ";#{point_s} #{point_e}   #{save_point} reverse #{reverse} cut_reversed #{phlatcut.cut_reversed?}\n" if (backtack)
                      reverse_points = false
                      if (save_point != nil) # ignore if 1 edge
@@ -1633,7 +1652,7 @@ puts " new #{newedges[i-1]}\n"
                         reverse_points = false
                      end
                   end
-                  puts ";   cp=#{cp}  point #{point}\n"   if (backtack)
+                  puts ";   using point #{point}\n"   if (backtack)
                end
 
                # retract if this cut does not start where the last one ended
@@ -1755,6 +1774,7 @@ puts " new #{newedges[i-1]}\n"
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else
+                           #puts "#{point} #{phlatcut.radius} " if @debug
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                         end
                      else

@@ -60,7 +60,7 @@ module PhlatScript
       end
 
       cut = self.new
-      cut.cut(point1, point2)
+      cut.cUt(point1, point2)
       # propagate the arc settings from the underlying edge to the tab
       if ((pcut.kind_of? PhlatArc) && (pcut.is_arc?))
         cut.radius = pcut.radius
@@ -78,7 +78,7 @@ module PhlatScript
       @edge = edge
     end
 
-    def cut(pt1, pt2)
+    def cUt(pt1, pt2)
       model = Sketchup.active_model
       entities = Sketchup.active_model.entities
       model.start_operation "Creating Tab", true, true
@@ -155,7 +155,6 @@ module PhlatScript
 # a couple of conditions that need to be tested to figure out the depth of the start and end point
 # 1. If an adjoining edge is not a tab then no additional processing is needed
 # 2. If an adjoining edge is a tab then the height for the common vertex needs to be the tab depth
-
       start_in_tab = false
       end_in_tab = false
 
@@ -178,13 +177,21 @@ module PhlatScript
       pts = [[@edge.start.position, start_depth]]
       if self.vtab?
          if (self.is_arc?)
-#            puts "#{self.center} #{self.g3?.inspect} #{self.radius}\n"
-            if self.g3?
+            #puts "   arc center #{self.center} #{self.g3?.inspect} #{self.radius.to_mm}\n"
+            if (self.center.x != 0.0) and ((self.center.y != 0.0))  # old arcs have no center set
+               if self.g3?
+                  ptm = midarc(@edge.start.position,@edge.end.position, self.center, self.radius)
+               else
+                  ptm = midarc(@edge.end.position,@edge.start.position, self.center, self.radius)
+               end                  
+            else   # old arcs have no center so cannot use midarc()
+# todo: might be able to calculate the center
+# http://mathforum.org/library/drmath/view/53027.html
+# https://rosettacode.org/wiki/Circles_of_given_radius_through_two_points            
+# formulas give 2 centers, woudl have to figure out which one to use
+# meanwhile - just use the old linear method, this gives funky vtabs but always works
                ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
-               #ptm = midarc(@edge.start.position,@edge.end.position, self.center, self.radius)
-            else
-               ptm = midarc(@edge.end.position,@edge.start.position, self.center, self.radius)
-            end                  
+            end
          else
             ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
          end
