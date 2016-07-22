@@ -142,9 +142,11 @@ module PhlatScript
    def midarc(ps,pe,pc,r)
       x = (ps.x + pe.x) /2
       y = (ps.y + pe.y) /2
+      #puts "x #{x.to_mm} y #{y.to_mm}"
 
       midpoint = Geom::Point3d.new(x,y,0)
       vect = pc.vector_to(midpoint)
+      #puts "vect legnth #{vect.length.to_mm} becomes #{r.to_mm}"
       vect.length = r
       p2 = pc.offset(vect)
       return p2
@@ -157,14 +159,45 @@ module PhlatScript
 # 2. If an adjoining edge is a tab then the height for the common vertex needs to be the tab depth
       start_in_tab = false
       end_in_tab = false
+      outside = nil   # make it exist
 
       @edge.start.edges.each { |e|
+         puts "find #{e}"
+         #try to figure out what we are cutting. inside or outside, to help figure out radius offset
+         pc = PhlatCut.from_edge(e)
+         if pc.kind_of?(PhlatScript::OutsideCut)
+            outside = true
+         end
+         if pc.kind_of?(PhlatScript::InsideCut)
+            outside = false
+         end
+         }
+puts "outside #{outside.inspect}"      
+      @edge.start.edges.each { |e|
+         puts "start #{e}"
+         #try to figure out what we are cutting. inside or outside, to help figure out radius offset
+         pc = PhlatCut.from_edge(e)
+         if pc.kind_of?(PhlatScript::OutsideCut)
+            outside = true
+         end
+         if pc.kind_of?(PhlatScript::InsideCut)
+            outside = false
+         end
         next if (e == @edge)
         pc = PhlatCut.from_edge(e)
         start_in_tab = pc.kind_of?(PhlatScript::TabCut) if pc
         break if start_in_tab
       }
+      #sometimes outside is still nil here, so check here as well
       @edge.end.edges.each { |e|
+         puts "end #{e}"
+         pc = PhlatCut.from_edge(e)
+         if pc.kind_of?(PhlatScript::OutsideCut)
+            outside = true
+         end
+         if pc.kind_of?(PhlatScript::InsideCut)
+            outside = false
+         end
         next if (e == @edge)
         pc = PhlatCut.from_edge(e)
         end_in_tab = pc.kind_of?(PhlatScript::TabCut) if pc
@@ -177,13 +210,29 @@ module PhlatScript
       pts = [[@edge.start.position, start_depth]]
       if self.vtab?
          if (self.is_arc?)
-            #puts "   arc center #{self.center} #{self.g3?.inspect} #{self.radius.to_mm}\n"
+            puts "   arc center #{self.center} g3 #{self.g3?.inspect} r #{self.radius.to_mm} o #{outside.inspect} #{start_depth} #{end_depth}\n"
             if (self.center.x != 0.0) and ((self.center.y != 0.0))  # old arcs have no center set
+               if (!self.g3?)
+                  newr = self.radius
+               else
+                  if (outside)
+                     newr = self.radius - PhlatScript.bitDiameter
+                  else
+                     newr = self.radius + PhlatScript.bitDiameter
+                  end
+               end
+#               puts "r #{self.radius}  newr #{newr}"
+               ptm = midarc(@edge.end.position,@edge.start.position, self.center, newr)
+=begin            
                if self.g3?
-                  ptm = midarc(@edge.start.position,@edge.end.position, self.center, self.radius)
+                  # radius is wrong for inside arcs, subtract bitdiam
+                  # does not work for all insidecuts... use linear instead
+                  #ptm = midarc(@edge.start.position,@edge.end.position, self.center, self.radius - PhlatScript.bitDiameter)
+                  ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
                else
                   ptm = midarc(@edge.end.position,@edge.start.position, self.center, self.radius)
                end                  
+=end               
             else   # old arcs have no center so cannot use midarc()
 # todo: might be able to calculate the center
 # http://mathforum.org/library/drmath/view/53027.html
