@@ -162,19 +162,7 @@ module PhlatScript
       outside = nil   # make it exist
 
       @edge.start.edges.each { |e|
-         puts "find #{e}"
-         #try to figure out what we are cutting. inside or outside, to help figure out radius offset
-         pc = PhlatCut.from_edge(e)
-         if pc.kind_of?(PhlatScript::OutsideCut)
-            outside = true
-         end
-         if pc.kind_of?(PhlatScript::InsideCut)
-            outside = false
-         end
-         }
-puts "outside #{outside.inspect}"      
-      @edge.start.edges.each { |e|
-         puts "start #{e}"
+         #puts "start #{e}"
          #try to figure out what we are cutting. inside or outside, to help figure out radius offset
          pc = PhlatCut.from_edge(e)
          if pc.kind_of?(PhlatScript::OutsideCut)
@@ -190,7 +178,7 @@ puts "outside #{outside.inspect}"
       }
       #sometimes outside is still nil here, so check here as well
       @edge.end.edges.each { |e|
-         puts "end #{e}"
+         #puts "end #{e}"
          pc = PhlatCut.from_edge(e)
          if pc.kind_of?(PhlatScript::OutsideCut)
             outside = true
@@ -203,21 +191,50 @@ puts "outside #{outside.inspect}"
         end_in_tab = pc.kind_of?(PhlatScript::TabCut) if pc
         break if end_in_tab
       }
+#puts "outside #{outside.inspect}"      
+if (outside == nil && self.g3?)
+   ptm = Geom.linear_combination(0.50, @edge.start.position, 0.50, @edge.end.position)
 
+   newr = self.radius
+   ptmr = midarc(@edge.end.position,@edge.start.position, self.center, newr)
+   distr = ptm.distance(ptmr)
+
+   newr = self.radius - PhlatScript.bitDiameter
+   ptmm = midarc(@edge.end.position,@edge.start.position, self.center, newr)
+   distm = ptm.distance(ptmm)
+
+   newr = self.radius + PhlatScript.bitDiameter
+   ptmp = midarc(@edge.end.position,@edge.start.position, self.center, newr)
+   distp = ptm.distance(ptmp)
+   
+   #puts "ptmr #{ptmr} distr #{distr}"
+   #puts "ptmm #{ptmm} distm #{distm}"
+   #puts "ptmp #{ptmp} distp #{distp}"
+   #ptmr (204.948134mm, 97.790685mm, 0mm) distr ~ 3.5mm
+   #ptmm (207.89049mm, 97.205414mm, 0mm) distm ~ 0.5mm
+   #ptmp (202.005778mm, 98.375956mm, 0mm) distp ~ 6.5mm
+   #we have an inside arc on an outside cut so we need outside to be true here, so that r-bd is used
+   if ( (self.g3?) && (distm < distr) && (distm < distp) )
+      outside = true
+   end
+end
       start_depth = start_in_tab ? PhlatScript.tabDepth : PhlatScript.cutFactor
       end_depth = end_in_tab ? PhlatScript.tabDepth : PhlatScript.cutFactor
 
       pts = [[@edge.start.position, start_depth]]
       if self.vtab?
          if (self.is_arc?)
-            puts "   arc center #{self.center} g3 #{self.g3?.inspect} r #{self.radius.to_mm} o #{outside.inspect} #{start_depth} #{end_depth}\n"
+            #puts "   arc center #{self.center} g3 #{self.g3?.inspect} r #{self.radius.to_mm} o #{outside.inspect} #{start_depth} #{end_depth}\n"
             if (self.center.x != 0.0) and ((self.center.y != 0.0))  # old arcs have no center set
                if (!self.g3?)
+                  #puts "   using radius"
                   newr = self.radius
                else
                   if (outside)
+                     #puts "   using r-bd"
                      newr = self.radius - PhlatScript.bitDiameter
                   else
+                     #puts "   using r+bd"
                      newr = self.radius + PhlatScript.bitDiameter
                   end
                end
