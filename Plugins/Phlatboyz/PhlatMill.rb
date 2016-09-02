@@ -257,9 +257,18 @@ module PhlatScript
       end
 
       stop_code = $phoptions.use_exact_path? ? " G61" : "" # G61 - Exact Path Mode
-      cncPrint("G90 #{unit_cmd} G49 G17#{stop_code}") # G90 - Absolute programming (type B and C systems)
-      cncPrint(format_feed(@speed_plung))  #output an initial feed rate so system always has it defined
-      cncPrint("\n")
+      if (@gforce) # output the header on separate lines for Marlin 
+         cncPrint("G90\n#{unit_cmd}\nG49\nG17\n"); # G90 - Absolute programming (type B and C systems)
+         if (stop_code != "")
+            cncPrint("#{stop_code}\n") 
+         end
+         cncPrint(format_feed(@speed_plung).strip)  #output an initial feed rate so system always has it defined
+         cncPrint("\n")
+      else
+         cncPrint("G90 #{unit_cmd} G49 G17#{stop_code}") # G90 - Absolute programming (type B and C systems)
+         cncPrint(format_feed(@speed_plung))  #output an initial feed rate so system always has it defined
+         cncPrint("\n")
+      end   
 #tool change      
       if ($phoptions.toolnum > -1)
          tool = "T#{$phoptions.toolnum} M06"
