@@ -2144,27 +2144,78 @@ module PhlatScript
       @cs = so
       @cc = cmd
    end
+   
+   # http://mathforum.org/library/drmath/view/53027.html
+   # two points x1y1 x2y2
+   # centerpoint cp
+   # radius r
+   # return a new centerpoint for this radius that is close to the existing centerpoint
+   def findCenters(x1,y1, x2,y2, cp, r)
+      q = Math.sqrt((x2-x1) ** 2 + (y2-y1) ** 2)  #dist between points
+      # mid point between points (x3, y3).  
+      x3 = (x1+x2)/2  
+      y3 = (y1+y2)/2
+      #one answer
+      xa = x3 + Math.sqrt(r**2-(q/2)**2)*(y1-y2)/q
+      ya = y3 + Math.sqrt(r**2-(q/2)**2)*(x2-x1)/q  
+      #other answer
+      xb = x3 - Math.sqrt(r**2-(q/2)**2)*(y1-y2)/q
+      yb = y3 - Math.sqrt(r**2-(q/2)**2)*(x2-x1)/q  
+      
+      # which one is closer to cp?
+      pa = Geom::Point3d.new(xa,ya,0.0)
+      pb = Geom::Point3d.new(xb,yb,0.0)
+      if (cp.distance(pa) < cp.distance(pb) )
+         return pa
+      else  
+         return pb
+      end
+   end   
 
 # use IJ format arc movement, more accurate, definitive direction
-   def arcmoveij(xo, yo, centerx,centery, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
+   def arcmoveij(xo, yo, centerx,centery, radius, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
       #puts "g3: #{g3} cmd #{cmd}"
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
       command_out = ""
-      command_out += cmd   if ((cmd != @cc) || @gforce)
-      @precision +=1  # circles like a bit of extra precision so output an extra digit
-      command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
-      command_out += (format_measure("Y", yo)) #if (yo != @cy)
-      command_out += (format_measure("Z", zo)) if (zo != @cz)
-      i = centerx - @cx
-      j = centery - @cy
-      command_out += (format_measure("I", i))
-      command_out += (format_measure("J", j))
-      @precision -=1
-      command_out += (format_feed(so))    if notequal(so, @cs)
-      command_out += "\n"
-      cncPrint(command_out)
+      if (radius > 0.01.inch)  # is radius big enough?
+         cp = Geom::Point3d.new(centerx,centery,0.0)
+         #   arcmove(xo,yo,radius,g3,zo)
+            # always calculate real center
+            p1 = Geom::Point3d.new(@cx,@cy,0.0)
+            p2 = Geom::Point3d.new(xo,yo,0.0)
+            r1 = cp.distance(p1);
+            r2 = cp.distance(p2);
+            puts "r1 #{r1} r2 #{r2} radius #{radius.to_mm}"
+            
+            #todo: check if real radius is close to supplie radius + or - a bit diam
+            # if it is, use realradius +- bitdiam instead of calculated radius
+            
+            radius = (r1 + r2) / 2.0
+            puts "   old center #{centerx} #{centery} #{radius.to_mm}"
+            nc = findCenters(@cx,@cy, xo,yo, cp, radius)
+            puts "   new center #{nc.x} #{nc.y}"
+            centerx = nc.x
+            centery = nc.y
+
+         command_out += cmd   if ((cmd != @cc) || @gforce)
+         @precision +=1  # circles like a bit of extra precision so output an extra digit
+         command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
+         command_out += (format_measure("Y", yo)) #if (yo != @cy)
+         command_out += (format_measure("Z", zo)) if notequal(zo,@cz)
+         i = centerx - @cx
+         j = centery - @cy
+         command_out += (format_measure("I", i))
+         command_out += (format_measure("J", j))
+         command_out += " (#{centerx} #{centery} #{radius.to_mm}) "
+         @precision -=1
+         command_out += (format_feed(so))    if notequal(so, @cs)
+         command_out += "\n"
+         cncPrint(command_out)
+      else
+         arcmove(xo,yo,radius,g3,zo)
+      end
       @cx = xo
       @cy = yo
       @cz = zo

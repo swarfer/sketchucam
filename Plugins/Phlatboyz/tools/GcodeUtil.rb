@@ -1765,7 +1765,7 @@ puts " new #{newedges[i-1]}\n"
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
 #something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
                         g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                        cutkind = phlatcut.class                                                         if (@debug)
+                        cutkind = phlatcut.class                                                         #if (@debug)
                         puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if (@debug)
 
                         # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
@@ -1775,7 +1775,27 @@ puts " new #{newedges[i-1]}\n"
                            aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else
                            #puts "#{point} #{phlatcut.radius} " if @debug
-                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
+                           center = phlatcut.center
+                           if ( !((center.x != 0.0) and (center.y != 0.0)) )
+                              raise "arc has no center, please recode this file"
+                           end
+                           tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                           #aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
+                           r = phlatcut.radius
+#                           if (phlatcut.kind_of?(PhlatScript::InsideCut) )
+#                              if (PhlatScript.useOverheadGantry? == g3)
+#                                 r = phlatcut.radius + @current_bit_diameter
+#                              end
+#                           end
+                           
+#                           if ((phlatcut.kind_of?(PhlatScript::OutsideCut) ) and (!g3) )
+#                              r = phlatcut.radius - @current_bit_diameter / 2.0
+#                              puts "New radius #{r.to_mm} cutkind=#{cutkind}  ===  g3=#{g3}"
+#                           else
+#                              r = phlatcut.radius
+#                              puts "old radius #{r.to_mm} cutkind=#{cutkind}  ===  g3=#{g3}"
+#                           end
+                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, r, g3, cut_depth)
                         end
                      else
                         aMill.move(point.x, point.y, cut_depth)
