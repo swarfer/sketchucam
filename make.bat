@@ -42,7 +42,7 @@ REM   goto spath
 
    @set PLINK_PROTOCOL=ssh
    @if not defined TERM set TERM=msys
-   git describe --abbrev=4 --dirty --always --tags > plugins\phrev.dat
+   git describe --abbrev=4 --dirty --always --tags --contains > plugins\phrev.dat
    
    if exist "C:\Program Files (x86)\Google\Google SketchUp 8" cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins"
    if exist "C:\Program Files\Google\Google SketchUp 8\Plugins" cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
@@ -57,7 +57,7 @@ rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
    
-   php move.php plugins\tp.zip SketchUcam-1_4b.rbz
+   php move.php plugins\tp.zip SketchUcam-1_4c.rbz
 
 goto end
 
