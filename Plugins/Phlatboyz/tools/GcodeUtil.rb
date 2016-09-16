@@ -304,7 +304,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             aMill.job_finish() # output housekeeping code
           rescue
             puts $!
-            UI.messagebox "GcodeUtil.generate_gcode failed; Error:"+$!.to_s
+            UI.messagebox "GcodeUtil.generate_gcode FAILED; Error:"+$!.to_s
           end
         else
           UI.messagebox(PhlatScript.getString("You must define the material thickness."))
@@ -620,7 +620,9 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
                      centers.reverse!
                      rev = false
                   end
-                  millEdges(aMill, centers, material_thickness, rev)
+                  if (!millEdges(aMill, centers, material_thickness, rev))
+                     raise "milledges failed"
+                  end
                   prrev = rev = false
                end
                centers = []
@@ -644,7 +646,9 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             centers.reverse!
             rev = false
          end
-         millEdges(aMill, centers, material_thickness, rev)
+         if (!millEdges(aMill, centers, material_thickness, rev))
+            raise "milledges failed"
+         end
       end
    end
 
@@ -675,7 +679,9 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             cutConnected(aMill,loopNode.sorted_cuts, material_thickness)
          else
             puts "  same together #{atype}" if (debugmln)
-            millEdges(aMill, loopNode.sorted_cuts, material_thickness)
+            if (!millEdges(aMill, loopNode.sorted_cuts, material_thickness))
+               raise "milledges failed"
+            end
          end
       else
 #   create arrays of same types, and cut them together
@@ -707,12 +713,16 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          end
          if !others.empty?
 #				puts "   all others #{others.length}"
-            millEdges(aMill, others, material_thickness)
+            if (!millEdges(aMill, others, material_thickness))
+               raise "milledges failed"
+            end
          end
       end
    else  ## if not multipass, just cut em
       puts "mln#{@level}: JUST CUT EM, NOTMULTI #{loopNode.sorted_cuts.length}" if (debugmln)
-      millEdges(aMill, loopNode.sorted_cuts, material_thickness)
+      if (!millEdges(aMill, loopNode.sorted_cuts, material_thickness))
+         raise "milledges failed"
+      end
    end
 
 
@@ -745,7 +755,9 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
       edges.compact!
       if (edges.size > 0)
          puts "mln#{@level}:  finally milledges #{edges.size} reverse #{reverse}" if (debugmln)
-         millEdges(aMill, edges, material_thickness, reverse)
+         if (!millEdges(aMill, edges, material_thickness, reverse))
+            raise "MillEdges failed"
+         end
       end
 
       puts "   millLoopNode exit #{@level}" if (debugmln)
@@ -1095,11 +1107,19 @@ puts " new #{newedges[i-1]}\n"
    end
 
    def GcodeUtil.millEdges(aMill, edges, material_thickness, reverse=false)
-      if @must_ramp
-         millEdgesRamp(aMill, edges, material_thickness, reverse)
-      else
-         millEdgesPlain(aMill, edges, material_thickness, reverse)
+      begin
+         if @must_ramp
+            millEdgesRamp(aMill, edges, material_thickness, reverse)
+         else
+            millEdgesPlain(aMill, edges, material_thickness, reverse)
+         end
+         return true
+      rescue Exception => e
+         puts e.message
+         UI.messagebox(e.message)   
+         return false
       end
+      
    end #millEdges
 
    def GcodeUtil.getHZoffset
@@ -1397,16 +1417,22 @@ puts " new #{newedges[i-1]}\n"
                            @ramp_next = false
                         end
 
-                        # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
+                        
                         center = phlatcut.center
+                        if ( !((center.x != 0.0) and (center.y != 0.0)) )
+                           raise "ARC HAS NO CENTER, PLEASE RECODE THIS FILE"
+                        end
                         tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                         puts "tcenter #{tcenter}" if (@debug)
 
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
-                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
+                           # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
+                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
+                           #aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else
                            puts "ARC to #{point.x}  #{point.y} #{cut_depth.to_mm}" if (@debug)
-                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
+                           #aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
+                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, phlatcut.radius, g3, cut_depth)
                         end
                      else  # not arc
                         if (@must_ramp)
@@ -1514,7 +1540,8 @@ puts " new #{newedges[i-1]}\n"
       end until ((!PhlatScript.useMultipass?) || ( (pass_depth-max_depth).abs < 0.0001) )
       @g_save_point = save_point if (save_point != nil)   # for optimizer
       rescue Exception => e
-         UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
+         raise e.message
+         #UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end
    else
       puts "no edges in milledgesramp" if (@debug)
@@ -1765,37 +1792,21 @@ puts " new #{newedges[i-1]}\n"
                      if ((phlatcut.kind_of? PhlatArc) && (phlatcut.is_arc?) && ((save_point.nil?) || (save_point.x != point.x) || (save_point.y != point.y)))
 #something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
                         g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                        cutkind = phlatcut.class                                                         #if (@debug)
+                        cutkind = phlatcut.class                                                         if (@debug)
                         puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if (@debug)
 
-                        # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
-#                        center = phlatcut.center
-#                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
+                        center = phlatcut.center
+                        if ( !((center.x != 0.0) and (center.y != 0.0)) )
+                           raise "ARC HAS NO CENTER, PLEASE RECODE THIS FILE"
+                        end
+                        tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                         if (phlatcut.kind_of? PhlatScript::TabCut) && (phlatcut.vtab?) && ($phoptions.use_vtab_speed_limit?)
-                           aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
+                           # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
+                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
+                           #aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
                         else
-                           #puts "#{point} #{phlatcut.radius} " if @debug
-                           center = phlatcut.center
-                           if ( !((center.x != 0.0) and (center.y != 0.0)) )
-                              raise "arc has no center, please recode this file"
-                           end
-                           tcenter = (trans ? (center.transform(trans)) : center) #transform if needed
                            #aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
-                           r = phlatcut.radius
-#                           if (phlatcut.kind_of?(PhlatScript::InsideCut) )
-#                              if (PhlatScript.useOverheadGantry? == g3)
-#                                 r = phlatcut.radius + @current_bit_diameter
-#                              end
-#                           end
-                           
-#                           if ((phlatcut.kind_of?(PhlatScript::OutsideCut) ) and (!g3) )
-#                              r = phlatcut.radius - @current_bit_diameter / 2.0
-#                              puts "New radius #{r.to_mm} cutkind=#{cutkind}  ===  g3=#{g3}"
-#                           else
-#                              r = phlatcut.radius
-#                              puts "old radius #{r.to_mm} cutkind=#{cutkind}  ===  g3=#{g3}"
-#                           end
-                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, r, g3, cut_depth)
+                           aMill.arcmoveij(point.x, point.y, tcenter.x,tcenter.y, phlatcut.radius, g3, cut_depth)
                         end
                      else
                         aMill.move(point.x, point.y, cut_depth)
@@ -1818,7 +1829,8 @@ puts " new #{newedges[i-1]}\n"
       @g_save_point = save_point if (save_point != nil)   # for optimizer
 
       rescue Exception => e
-         UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
+         raise e.message
+         #UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
       end
       end # if edges
    end  # milledges without ramp

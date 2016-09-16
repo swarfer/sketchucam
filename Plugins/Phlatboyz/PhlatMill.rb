@@ -848,9 +848,11 @@ module PhlatScript
 #angle*radius   (radians)
          
          if (cmd.include?('3'))  # find the 'other' command for the return stroke
+            g3 = true
             ocmd = 'G02'
          else
             ocmd = 'G03'
+            g3 = false
          end
          # find halfway point
          # is the angle exceeded?
@@ -899,9 +901,13 @@ module PhlatScript
          curdepth = @cz
          cnt = 0
          command_out = ''
-         @precision += 1
+#         @precision += 1  
+         cx = @cx
+         cy = @cy
+         gforcewas = @gforce
+         @gforce = true  #must have arc commands on every line
          while ( (curdepth - zo).abs > 0.0001) do
-            command_out += cmd
+            #command_out += cmd
             cnt += 1
             if cnt > 1000
                puts "ramp arc high count break" 
@@ -910,9 +916,9 @@ module PhlatScript
             end
             puts "   curdepth #{curdepth.to_mm}"            if(@debugramp)
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
-            command_out += format_measure('x',op.x)
-            command_out += format_measure('y',op.y)
-# for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
+#            command_out += format_measure('x',op.x)
+#            command_out += format_measure('y',op.y)
+            # for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
             if (zo-curdepth).abs < (bz*2)
                puts "   last pass smaller bz"               if(@debugramp)
                bz = (zo-curdepth).abs / 2
@@ -922,25 +928,35 @@ module PhlatScript
             if (curdepth < zo)
                curdepth = zo
             end   
-            command_out += format_measure('z',curdepth)
-            command_out += format_measure('r',rad)
-            command_out += (format_feed(so))       if notequal(so, @cs)
+ #           command_out += format_measure('z',curdepth)
+ #           command_out += format_measure('r',rad)
+ #           command_out += (format_feed(so))       if notequal(so, @cs)
+            command_out += arcmoveij(op.x, op.y, cent.x,cent.y, rad, g3, curdepth, so, cmd, false)
+            @cx = op.x   # next arcmoveij needs these
+            @cy = op.y
+            @cz = curdepth
             @cs = so
-            command_out += "\n";
+#            command_out += "\n";
 
             # cut to @cx,@cy, curdepth
             curdepth -= bz
             if (curdepth < zo)
                curdepth = zo
             end   
-            command_out += ocmd
-            command_out += format_measure('X',@cx)
-            command_out += format_measure('Y',@cy)
-            command_out += format_measure('Z',curdepth)
-            command_out += format_measure('R',rad)
-            command_out += "\n"
+#            command_out += ocmd
+#            command_out += format_measure('X',@cx)
+#            command_out += format_measure('Y',@cy)
+#            command_out += format_measure('Z',curdepth)
+#            command_out += format_measure('R',rad)
+#            command_out += "\n"
+            ng3 = !g3 
+            command_out += arcmoveij(cx, cy, cent.x,cent.y, rad, ng3, curdepth, so, ocmd, false)
+            @cx = cx   # next arcmoveij needs these
+            @cy = cy
+            @cz = curdepth
          end  # while
-         @precision -= 1
+         @gforce = gforcewas
+#         @precision -= 1
          cncPrint(command_out)
          cncPrintC("(ramplimitarc end)\n")             if(@debugramp)
          @cz = zo
@@ -1904,7 +1920,7 @@ module PhlatScript
          if (diam > @bit_diameter) # only need a spiral bore if desired hole is bigger than the drill bit
             command_out +=  " (SINGLE spiral)\n"                    if @debug
             command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,yoff) : SpiralAt(xo,yo,zStart,zo,yoff)
-            command_out += "g00" + format_measure("y" , yo) + format_measure("z" , sh) + "\n"
+            #command_out += "g00" + format_measure("y" , yo) + format_measure("z" , sh) + "\n"
             cz = sh
          end
          if (diam < @bit_diameter)
@@ -1917,9 +1933,10 @@ module PhlatScript
 #      command_out += "\n";
       command_out += "(plungeboredepth - return to center retract)\n" if (@debug)
       command_out += "G00" + format_measure("Y",yo)      # back to circle center
-      command_out +=  format_measure("Z",sh) + "\n"
+      command_out += format_measure("Z",sh) + "\n"
       cz = sh
       if (needretract) # retract to real safe height
+         command_out += "G00" if (@gforce)
          command_out += format_measure(" Z",@retract_depth) + "\n" if notequal(sh, @retract_depth)
          cz = @retract_depth
       end
@@ -2172,9 +2189,10 @@ module PhlatScript
       end
    end   
 
-# use IJ format arc movement, more accurate, definitive direction
-   def arcmoveij(xo, yo, centerx,centery, radius, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
-      cmd = @cmd_arc_rev if g3
+# use IJ format arc movement, more accurate, definitive direction (2016 - finds centers)
+#if print is false then return the string rather than cncprint it, for ramplimitarc
+   def arcmoveij(xo, yo, centerx,centery, radius, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc, print=true)
+      cmd = (g3) ? @cmd_arc_rev : @cmd_arc
       #puts "g3: #{g3} cmd #{cmd}"
       #G17 G2 x 10 y 16 i 3 j 4 z 9
       #G17 G2 x 10 y 15 r 20 z 5
@@ -2182,45 +2200,75 @@ module PhlatScript
       if (radius > 0.01.inch)  # is radius big enough?
          cp = Geom::Point3d.new(centerx,centery,0.0)
          #   arcmove(xo,yo,radius,g3,zo)
-            # always calculate real center
-            p1 = Geom::Point3d.new(@cx,@cy,0.0)
-            p2 = Geom::Point3d.new(xo,yo,0.0)
-            r1 = cp.distance(p1);
-            r2 = cp.distance(p2);
-            puts "r1 #{r1} r2 #{r2} radius #{radius.to_mm}"
-            
-            #todo: check if real radius is close to supplie radius + or - a bit diam
-            # if it is, use realradius +- bitdiam instead of calculated radius
-            
-            radius = (r1 + r2) / 2.0
-            puts "   old center #{centerx} #{centery} #{radius.to_mm}"
-            nc = findCenters(@cx,@cy, xo,yo, cp, radius)
-            puts "   new center #{nc.x} #{nc.y}"
-            centerx = nc.x
-            centery = nc.y
+         # always calculate real center, and optionally adjust radius
+         p1 = Geom::Point3d.new(@cx,@cy,0.0)
+         p2 = Geom::Point3d.new(xo,yo,0.0)
+         r1 = cp.distance(p1);
+         r2 = cp.distance(p2);
+         nradius = (r1 + r2) / 2.0  #new radius as average of the two calculated radii
+         #puts "r1 #{r1} r2 #{r2} oldradius #{radius.to_mm}  #{nradius.to_mm}"
+         
+         #check if real radius is close to supplied radius + or - a bit diam
+         # if it is, use realradius +- bitdiam instead of calculated radius
+         
+         diff = nradius - radius
+         if (diff < 0) && ((diff + @bit_diameter).abs < 0.1.mm)
+            #puts "   radius - bd #{diff.to_mm}"
+            radius = radius - @bit_diameter
+            diff = nradius - radius
+         else
+            if (diff > 0) && ((diff - @bit_diameter).abs < 0.1.mm)
+               #puts "   radius + bd  #{diff.to_mm}"
+               radius = radius + @bit_diameter
+               diff = nradius - radius
+            end
+         end
+         if (diff.abs > (@bit_diameter/2) )  # just in case....
+            radius = nradius
+            diff = nradius - radius
+         end         
+         
+         #puts "   old center #{centerx} #{centery} #{radius.to_mm} #{nradius.to_mm} #{diff.to_mm}"
+         nc = findCenters(@cx,@cy, xo,yo, cp, radius)
+         #puts "   new center #{nc.x} #{nc.y}"
+         centerx = nc.x
+         centery = nc.y
 
          command_out += cmd   if ((cmd != @cc) || @gforce)
          @precision +=1  # circles like a bit of extra precision so output an extra digit
          command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
          command_out += (format_measure("Y", yo)) #if (yo != @cy)
-         command_out += (format_measure("Z", zo)) if notequal(zo,@cz)
+
+         if (@laser)
+            if (notequal(zo , @cz))
+               depth = laserbright(zo)
+               #insert the pwm command before current move
+               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+            end   
+         else
+            command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
+         end
+         
          i = centerx - @cx
          j = centery - @cy
          command_out += (format_measure("I", i))
          command_out += (format_measure("J", j))
-         command_out += " (#{centerx} #{centery} #{radius.to_mm}) "
          @precision -=1
          command_out += (format_feed(so))    if notequal(so, @cs)
          command_out += "\n"
-         cncPrint(command_out)
+         cncPrint(command_out) if (print)
       else
-         arcmove(xo,yo,radius,g3,zo)
+         arcmove(xo,yo,radius,g3,zo)  # will do a line segment
       end
-      @cx = xo
-      @cy = yo
-      @cz = zo
-      @cs = so
-      @cc = cmd
+      if (print)
+         @cx = xo
+         @cy = yo
+         @cz = zo
+         @cs = so
+         @cc = cmd
+      else
+         return command_out
+      end
    end
 
 
