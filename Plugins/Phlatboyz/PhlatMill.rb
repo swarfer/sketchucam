@@ -2094,7 +2094,8 @@ module PhlatScript
       command_out += "G00" + format_measure("Y",yo)      # back to circle center
       command_out += format_measure("Z",sh) + "\n"  # back to safe height
       cz = sh
-      if (needretract)
+      if (needretract && notequal(sh,@retract_depth) )
+         command_out += "G00"    if (@gforce)
          command_out += " " + format_measure(" Z",@retract_depth) + "\n" # retract to real safe height
          cz = @retract_depth
       end
