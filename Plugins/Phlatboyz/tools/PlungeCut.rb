@@ -21,8 +21,13 @@ module PhlatScript
 
     def PlungeCut.cut(pt, dfact, diam, knt = 0, ang = 0, cdiam = 0.to_l, cdepth = 0.to_l)
       plungecut = PlungeCut.new
-      plungecut.cut(pt, dfact, diam, knt, ang, cdiam, cdepth)
-      return plungecut
+      begin
+         plungecut.cut(pt, dfact, diam, knt, ang, cdiam, cdepth)
+         return plungecut
+      rescue Exception => e
+         UI.messagebox "Exception in PlungeTool.cut "+ e.message
+         return nil
+      end
     end
 
     def PlungeCut.preview(view, pt)
@@ -49,13 +54,52 @@ module PhlatScript
       super()
       @edge = edge
     end
+    
+   #strip trailing zeros from the string, not the same as the one in PhlatMill
+   def stripzeros(inp,ignore = false)
+      out = inp.to_s
+      # might have mm or ", remove then replace
+      if out.include?("mm")
+         hasmetric = true
+         out = out.gsub(/mm/,'')
+      else
+         hasmetric = false
+      end
+      if out.include?("\"")
+         hasinch = true
+         out = out.gsub(/\"/,'')
+      else
+         hasinch= false
+      end
+      #remove trailing 0's
+      while out =~ /00$/
+         out = out.gsub(/00$/,'0')
+      end
+      if (!ignore)  # for normal trims
+         if (out =~ /\.0/) == nil
+            if (out =~ /0$/) != nil
+               out = out.gsub(/0$/,'')
+            end
+         end
+      else  # if ignore is true, then trim all trailing zeros
+         if (out =~ /\.0$/)  # if ends in a .0, remove it
+            out = out.gsub(/\.0$/,'')
+         end
+      end
+      out = out + 'mm'   if (hasmetric)
+      out = out + '"'   if (hasinch)
+      return out
+   end
+
 
 #if cnt is > 0 then it is used in the groupname
 #if ang > 0 then it is used for the countersink angle
 # cdia is the countersink diam, 'diam' is used for the actual hole as usual
     def cut(pt, dfactor, diam, cnt, ang, cdia, cdepth)
       Sketchup.active_model.start_operation "Cutting Plunge", true
-      
+      if (pt.z != 0.0)
+         raise "YOUR DRAWING IS NOT PHLAT"
+      end   
       #puts "dfactor #{dfactor}"
       #puts " diam #{diam} #{diam.class}"
       #puts " cnt #{cnt}"
@@ -78,7 +122,7 @@ module PhlatScript
       
 #      group.name = "";
       if (cnt > 0)
-         group.name = "PB" + cnt.to_s
+         group.name = "PB" + stripzeros(cnt.to_s,false)
       end
       
       end_pt = Geom::Point3d.new(pt.x + rad, pt.y, 0)
@@ -96,9 +140,9 @@ module PhlatScript
         #puts "set diam #{diam} #{diam.to_inch} #{diam.to_f} #{diam.class}"
         newedges[0].set_attribute(Dict_name, Dict_plunge_diameter, diam.to_f)
         if (PhlatScript.isMetric)  # add diam to group name
-           group.name = group.name + "_diam_#{sprintf("%.3f",diam.to_mm)}mm"
+           group.name = group.name + "_diam_#{stripzeros(diam.to_mm.to_s,false)}mm"
         else
-           group.name = group.name + "_diam_#{sprintf("%.3f",diam)}"
+           group.name = group.name + "_diam_#{stripzeros(diam.to_s,false)}"
         end
       end
       if (ang > 0.0)
@@ -112,8 +156,8 @@ module PhlatScript
          #puts "set cdia #{cdia} #{cdia.to_inch} #{cdia.to_f} #{cdia.class}"
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
-         group.name = group.name + "_ca_#{ang.to_s}"
-         group.name = group.name + "_cd_#{cdia.to_s}"
+         group.name = group.name + "_ca_#{stripzeros(ang.to_s,false)}"
+         group.name = group.name + "_cd_#{stripzeros(cdia.to_s,false)}"
          dfactor = [PhlatScript.cutFactor, 100.0].max   #always at least 100% deep
       end   
       if (ang < 0.0)
@@ -126,19 +170,15 @@ module PhlatScript
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  
          newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_f)  
          newedges[0].material = Color_plunge_cbore
-         group.name = group.name + "_cb_#{cdepth.to_s}"
-         group.name = group.name + "_cd_#{cdia.to_s}"
+         group.name = group.name + "_cb_#{stripzeros(cdepth.to_s,false)}"
+         group.name = group.name + "_cd_#{stripzeros(cdia.to_s,false)}"
          dfactor = [PhlatScript.cutFactor,100].max   #always at least 100% deep
       end   
 
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
          newedges[0].set_attribute(Dict_name, Dict_plunge_depth_factor, dfactor.to_s)  # class is float
          newedges[0].material = Color_plunge_cutd   if (ang == 0.0)
-         if (PhlatScript.isMetric)      # add depth factor to group name
-           group.name = group.name + "_depth_#{dfactor}"
-         else
-           group.name = group.name + "_depth_#{dfactor}"           
-         end
+         group.name = group.name + "_depth_#{stripzeros(dfactor.to_s,false)}"
       else
          newedges[0].material = Color_plunge_cut      if (ang == 0.0)
       end
