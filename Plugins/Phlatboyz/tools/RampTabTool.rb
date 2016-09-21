@@ -7,10 +7,10 @@ module PhlatScript
    class RampTabTool < PhlatTool
 
       def initialize
+         super()
          @tooltype=(PB_MENU_MENU)
          @tooltip="Set Ramp VTabs"
          @statusText="Set Ramp VTabs"
-         @menuItem="Set Ramp VTabs"
          @menuText="Set Ramp VTabs"
       end
 

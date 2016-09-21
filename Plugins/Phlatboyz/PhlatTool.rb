@@ -14,7 +14,6 @@ module PhlatScript
       @largeIcon = "images/#{toolname.downcase}_large.png"
       @smallIcon = "images/#{toolname.downcase}_small.png"
       @statusText = PhlatScript.getString("Phlatboyz #{toolname}")
-      @menuItem = PhlatScript.getString(toolname)
       @menuText = PhlatScript.getString(toolname)
       @ip = nil
       cursorPath = Sketchup.find_support_file("cursor_#{toolname.downcase}.png", Cursor_directory)

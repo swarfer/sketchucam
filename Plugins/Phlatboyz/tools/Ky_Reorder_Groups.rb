@@ -40,7 +40,6 @@ module PhlatScript
          @largeIcon = "images/reorder_large.png"
          @smallIcon = "images/reorder_small.png"
          @statusText = "kyyu Reorder Groups"
-         @menuItem = PhlatScript.getString("Reorder")
          @menuText = PhlatScript.getString("ReOrder Groups")
          @statusMsg = "Kyyu Group ReOrder - click groups in the order you want them cut"
        end

@@ -7,10 +7,10 @@ module PhlatScript
    class ChamferTool < PhlatTool
 
       def initialize
+         super()
          @tooltype=(PB_MENU_MENU)
          @tooltip="Set Chamfer parameters"
          @statusText="Set Chamfer parameters"
-         @menuItem="Set Chamfer parameters"
          @menuText="Set Chamfer parameters"
       end
 

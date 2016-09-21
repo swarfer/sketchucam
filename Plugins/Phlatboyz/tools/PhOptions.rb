@@ -877,11 +877,11 @@ module PhlatScript
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    class OptionsFilesTool < PhlatTool
     def initialize(opt)   #give it the options instance
+      super()
       @options = opt  # store the options instance so we can manipulate it without a global
       @tooltype=(PB_MENU_MENU)
       @tooltip="Default File Options"
       @statusText="File Options1"
-      @menuItem="File Options2"
       @menuText="File Options"
     end
 
@@ -915,11 +915,11 @@ end # class
 #========================================================
    class OptionsMiscTool < PhlatTool
       def initialize(opt)   #give it the options instance
+         super()
          @options = opt  # store the options instance so we can manipulate it without a global
          @tooltype=(PB_MENU_MENU)
          @tooltip="Default Misc Options"
          @statusText="Misc Options1"
-         @menuItem="Misc Options2"
          @menuText="Misc Options"
       end
 
@@ -967,11 +967,11 @@ end # class
 #===============================================================================
    class OptionsToolsTool < PhlatTool
       def initialize(opt)   #give it the options instance
+         super()
          @options = opt  # store the options instance so we can manipulate it without a global
          @tooltype=(PB_MENU_MENU)
          @tooltip="Default Tool Options"
          @statusText="Tool Options1"
-         @menuItem="Tool Options2"
          @menuText="Tool Options"
       end
 
@@ -1055,11 +1055,11 @@ end # class
 #===============================================================================
    class OptionsMachTool < PhlatTool
       def initialize(opt)   #give it the options instance
+         super()
          @options = opt  # store the options instance so we can manipulate it without a global
          @tooltype=(PB_MENU_MENU)
          @tooltip="Default Machine Options"
          @statusText="Machine Options1"
-         @menuItem="Machine Options2"
          @menuText="Machine Options"
       end
 
@@ -1143,11 +1143,11 @@ end # class
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    class OptionsFeatTool < PhlatTool
       def initialize(opt)   #give it the options instance
+         super()
          @options = opt  # store the options instance so we can manipulate it without a global
          @tooltype=(PB_MENU_MENU)
          @tooltip="Default FeatOptions"
          @statusText="Feature Options1"
-         @menuItem="Feature Options2"
          @menuText="Feature Options"
       end
 
@@ -1249,11 +1249,11 @@ end # class
 #just for hole options
    class OptionsFeat2Tool < PhlatTool
       def initialize(opt)   #give it the options instance
+         super()
          @options = opt  # store the options instance so we can manipulate it without a global
          @tooltype=(PB_MENU_MENU)
          @tooltip="Default Hole FeatOptions"
          @statusText="Hole Feature Options1"
-         @menuItem="Hole Feature Options2"
          @menuText="Hole Feature Options"
       end
 

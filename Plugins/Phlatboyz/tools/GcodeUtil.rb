@@ -17,10 +17,10 @@ module PhlatScript
     # this tool gets the list of groups containing phlatcuts and displays them in the cut order
     # it displays 2 levels deep in the case of a group of groups
     def initialize
+       super()
        @tooltype=(PB_MENU_MENU)
        @tooltip="Group Listing in cut order"
        @statusText="Groups Summary display"
-       @menuItem="Groups Summary"
        @menuText="Groups Summary"
     end
 
@@ -130,7 +130,6 @@ module PhlatScript
       @largeIcon = "images/gcode_large.png"
       @smallIcon = "images/gcode_small.png"
       @statusText = PhlatScript.getString("Phlatboyz GCode")
-      @menuItem = PhlatScript.getString("GCode")
       @menuText = PhlatScript.getString("GCode")
    end
 

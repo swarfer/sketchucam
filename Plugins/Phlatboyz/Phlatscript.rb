@@ -603,7 +603,7 @@ module PhlatScript
   end
 
    def PhlatScript.addToolItem(tool, submenu=@@phlatboyz_tools_submenu)
-      cmd = UI::Command.new(tool.menuItem) { tool.select }
+      cmd = UI::Command.new(tool.menuText) { tool.select }
       cmd.tooltip = tool.tooltip
       cmd.status_bar_text = tool.statusText
       cmd.menu_text = tool.menuText

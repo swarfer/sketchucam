@@ -13,7 +13,6 @@ module PhlatScript
          @tooltype=(PB_MENU_TOOLBAR)
          @tooltip="Set 0,0 offset"
          @statusText= "pick point within safe area for 0,0" 
-         @menuItem="Zero Offset"
          @menuText="Zero Offset Pick"
          @largeIcon = "images/zerotool_large.png"
          @smallIcon = "images/zerotool_small.png"         

@@ -42,6 +42,7 @@ module PhlatScript
    class PocketTool < CenterLineTool
 
    def initialize
+      super()
       @active_face = nil
       @bit_diameter = PhlatScript.bitDiameter
       #puts "bit diameter #{@bit_diameter.to_mm}mm"
@@ -59,14 +60,11 @@ module PhlatScript
       @keyflag = 0
 
       @tooltype   = 3
-      @tooltip    = PhlatScript.getString("Pocket Face")
       @largeIcon  = "images/pockettool_large.png"
       @smallIcon  = "images/pockettool_small.png"
       @largeIcon  = "images/Pocket_large.png"
       @smallIcon  = "images/Pocket_small.png"
       @statusText = PhlatScript.getString("Pocket Face")
-      @menuItem   = PhlatScript.getString("Pocket")
-      @menuText   = PhlatScript.getString("Pocket a face")
       #PhlatScript.getString("GCode")
       #	 @statusmsg = "Pockettool: [shift] for only zigzag [ctrl] for only boundary, stepover is #{@stepover_percent}%"
       @statusmsgBase  = "Pockettool: [shift] for only Zigzag [ctrl] for only boundary : [END] to toggle zigzag direction : "

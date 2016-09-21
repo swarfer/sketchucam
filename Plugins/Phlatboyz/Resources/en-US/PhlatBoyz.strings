@@ -1,4 +1,4 @@
-"stringversion"="1.05";
+"stringversion"="1.06";
 "NewPhlatboyz"="NewPhlatboyz";
 "Phlatboyz"="Phlatboyz";
 
@@ -120,9 +120,12 @@
 
 "error_parens"="The %s contains parenthesis. This will cause an error in some CNC software.";
 
-"Pocket Face"="Pocket Face";
-"Pocket"="Pocket";
-"Pocket a face"="Pocket a face";
+"PocketTool"="Pocket a Face";
+"Phlatboyz PocketTool"="SketchUcam Pocket a Face";
+
 "Reorder"="Reorder";
-"ReOrder Groups"="ReOrder Groups";
+"ReOrder Groups"="SketchUcam ReOrder Groups";
 "Show gplot"="Show Gplot after output";
+
+"UseCommentsTool"="Comments on/off";
+"Phlatboyz UseCommentsTool"="Toggle Using Comments in G-code";

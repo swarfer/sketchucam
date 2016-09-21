@@ -18,10 +18,10 @@ module PhlatScript
    class SummaryTool < PhlatTool
 
       def initialize
+         super()
          @tooltype=(PB_MENU_MENU)
          @tooltip="Options Summary"
          @statusText="Options Summary display"
-         @menuItem="Options Summary"
          @menuText="Options Summary"
       end
 
@@ -52,10 +52,10 @@ module PhlatScript
    class DisplayProfileFolderTool < PhlatTool
 
       def initialize
+         super()
          @tooltype=(PB_MENU_MENU)
          @tooltip="Display Profiles folder"
          @statusText="Display profile folder"
-         @menuItem="Profiles_Folder"
          @menuText="Display Profiles Folder"
       end
 

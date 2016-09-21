@@ -68,10 +68,10 @@ end
 
   class ProfilesSaveTool < PhlatTool
     def initialize
+      super()
       @tooltype=(PB_MENU_MENU)
       @tooltip="Save tool profile"
       @statusText="Save Tool Profile"
-      @menuItem="SaveProfile"
       @menuText="Save profile"
     end
 
@@ -174,10 +174,10 @@ class ProfilesTool < PhlatTool
 #--------------------------------------------------------------------------------
 class ProfilesLoadTool < ProfilesTool
     def initialize
+      super()
       @tooltype=(PB_MENU_MENU)
       @tooltip="Load tool profile"
       @statusText="Load Tool Profile"
-      @menuItem="LoadProfile"
       @menuText="Load Profile"
     end
 
@@ -383,10 +383,10 @@ end # class
 
  class ProfilesDeleteTool < ProfilesTool
    def initialize
+      super()
       @tooltype=(PB_MENU_MENU)
       @tooltip="Delete tool profile"
       @statusText="Delete Tool Profile"
-      @menuItem="DelProfile"
       @menuText="Delete Profile"
    end
 

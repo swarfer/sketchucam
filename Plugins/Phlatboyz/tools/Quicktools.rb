@@ -6,12 +6,11 @@ module PhlatScript
    class UseCommentsTool < PhlatTool
 
       def initialize
+         super()
          toolname = 'Use Comments?'
          @tooltype=(PB_MENU_QTOOL)
-         @tooltip="Toggle Use Comments"
+         #@tooltip="Toggle Use Comments"
          @statusText= ($phoptions.usecomments?) ? "UseComments is ON" : "UseComments is OFF"
-         @menuItem="Comments on/off"
-         @menuText="Comments on/off"
          @largeIcon = "images/comment_large.png"
          @smallIcon = "images/comment_small.png"
          @cmmd = nil
@@ -36,11 +35,11 @@ module PhlatScript
 class UseBracketsTool < PhlatTool
 
       def initialize
+         super()
          toolname = 'Comment Style'
          @tooltype=(PB_MENU_QTOOL)
          @tooltip="Toggle Comment style"
          @statusText= ($phoptions.bracket?) ? "Comment style is ()" : "Comment style is ;" 
-         @menuItem="Toggle Comment Style"
          @menuText="Toggle Comment Style"
          @largeIcon = "images/bracket_large.png"
          @smallIcon = "images/bracket_small.png"
@@ -66,11 +65,11 @@ class UseBracketsTool < PhlatTool
 class FourthAxisTool < PhlatTool
 
       def initialize
+         super()
          toolname = 'Fourth Axis Tool'
          @tooltype=(PB_MENU_QTOOL)
          @tooltip="Fourth Axis Settings"
          @statusText= "Select 4th Axis options"
-         @menuItem="Fourth Axis"
          @menuText="Fourth Axis"
          @largeIcon = "images/rotate_large.png"
          @smallIcon = "images/rotate_small.png"
@@ -137,11 +136,11 @@ class FourthAxisTool < PhlatTool
 class ToolChangeTool < PhlatTool
 
       def initialize
+         super()
          toolname = 'Tool Change Tool'
          @tooltype=(PB_MENU_QTOOL)
          @tooltip="Tool Change Settings"
          @statusText= "Select Tool Change options"
-         @menuItem="Tool Change"
          @menuText="Tool Change"
          @largeIcon = "images/toolchange_large.png"
          @smallIcon = "images/toolchange_small.png"

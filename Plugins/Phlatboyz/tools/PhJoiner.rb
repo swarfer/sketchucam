@@ -14,11 +14,11 @@ module PhlatScript
    class JoinerTool < PhlatTool
 
       def initialize
+         super()
          toolname = 'Joiner'
          @tooltype=(PB_MENU_MENU)
-         @tooltip="G-code Joiner"
+         @tooltip="Join multiple G-code Files"
          @statusText="2Gcode Joiner"
-         @menuItem="3Gcode joiner"
          @menuText="GCode Joiner"
          @largeIcon = "images/#{toolname.downcase}_large.png"
          @smallIcon = "images/#{toolname.downcase}_small.png"
@@ -123,7 +123,7 @@ module PhlatScript
          idx = 0
          lastfile = filenames.length - 1  #last file
          while (idx < filenames.length)
-            puts "output file #{idx}"
+            puts "output file #{idx}"                          if @debug
             inf = File.new(filenames[idx],"r")
             ff = filenames[idx]
             
@@ -138,7 +138,7 @@ module PhlatScript
                   end
                   line = inf.readline
                end
-               puts "header skipped #{idx}"
+               puts "header skipped #{idx}"                    if @debug
                if ($phoptions.usecomments?)
                   comms = PhlatScript.gcomments("Join   #{File.basename(filenames[idx])}")
                   comms.each { |cm|
@@ -153,11 +153,11 @@ module PhlatScript
                outf.puts(line)   if !line.match('Outfeed|EndPosition|M30|%')  #do not output leading % etc
                line = inf.readline
             end
-            puts "output till footer done #{idx}  #{line}"
+            puts "output till footer done #{idx}  #{line}"     if @debug
             
             if (idx == lastfile)
                #output footer
-               puts "writing footer #{idx}"
+               puts "writing footer #{idx}"                    if @debug
                outf.puts(line)
                while !inf.eof
                   line = inf.readline
@@ -166,11 +166,11 @@ module PhlatScript
             end
             
             inf.close
-            puts "closed #{idx}"
+            puts "closed #{idx}"                               if @debug
             idx += 1
          end # while   
          outf.close
-         puts "finished writing joined files"
+         puts "finished writing joined files"                  if @debug
          if PhlatScript.usecommentbracket?
             if (UI.messagebox("All files joined into file #{outputfile}, do you want to preview the G-code?",MB_YESNO) == IDYES)
                GPlot.new.plot(outputfile)
