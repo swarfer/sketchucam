@@ -222,6 +222,11 @@ module PhlatScript
          cncPrintC("Plunge Diam First")
       end
       
+      cncPrintC("Plunge Use reduced safe height OFF")  if (!$phoptions.use_reduced_safe_height?) 
+      cncPrintC("Plunge Use fuzzy hole OFF")  if (!$phoptions.use_fuzzy_holes?)
+      cncPrintC("Plunge Use quarter arcs OFF")  if (!@quarters)
+      cncPrintC("Plunge Using Quickpeck")  if (@quickpeck)
+      
       if ($phoptions.toolnum > -1)
          cncPrintC("Using plain toolchange")
       end
@@ -1268,6 +1273,88 @@ module PhlatScript
             command_out += "#{cmd}"
             command_out += format_measure("X",xo) + format_measure("Y",yo-yoff) + format_measure("I",yoff)  + format_measure("J",0)
             command_out += "\n"
+=begin            
+            # 8 point circle, yoff is radius
+            xx = Math::cos(torad(45)) * yoff  # offsets to intermediate points
+            yy = Math::sin(torad(45)) * yoff
+            
+            command_out += "g01 " + format_measure("X",xo) + format_measure("Y",yo-yoff) + "\n"
+            
+            #at x, y-yoff
+            #2 move to x+xx, y-yy,0,-yoff
+            command_out += "(to 2)\n"
+            command_out += "#{cmd}"
+            x = xo + xx
+            y = yo - yy
+            i = 0
+            j = yoff
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #3 moveto x+yoff,y, -xx, yy
+            command_out += "(to 3)\n"
+            command_out += "#{cmd}"
+            x = xo + yoff
+            y = yo
+            i = -xx
+            j = yy
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+   
+            #4 moveto x+xx y+yy, -yoff. 0
+            command_out += "#{cmd}"
+            x = xo + xx
+            y = yo + yy
+            i = -yoff
+            j = 0
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #5 moveto x, y+yoff,-xx,-yy
+            command_out += "#{cmd}"
+            x = xo
+            y = yo + yoff
+            i = -xx
+            j = -yy
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #6 moveto x-xx, y+yy, 0, -yoff
+            command_out += "#{cmd}"
+            x = xo - xx
+            y = yo + yy
+            i = 0
+            j = -yoff
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #7 moveto x-yoff, y, xx, -yy
+            command_out += "#{cmd}"
+            x = xo - yoff
+            y = yo
+            i = xx
+            j = -yy
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #8 moveto x-xx, y-yy, xx, 0
+            command_out += "#{cmd}"
+            x = xo - xx
+            y = yo - yy
+            i = yoff
+            j = 0
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+            
+            #1 moveto x y-yoff, xx, yy
+            command_out += "#{cmd}"
+            x = xo
+            y = yo -yoff
+            i = xx
+            j = yy
+            command_out += format_measure("X",x) + format_measure("Y",y) + format_measure("I",i)  + format_measure("J",j)
+            command_out += "\n"
+=end            
          end
       command_out += "   (SPIRALatQ END)\n" if @debug
       @precision -= 1
@@ -1591,7 +1678,7 @@ module PhlatScript
             circ = circle(xo,yo,zNow,rNow)
             if (circ != "")
                output += circ
-               output += 'G00' + format_measure('Z',zNow + 0.002) + "\n"
+               output += 'G00' + format_measure('Y',yo - (rNow-hbd) + 0.003) + format_measure('Z',zNow + 0.002) + "\n"
             end
             output += "(plain done)\n"                                                 if @debug
          else
@@ -1619,7 +1706,7 @@ module PhlatScript
             output += "(YSTEP #{ystep.to_mm})\n"                                                if @debug
             output += SpiralOut(xo,yo,zStart,zNow,rNow-hbd,ystep)  # now spiralout from there
             @cboreinner = 0
-            output += 'G00' + format_measure('Z',zNow + 0.002) + "\n"
+            output += 'G00' + format_measure('Y',yo - (rNow-hbd) + 0.003)+ format_measure('Z',zNow + 0.002) + "\n"
             output += "(SPIRAL rNow #{rNow.to_mm} done)\n"                             if @debug
          end
          rNow -= xf
@@ -1691,6 +1778,7 @@ module PhlatScript
    def plungeboredepth(xo,yo,zStart,zo,diam,needretract=true)
    #@debug = true
       cz = @retract_depth
+      cy = yo
       zos = format_measure("depth=",(zStart-zo))
       ds = format_measure(" diam=", diam)
       cncPrintC("(plungeboredepth #{zos} #{ds})\n")
@@ -1908,10 +1996,12 @@ module PhlatScript
             end
             
             command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,nowyoffset) : SpiralAt(xo,yo,zStart,zo,nowyoffset)
+            cy = nowyoffset
 
             #            if (nowyoffset != yoff) # then retract to reduced safe
             if ( (nowyoffset - yoff).abs > 0.0001) # then retract to reduced safe            
                command_out += "G00" + format_measure("Y" , yo - nowyoffset + ystep/2) + format_measure("Z" , sh)
+               cy = yo - nowyoffset + ystep/2
                cz = sh
                command_out += "\n"
             end
@@ -1922,6 +2012,7 @@ module PhlatScript
             command_out += (@quarters) ? SpiralAtQ(xo,yo,zStart,zo,yoff) : SpiralAt(xo,yo,zStart,zo,yoff)
             #command_out += "g00" + format_measure("y" , yo) + format_measure("z" , sh) + "\n"
             cz = sh
+            cy = yoff
          end
          if (diam < @bit_diameter)
             cncPrintC("NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter}")
@@ -1931,19 +2022,24 @@ module PhlatScript
       # return to center at safe height
 #      command_out += format_measure(" G1 Y",yo)
 #      command_out += "\n";
-      command_out += "(plungeboredepth - return to center retract)\n" if (@debug)
-      command_out += "G00" + format_measure("Y",yo)      # back to circle center
-      command_out += format_measure("Z",sh) + "\n"
-      cz = sh
-      if (needretract) # retract to real safe height
-         command_out += "G00" if (@gforce)
-         command_out += format_measure(" Z",@retract_depth) + "\n" if notequal(sh, @retract_depth)
+      if notequal(yo,cy) or notequal(cz,sh)
+         command_out += "(plungeboredepth - return to center retract)\n" if (@debug)
+         command_out += "G00" 
+         command_out += format_measure("Y",yo)   if notequal(yo,cy)   # back to circle center
+         command_out += format_measure("Z",sh) + "\n"
+         cz = sh
+      end
+      if (needretract and notequal(sh, @retract_depth)) # retract to real safe height
+         command_out += "(retract to real safe height)\n"      if (@debug)
+         command_out += "G00"
+         command_out += format_measure(" Z",@retract_depth) + "\n" 
          cz = @retract_depth
       end
       command_out += "(plungeboredepth - return to center retract done)\n" if (@debug)
       cncPrint(command_out)
       
-      cncPrintC("plungebore end cz #{cz.to_mm}")
+#      cncPrintC("plungebore end cz #{cz.to_mm}")
+      cncPrintC("plungebore end")
 
       @cx = xo
       @cy = yo
@@ -1978,6 +2074,7 @@ module PhlatScript
 #      ys = format_measure('Y', yo)
 #      command_out += "G00 #{xs} #{ys}\n";
 #swarfer: a little optimization, approach the surface faster
+      cz = @retract_depth  # keep track of actual current z
       if ($phoptions.use_reduced_safe_height?) 
          sh = (@retract_depth - zStart) / 4 # use reduced safe height
          sh = (sh > 0.5.mm) ? 0.5.mm : sh
@@ -1986,9 +2083,10 @@ module PhlatScript
          end
          if (!@canneddrill) || (PhlatScript.mustramp?) 
             puts "  reduced safe height #{sh.to_mm}\n"                     if @debug
-            command_out += "G00" + format_measure("Z", sh)    # fast feed down to 1/3 safe height
+            command_out += "G00" + format_measure("Z", sh)    # fast feed down to safe height
             command_out += "\n"
             @cz = sh
+            cz = sh
          end
       else
          sh = @retract_depth
@@ -2054,6 +2152,7 @@ module PhlatScript
          #puts "   zonow #{zonow.to_mm}"
 #         command_out += "G01"  + format_measure('Y', yo - @bit_diameter/2) + format_measure("Z",zonow)
          command_out += "G00"  + format_measure('Z', zonow) + "\n"
+         cz = zonow
          @precision += 1
          #arc from center to start point
          if (@cboreinner > 0 )
@@ -2077,9 +2176,8 @@ module PhlatScript
          
          command_out += SpiralOut(xo,yo,zStart,zonow,yoff,ystep)
          if PhlatScript.useMultipass? &&  ((zonow - zo).abs > 0.0001)
-#            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2 + 0.005) + "\n"
-#            command_out += "G00" + format_measure('Y', yo - @bit_diameter/2+ 0.005) + format_measure('Z',zonow + 0.02) + "\n"
-            command_out += "G00" + format_measure('Z',zonow + 0.02) + "\n"    # raise
+            command_out += "G00" + format_measure('Y', yo-yoff+0.02) + format_measure('Z',zonow + 0.02) + "\n"    # raise
+            cz = zonow + 0.02
             command_out += "G00" + format_measure('Y', yo) + "\n"             # back to hole center
          end
          cnt += 1
