@@ -1390,9 +1390,9 @@ module PhlatScript
       yfinal = yo - yoff
       if (@cboreinner > 0)
          ynow = ( @cboreinner /2 - @bit_diameter / 2)
-         command_out += "(ynow offset #{ynow.to_mm})\n"
+         command_out += "(ynow offset #{ynow.to_mm})\n"           if @debug
          ynow = yo - ynow
-         command_out += "(ynow        #{ynow.to_mm})\n"
+         command_out += "(ynow        #{ynow.to_mm})\n"           if @debug
       else
          ynow = yo - @bit_diameter / 2
       end
@@ -1471,7 +1471,7 @@ module PhlatScript
       cncPrintC("GetFuzzyYstep #{diam.to_mm}, #{ystep.to_mm}, #{mustramp}, #{force}")  if @debug
       @debug = false
       if (mustramp)
-         if (@cboreinner > 0) && (@cboreinner > (@bit_diameter*2) )
+         if (@cboreinner > 0) && (@cboreinner >= (@bit_diameter*2) )
             cncPrintC("getfuzzyYstep using cboreinner #{@cboreinner.to_mm}")     if @debug
             rem = (diam / 2) - (@cboreinner/2)  # still to be cut, we have already cut a @cboreinner hole
             cncPrintC("   getfuzzystep inner rem = #{rem.to_mm}")  if @debug
@@ -1728,7 +1728,12 @@ module PhlatScript
          cncPrintC("plungeCBORE #{sprintf('X%0.2f',xo.to_mm)},#{sprintf('Y%0.2f',yo.to_mm)},zs #{sprintf('%0.2f',zStart.to_mm)},zo #{sprintf('%0.2f',zo.to_mm)}")
          cncPrintC("   diam#{sprintf('%0.2f',diam.to_mm)}, cdiam #{sprintf('%0.2f',cdiam.to_f.to_mm)}, cdepth #{sprintf('%0.2f',cdepth.to_f.to_mm)}")
       else
-         cncPrintC("plungeCBORE diam#{sprintf('%0.3f',diam.to_mm)}, cdiam #{sprintf('%0.3f',cdiam.to_f.to_mm)}, cdepth #{sprintf('%0.3f',cdepth.to_f.to_mm)}")
+         c = "plungeCBORE" + format_measure("diam",diam) + format_measure("cdiam",cdiam) + format_measure("cdepth",cdepth) + ' '
+         while (c.include?('0 ')  )
+            c = c.gsub(/0 /,' ')
+         end
+         c = c.gsub('. ','.0 ')
+         cncPrintC(c)
       end
       
       #first drill the center hole
@@ -1751,7 +1756,7 @@ module PhlatScript
       ucwas = $phoptions.usecomments?
       $phoptions.usecomments = false                     if !@debug
       cncPrintC("cbore call plungebore for the cbore")   if @debug
-      @cboreinner = diam    if (diam > (@bit_diameter * 2) )      # set inner diameter if relevant
+      @cboreinner = diam    if (diam >= (@bit_diameter * 2) )      # set inner diameter if relevant
       plungebore(xo, yo, zStart, zStart-cdepth.to_f, cdiam.to_f)
       @cboreinner = 0
       cncPrintC("cbore call plungebore returned")        if @debug
@@ -2159,7 +2164,7 @@ module PhlatScript
             dd = (@cboreinner / 2) - (@bit_diameter/2)   # diameter of arc to centerbore edge
             yy = yo - (dd)
             rr = -dd / 2
-            command_out += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n"
+            command_out += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n"    if @debug
          else  
             yy =  yo - @bit_diameter/2
             rr = -@bit_diameter/4

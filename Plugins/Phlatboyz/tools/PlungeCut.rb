@@ -145,7 +145,7 @@ module PhlatScript
            group.name = group.name + "_diam_#{stripzeros(diam.to_s,false)}"
         end
       end
-      if (ang > 0.0)
+      if (ang > 0.0)  # countersink
          #puts "angle > #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
          circleInner.each { |e|
@@ -160,7 +160,7 @@ module PhlatScript
          group.name = group.name + "_cd_#{stripzeros(cdia.to_s,false)}"
          dfactor = [PhlatScript.cutFactor, 100.0].max   #always at least 100% deep
       end   
-      if (ang < 0.0)
+      if (ang < 0.0)   #counterbore
          #puts "angle < #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 9)
          circleInner.each { |e|
@@ -182,7 +182,7 @@ module PhlatScript
       else
          newedges[0].material = Color_plunge_cut      if (ang == 0.0)
       end
-      
+      group.name = group.name.gsub('~ ','')      
       @edge = newedges[0]
       Sketchup.active_model.commit_operation
     end
