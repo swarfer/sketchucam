@@ -412,7 +412,11 @@ module PhlatScript
   end
 
   def PhlatScript.multipassDepth=(mdepth)
-    Sketchup.active_model.set_attribute(Dict_name, Dict_multipass_depth, mdepth)
+      if (mdepth > 0)
+         Sketchup.active_model.set_attribute(Dict_name, Dict_multipass_depth, mdepth)
+      else
+         UI.messagebox("Cannot set multipass depth to 0")
+      end
   end
 
   def PhlatScript.tabletop?
