@@ -43,6 +43,8 @@ module PhlatScript
 
    def initialize
       super()
+      @limit = 0
+      @flood = false #must we use flood file for zigzags?
       @active_face = nil
       @bit_diameter = PhlatScript.bitDiameter
       #puts "bit diameter #{@bit_diameter.to_mm}mm"
@@ -67,7 +69,7 @@ module PhlatScript
       @statusText = PhlatScript.getString("Pocket Face")
       #PhlatScript.getString("GCode")
       #	 @statusmsg = "Pockettool: [shift] for only zigzag [ctrl] for only boundary, stepover is #{@stepover_percent}%"
-      @statusmsgBase  = "Pockettool: [shift] for only Zigzag [ctrl] for only boundary : [END] to toggle zigzag direction : "
+      @statusmsgBase  = "Pockettool: [shift] only Zigzag [ctrl] only boundary : [END] toggle direction : [HOME] floodfill ZZ only : "
       @statusmsg = @statusmsgBase
    end
 
@@ -95,6 +97,15 @@ module PhlatScript
    def onKeyDown(key, repeat, flags, view)
       if key == VK_END    # toggle zig direction
          toggle_direc_flag()
+      end
+      if key == VK_HOME    # toggle use of flood fill
+         @flood = !@flood
+         if (@flood)
+            @statusmsg = @statusmsgBase + "FLOOD #{@stepover_percent}%"
+         else
+            @statusmsg = @statusmsgBase + "StepOver #{@stepover_percent}%"
+         end
+         Sketchup::set_status_text(@statusmsg, SB_PROMPT)
       end
 
       if (key == VK_SHIFT)
@@ -163,9 +174,11 @@ module PhlatScript
    def activeFaceFromInputPoint(inputPoint)
       face = inputPoint.face
       # check simple face (outer_loop only)
-      if (face)
-         if (face.loops.length != 1)
-            face = nil
+      if (!@flood)
+         if (face)
+            if (face.loops.length != 1)
+               face = nil
+            end
          end
       end
       return face
@@ -203,86 +216,418 @@ module PhlatScript
          sel.clear    if (didit)
          self.reset(view)    
          Sketchup.active_model.select_tool(nil) # select select tool since we have already pocketed all selected faces
-      else  #if nothign selected, just get ready to pocket the clicked face
+      else  #if nothing selected, just get ready to pocket the clicked face
          @ip = Sketchup::InputPoint.new
          #puts "activate stepOver = #{@stepOver}  @stepover_percent #{@stepover_percent}"
-         @statusmsg = @statusmsgBase + "StepOver is #{@stepover_percent}%"
+         if (@flood)
+            @statusmsg = @statusmsgBase + "FLOOD #{@stepover_percent}%"
+         else
+            @statusmsg = @statusmsgBase + "StepOver #{@stepover_percent}%"
+         end
          Sketchup::set_status_text(@statusmsg, SB_PROMPT)
          self.reset(nil)
       end
    end
+   
+   #return true if any true values in hash 0..xm,0..ym
+   def someleft(hsh, xm, ym)
+      y = 0
+      while (y <= ym) do
+         x = 0
+         while (x <= xm) do
+            if hsh[[x,y]]
+               return true
+            end
+            x += 1
+         end
+         y += 1
+      end
+      return false
+   end
 
+   # return true if pc is on the line pa,pb   
+   def isonline(pc,pa,pb)
+      ac = pa.distance(pc)
+      cb = pb.distance(pc)
+      ab = pa.distance(pb)
+      return (ab -(ac + cb)).abs < 0.0001
+   end   
+  
+   # return true if line [pt1,pt2] crosses any edge in theface
+   def iscrossing(pt1,pt2, theface)
+      line = [pt1, pt2]
+      theface.loops.each { |loop|
+         edges = loop.edges
+         edges.each { |e|  #check each edge to see if it intersects line inside the edge
+            l2 = [e.vertices[0].position, e.vertices[1].position]    # make a line
+            point = Geom.intersect_line_line(line, e.vertices)       # find intersection
+            if (point != nil)
+               online1 = isonline(point, line[0], line[1])           # is the point on the line
+               online2 = isonline(point, e.vertices[0].position, e.vertices[1].position)  # is the point on the edge
+               #ent.add_cpoint(point)    if (online1 and online2)
+               #puts "online1 #{online1} #{online2}"
+               return true if (online1 and online2)
+               # if (online1 and online2) then we can return true here, no need to process more
+            end
+         } # edges.each
+      }   # loops.each
+      return false
+   end
+
+   def debugfile(line)
+      File.open("d:/temp/sketchupdebug.txt", "a+") { |fp| fp.puts(line)  }
+   end
+   
+   
+   # this can zigzag a face with holes in it, and also ones with complex concave/convex borders
+   # returns an array containing one or more arrays of points, each set of points is a zigzag
+   def get_zigzag_flood(aface)
+      result = []
+      
+      # create a 2D array to hold the rasterized shape
+      # raster is on stepover boundaries and center of each square is where the zigzags will start and end.
+      # set true for each centerpoint that is inside the face
+      # raster 0,0 is bottom left of the shape, just outside the boundary
+      bb = aface.bounds
+      stepOverinuse = @bit_diameter * @stepOver
+      if ($phoptions.use_fuzzy_pockets?)  #always uses fuzzy, because it fails at exactly 50%
+         ylen = bb.max.y - bb.min.y - 0.002
+         stepOverinuse = getfuzzystepover(ylen)
+         xlen = bb.max.x - bb.min.x - 0.002
+         stepOverinuse += getfuzzystepover(xlen)
+         stepOverinuse /= 2      # avg of horiz and vertical fuzzy step
+      end
+      ystart = bb.min.y - stepOverinuse / 2  # center of bottom row of cells
+      yend = bb.max.y + stepOverinuse / 2 + 0.002
+      
+      xstart = bb.min.x - stepOverinuse / 2  # center of first column of cells
+      xend = bb.max.x + stepOverinuse  * 3/4  # MUST have a false column after end of object
+      debugfile("xstart #{xstart.to_mm},#{ystart.to_mm}   #{xend.to_mm},#{yend.to_mm} #{stepOverinuse.to_mm}" )   if (@debug)
+      
+      cells = Hash.new(false)
+      # now loop through all cells and test to see if this point is in the face or on an edge
+      pt = Geom::Point3d.new(0, 0, 0)
+      x = xstart
+      xmax = ymax = 0.0
+      
+ entities = Sketchup.active_model.active_entities
+ #constpoint = entities.add_cpoint point1      
+      countx = 0
+      while (x <= xend) do
+         y = ystart
+#         s = "X #{x.to_mm}"
+         county = 0
+         while (y <= yend) do
+            xc = ((x-xstart) / stepOverinuse + 0.002).round  # x cell index
+            yc = ((y-ystart) / stepOverinuse + 0.002).round  # y cell index
+            pt = Geom::Point3d.new(x, y,0)
+            res = aface.classify_point(pt)
+#            s += " #{y.to_mm}:#{xc}-#{yc}"
+            
+            case res
+               when Sketchup::Face::PointUnknown #(indicates an error),
+                  puts "unknown"    if (@debug)
+               when Sketchup::Face::PointInside    #(point is on the face, not in a hole),
+                  cells[[xc,yc]] = true
+               when Sketchup::Face::PointOnVertex  #(point touches a vertex),
+                  #cells[[xc,yc]] = true
+               when Sketchup::Face::PointOnEdge    #(point is on an edge),
+                  #cells[[xc,yc]] = true
+               when Sketchup::Face::PointOutside   #(point outside the face or in a hole),
+                  #puts "outside"      if (@debug)
+               when Sketchup::Face::PointNotOnPlane #(point off the face's plane).
+                  puts "notonplane"    if (@debug)
+            end
+            
+            xmax = (xmax < xc) ? xc : xmax
+            ymax = (ymax < yc) ? yc : ymax
+            y += stepOverinuse
+            county += 1
+            if (county > 200)
+               puts "county high break"
+               break
+            end
+         end  # while y
+#         debugfile(s)  if (@debug)
+         x += stepOverinuse
+         countx += 1
+         if (countx > 200)
+            puts "countx high break"
+            break
+         end
+      end # while x
+      debugfile("xmax #{xmax} ymax #{ymax}")  if (@debug) # max cell index
+#      puts "xmax #{xmax} ymax #{ymax}"
+#output array for debug      
+      if (@debug)
+         y = ymax
+         debugfile("START")   if (@debug)
+         while (y >= 0) do
+            x = 0
+            s = "y #{y}"
+            while (x <= xmax) do
+               if (cells[[x,y]])
+                  s += " 1"
+               else
+                  s += " 0"
+               end
+               x += 1
+            end
+            debugfile(s)      if (@debug)
+            y -= 1 
+         end
+      end
+
+      # now create the zigzag points from the hash, search along X for first and last points
+      # keep track of 'going left' or 'going right' so we can test for a line that would cross the boundary
+      # if this line would cross the boundary, start a new array of points
+      r = 0
+      prevpt = nil
+#@debug = true
+      while (someleft(cells,xmax,ymax))  # true if some cells are still not processed
+         debugfile("R=#{r}")           if (@debug)
+         result[r] = []
+         y = 0
+         goingright = true
+         py = -1  # previous y used, to make sure we do not jump a Y level
+         county = 0
+         while (y <= ymax) do
+            county += 1
+            if (county > 500)
+               puts " county break"
+               break
+            end
+         
+            leftx = -1
+            x = 0
+            while (x <= xmax) do # search to the right for a true
+               if (cells[[x,y]] == true)
+                  cells[[x,y]] = false
+                  leftx = x
+                  break  # found left side X val
+               end
+               x += 1
+            end #while x
+            rightx = -1
+            x += 1
+            if x <= xmax 
+               while (x <= xmax) do  # search to the right for a false
+                  if (cells[[x,y]] == false)
+                     rightx = x-1
+                     break  # found right  side X val
+                  end
+                  cells[[x,y]] = false                # set false after we visit
+                  x += 1
+               end #while x
+            end
+            # now we have leftx and rightx for this Y, if rightx > -1 then push these points
+            debugfile("   left #{leftx} right #{rightx} y #{y}")  if (@debug)
+            if (rightx > -1)
+               #if px,py does not cross any face edges
+#               pt1 = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
+#               pt2 = Geom::Point3d.new(0, 0, 0)
+               if (goingright)
+                  pt = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
+                  
+                  #if line from prevpt to pt crosses anything, start new line segment
+                  if (prevpt != nil)
+                     if (iscrossing(prevpt,pt,aface) )
+                        debugfile("iscrossing goingright #{x} #{y}")      if (@debug)
+                        r += 1
+                        result[r] = []
+                        debugfile(" R=#{r}")          if (@debug)
+                        prevpt = nil
+                     else
+                        if (py > -1)
+                           if ((y - py) > 1)  # do not cross many y rows, start new set instead
+                              debugfile("isyrows goingright #{x} #{y}")       if (@debug)
+                              r += 1
+                              result[r] = []
+                              debugfile(" R=#{r}")       if (@debug)
+                              prevpt = nil
+                           end
+                        end
+                     end
+                  end
+                  
+                  entities.add_cpoint(pt)       if (@debug)
+                  result[r] << pt
+                  pt = Geom::Point3d.new(xstart + rightx*stepOverinuse, ystart + y * stepOverinuse, 0)
+                  result[r] << pt
+                  entities.add_cpoint(pt)       if (@debug)
+               else
+                  #pt.x = xstart + rightx*stepOverinuse
+                  #pt.y = ystart + y * stepOverinuse
+                  pt = Geom::Point3d.new(xstart + rightx*stepOverinuse, ystart + y * stepOverinuse, 0)
+                  
+                  #if line from prevpt to pt crosses anything, start new line segment
+                  if (prevpt != nil)
+                     if (iscrossing(prevpt,pt,aface) )
+                        debugfile("iscrossing goingleft #{x} #{y}")     if (@debug)
+                        prevpt = nil
+                        r += 1
+                        result[r] = []
+                        debugfile(" R=#{r}")       if (@debug)
+                     else   
+                        if (py > -1)
+                           if ((y - py) > 1)  # do not cross many y rows
+                              debugfile("isyrows goingleft #{x} #{y}")     if (@debug)
+                              r += 1
+                              result[r] = []
+                              prevpt = nil
+                              debugfile(" R=#{r}")                         if (@debug)
+                           end
+                        end
+                     end
+                  end
+                  
+                  result[r] << pt
+                  entities.add_cpoint(pt)    if (@debug)
+                  #pt.x = xstart + leftx*stepOverinuse
+                  pt = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
+                  result[r] << pt
+                  entities.add_cpoint(pt)    if (@debug)
+               end
+               prevpt = Geom::Point3d.new(pt.x, pt.y, 0)
+               py = y
+            end # if rightx valid
+            y += 1
+            goingright = !goingright
+         end # while y
+         
+         #debug output
+         if (@debug)
+            if (someleft(cells,xmax,ymax)  )
+               debugfile("someleft #{r}")       if (@debug)
+               yc = ymax
+               while (yc >= 0) do
+                  xc = 0
+                  s = "Y #{yc}"
+                  while (xc <= xmax) do
+                     if (cells[[xc,yc]])
+                        s += " 1"
+                     else
+                        s += " 0"
+                     end
+                     xc += 1
+                  end
+                  debugfile(s)         if (@debug)
+                  yc -= 1 
+               end
+            end
+         end
+         r += 1
+         prevpt = nil
+      end # while someleft   
+@debug = false
+      puts " result #{result.length}  #{result[0].length}  "   if (@debug)
+      debugfile("result #{result.length}")      if (@debug)
+      result.each { |rs|
+         debugfile("   #{rs.length}")           if (@debug)
+         }
+      return result
+   end
+
+#-------------------------------------------------------------
    def draw_geometry(view)
-#puts "DRAW"   
       view.drawing_color = Color_pocket_cut
       #view.line_width = 3.0
-      if (@keyflag == 1) || (@keyflag == 0)
-         zigzag_points = get_zigzag_points(@active_face.outer_loop)
-      else
-         zigzag_points = nil
-      end
+      
+      # if face has holes then do flood zigzag only
+      if (!@flood)
+         if (@keyflag == 1) || (@keyflag == 0)
+            zigzag_points = get_zigzag_points(@active_face.outer_loop)
+         else
+            zigzag_points = nil
+         end
 
-      if (@keyflag == 2) || (@keyflag == 0)
-         contour_points = get_contour_points(@active_face.outer_loop) if (!@active_face.deleted?)
-      else
-         contour_points = nil
-      end
-
-      if (zigzag_points != nil)
-         if (zigzag_points.length >= 2)
-            view.draw GL_LINE_STRIP, zigzag_points
+         if (@keyflag == 2) || (@keyflag == 0)
+            contour_points = get_contour_points(@active_face.outer_loop) if (!@active_face.deleted?)
+         else
+            contour_points = nil
+         end
+         
+         if (zigzag_points != nil)
+            if (zigzag_points.length >= 2)
+               view.draw(GL_LINE_STRIP, zigzag_points)
+            end
+         end
+         if (contour_points != nil)
+            if (contour_points.length >= 3)
+               view.draw( GL_LINE_LOOP, contour_points)
+            end
+         end
+      else  # do floodfill only
+         puts "  #{@active_face.loops.length} loops"  if (@debug)
+         zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
+         
+         if (zigzag_points != nil)
+            zigzag_points.each { |zpoints|
+               puts "draw #{zpoints.length}" if (@debug)
+#               debugfile("drawing #{zpoints.length}")
+#               zpoints.each { |pt|
+#                  debugfile("#{pt.x}  #{pt.y}")
+#                  }
+               view.draw(GL_LINE_STRIP, zpoints) if (zpoints.length > 1)
+               }
+         sleep(1)      if (@debug)
          end
       end
-      if (contour_points != nil)
-         if (contour_points.length >= 3)
-            view.draw GL_LINE_LOOP, contour_points
-         end
-      end
+
    end
 
    def create_geometry(face, view)
       #puts "create geometry"
       model = view.model
       model.start_operation("Create Pocket",true,true)
-
-      if @keyflag == 1 || @keyflag == 0
-         zigzag_points = get_zigzag_points(@active_face.outer_loop)
-      else
-         zigzag_points = nil
-      end
-
-      if (@keyflag == 2) || (@keyflag == 0)
-         contour_points = get_contour_points(@active_face.outer_loop)
-#         contour_points.each { |cp|
-#            puts "#{cp}\n"
-#            }
-      else
-         contour_points = nil
-      end
-
-      if zigzag_points != nil
-         if (zigzag_points.length >= 2)
-            zedges = model.entities.add_curve(zigzag_points)
-            cuts = PocketCut.cut(zedges)
-            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
-         end
-      end
-      if (contour_points != nil)
-         if (contour_points.length >= 3)
-            contour_points.push(contour_points[0])  #close the loop for add_curve
-#use add_curve instead of add_face so that the entire outline can be selected easily for delete
-            if PhlatScript.usePocketcw?
-#               puts "pocket CW"
-#               cface = model.entities.add_face(contour_points)
-               cedges = model.entities.add_curve(contour_points)
-            else
-#               puts "pocket CCW"
-#               cface = model.entities.add_face(contour_points.reverse!)
-#               cedges = cface.edges
-               cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
+      
+      if (@flood)
+         zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
+         zigzag_points.each { |zpoints|
+            if (zpoints.length > 1)
+               zedges = model.entities.add_curve(zpoints)
+               cuts = PocketCut.cut(zedges)
+               cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
             end
-            cuts = PocketCut.cut(cedges)
-            cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            }
+         @flood = false   
+      else
+         if @keyflag == 1 || @keyflag == 0
+            zigzag_points = get_zigzag_points(@active_face.outer_loop)
+         else
+            zigzag_points = nil
+         end
+
+         if (@keyflag == 2) || (@keyflag == 0)
+            contour_points = get_contour_points(@active_face.outer_loop)
+         else
+            contour_points = nil
+         end
+
+         if zigzag_points != nil
+            if (zigzag_points.length >= 2)
+               zedges = model.entities.add_curve(zigzag_points)
+               cuts = PocketCut.cut(zedges)
+               cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            end
+         end
+         if (contour_points != nil)
+            if (contour_points.length >= 3)
+               contour_points.push(contour_points[0])  #close the loop for add_curve
+   #use add_curve instead of add_face so that the entire outline can be selected easily for delete
+               if PhlatScript.usePocketcw?
+   #               puts "pocket CW"
+   #               cface = model.entities.add_face(contour_points)
+                  cedges = model.entities.add_curve(contour_points)
+               else
+   #               puts "pocket CCW"
+   #               cface = model.entities.add_face(contour_points.reverse!)
+   #               cedges = cface.edges
+                  cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
+               end
+               cuts = PocketCut.cut(cedges)
+               cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+            end
          end
       end
 
@@ -593,7 +938,7 @@ end
       end
 #      puts "   newstep #{newstep}"
       newstep = (newstep * 10000.0).floor / 10000.0   # floor to 1/10000"
-      newstep = 1.mm if (newstep == 0.0)
+      newstep = 1.mm if (newstep.abs < 0.001)
       
 #      puts "    newsteps #{newsteps} newstep #{newstep.to_mm} newstepover #{newstepover}%\n"
       if (newstepover > 0)

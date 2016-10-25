@@ -44,12 +44,14 @@ class PocketCut < CenterLineCut
 
     def PocketCut.cut(edges)
       cuts = []
-      edges.each do | e |
-        cut = PocketCut.new
-        cut.cut(e)
-        cuts.push(cut)
+      if (edges)
+         edges.each do | e |
+           cut = PocketCut.new
+           cut.cut(e)
+           cuts.push(cut)
+         end
+         return cuts
       end
-      return cuts
     end
 
     def cut(edge)
