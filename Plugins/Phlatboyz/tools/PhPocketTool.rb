@@ -49,6 +49,9 @@ module PhlatScript
       @bit_diameter = PhlatScript.bitDiameter
       #puts "bit diameter #{@bit_diameter.to_mm}mm"
       @ip = nil
+      @cells = nil
+      @cellxmax = -1
+      @cellymax = -1
 
       # set this to change zigzag stepover, less for hard material, more for soft
       @stepover_percent = PhlatScript.stepover
@@ -274,61 +277,55 @@ module PhlatScript
       return false
    end
 
+   # return point where they cross , if line [pt1,pt2] crosses any edge in theface
+   def wherecrossing(pt1,pt2, theface)
+      line = [pt1, pt2]
+      theface.loops.each { |loop|
+         edges = loop.edges
+         edges.each { |e|  #check each edge to see if it intersects line inside the edge
+            l2 = [e.vertices[0].position, e.vertices[1].position]    # make a line
+            point = Geom.intersect_line_line(line, e.vertices)       # find intersection
+            if (point != nil)
+               online1 = isonline(point, line[0], line[1])           # is the point on the line
+               online2 = isonline(point, e.vertices[0].position, e.vertices[1].position)  # is the point on the edge
+               #ent.add_cpoint(point)    if (online1 and online2)
+               #puts "online1 #{online1} #{online2}"
+               return point if (online1 and online2)
+               # if (online1 and online2) then we can return true here, no need to process more
+            end
+         } # edges.each
+      }   # loops.each
+      return nil
+   end
+   
+   
    def debugfile(line)
       File.open("d:/temp/sketchupdebug.txt", "a+") { |fp| fp.puts(line)  }
    end
    
-   
-   # this can zigzag a face with holes in it, and also ones with complex concave/convex borders
-   # returns an array containing one or more arrays of points, each set of points is a zigzag
-   def get_zigzag_flood(aface)
-      result = []
-      
-      # create a 2D array to hold the rasterized shape
-      # raster is on stepover boundaries and center of each square is where the zigzags will start and end.
-      # set true for each centerpoint that is inside the face
-      # raster 0,0 is bottom left of the shape, just outside the boundary
-      bb = aface.bounds
-      stepOverinuse = @bit_diameter * @stepOver
-      if ($phoptions.use_fuzzy_pockets?)  #always uses fuzzy, because it fails at exactly 50%
-         ylen = bb.max.y - bb.min.y - 0.002
-         stepOverinuse = getfuzzystepover(ylen)
-         xlen = bb.max.x - bb.min.x - 0.002
-         stepOverinuse += getfuzzystepover(xlen)
-         stepOverinuse /= 2      # avg of horiz and vertical fuzzy step
-      end
-      ystart = bb.min.y - stepOverinuse / 2  # center of bottom row of cells
-      yend = bb.max.y + stepOverinuse / 2 + 0.002
-      
-      xstart = bb.min.x - stepOverinuse / 2  # center of first column of cells
-      xend = bb.max.x + stepOverinuse  * 3/4  # MUST have a false column after end of object
-      debugfile("xstart #{xstart.to_mm},#{ystart.to_mm}   #{xend.to_mm},#{yend.to_mm} #{stepOverinuse.to_mm}" )   if (@debug)
-      
-      cells = Hash.new(false)
-      # now loop through all cells and test to see if this point is in the face or on an edge
-      pt = Geom::Point3d.new(0, 0, 0)
-      x = xstart
-      xmax = ymax = 0.0
-      
- entities = Sketchup.active_model.active_entities
- #constpoint = entities.add_cpoint point1      
+   # create a raster of 'cells' over the face, cells are spaced at stepOverinuse intervals
+   # initialize @cells before calling this
+   # make sure there is  a border of false cells around the face
+   # use half stepover on X to get the ends of the zigs closer to the borders - suites horizontal zigzags
+   def createcells(xstart,xend, ystart,yend, stepOverinuse, aface)
       countx = 0
+      xmax = ymax = 0
+      x = xstart
       while (x <= xend) do
          y = ystart
-#         s = "X #{x.to_mm}"
          county = 0
          while (y <= yend) do
-            xc = ((x-xstart) / stepOverinuse + 0.002).round  # x cell index
+            #note: using half stepover on the X axis, gets the ends of the zigs closer to the border
+            xc = ((x-xstart) / (stepOverinuse/2) + 0.002).round  # x cell index
             yc = ((y-ystart) / stepOverinuse + 0.002).round  # y cell index
             pt = Geom::Point3d.new(x, y,0)
             res = aface.classify_point(pt)
-#            s += " #{y.to_mm}:#{xc}-#{yc}"
             
             case res
                when Sketchup::Face::PointUnknown #(indicates an error),
                   puts "unknown"    if (@debug)
                when Sketchup::Face::PointInside    #(point is on the face, not in a hole),
-                  cells[[xc,yc]] = true
+                  @cells[[xc,yc]] = true
                when Sketchup::Face::PointOnVertex  #(point touches a vertex),
                   #cells[[xc,yc]] = true
                when Sketchup::Face::PointOnEdge    #(point is on an edge),
@@ -343,19 +340,64 @@ module PhlatScript
             ymax = (ymax < yc) ? yc : ymax
             y += stepOverinuse
             county += 1
-            if (county > 200)
+            if (county > 2000)   #really for debugging but prevents runaway loops
                puts "county high break"
                break
             end
          end  # while y
-#         debugfile(s)  if (@debug)
-         x += stepOverinuse
+         x += (stepOverinuse / 2.0)
          countx += 1
-         if (countx > 200)
+         if (countx > 2000)
             puts "countx high break"
             break
          end
       end # while x
+      @cellxmax = xmax
+      @cellymax = ymax
+   end
+   
+   
+   # this can zigzag a face with holes in it, and also ones with complex concave/convex borders
+   # returns an array containing one or more arrays of points, each set of points is a zigzag
+   def get_zigzag_flood(aface)
+      result = []
+#@debug = true      
+      # create a 2D array to hold the rasterized shape
+      # raster is on stepover boundaries and center of each square is where the zigzags will start and end.
+      # set true for each centerpoint that is inside the face
+      # raster 0,0 is bottom left of the shape, just outside the boundary
+      bb = aface.bounds
+      stepOverinuse = @bit_diameter * @stepOver
+      ystart = bb.min.y - stepOverinuse / 2  # center of bottom row of cells
+      yend = bb.max.y + stepOverinuse / 2 + 0.002
+      
+      xstart = bb.min.x - stepOverinuse / 2  # center of first column of cells
+      xend = bb.max.x + stepOverinuse + 0.002  # MUST have a column after end of object else stuff gets skipped
+#      if ($phoptions.use_fuzzy_pockets?)  #always uses fuzzy, gives better results
+         ylen = yend - ystart - 0.002
+         stepOverinuse1 = getfuzzystepover(ylen)
+         xlen = xend - xstart - 0.002
+         stepOverinuse2 = getfuzzystepover(xlen)
+         stepOverinuse = [stepOverinuse1, stepOverinuse2].min  # always use lesser value
+#      end
+      debugfile("xstart #{xstart.to_mm},#{ystart.to_mm}   #{xend.to_mm},#{yend.to_mm} #{stepOverinuse.to_mm}" )   if (@debug)
+
+      #use a hash as if it were a 2d array of cells rastered over the face
+      if (@cells == nil)
+         @cells = Hash.new(false)
+      else
+         @cells.clear
+      end   
+      # now loop through all cells and test to see if this point is in the face
+      pt = Geom::Point3d.new(0, 0, 0)
+      xmax = ymax = 0.0
+#create the cell array      
+      createcells(xstart,xend, ystart,yend, stepOverinuse, aface)  #creates cell has and sets @cellxmax etc
+      xmax = @cellxmax
+      ymax = @cellymax
+      
+      entities = Sketchup.active_model.active_entities  if (@debug)
+      
       debugfile("xmax #{xmax} ymax #{ymax}")  if (@debug) # max cell index
 #      puts "xmax #{xmax} ymax #{ymax}"
 #output array for debug      
@@ -366,7 +408,7 @@ module PhlatScript
             x = 0
             s = "y #{y}"
             while (x <= xmax) do
-               if (cells[[x,y]])
+               if (@cells[[x,y]])
                   s += " 1"
                else
                   s += " 0"
@@ -384,7 +426,7 @@ module PhlatScript
       r = 0
       prevpt = nil
 #@debug = true
-      while (someleft(cells,xmax,ymax))  # true if some cells are still not processed
+      while (someleft(@cells,xmax,ymax))  # true if some cells are still not processed
          debugfile("R=#{r}")           if (@debug)
          result[r] = []
          y = 0
@@ -401,8 +443,8 @@ module PhlatScript
             leftx = -1
             x = 0
             while (x <= xmax) do # search to the right for a true
-               if (cells[[x,y]] == true)
-                  cells[[x,y]] = false
+               if (@cells[[x,y]] == true)
+                  @cells[[x,y]] = false
                   leftx = x
                   break  # found left side X val
                end
@@ -412,11 +454,11 @@ module PhlatScript
             x += 1
             if x <= xmax 
                while (x <= xmax) do  # search to the right for a false
-                  if (cells[[x,y]] == false)
+                  if (@cells[[x,y]] == false)
                      rightx = x-1
                      break  # found right  side X val
                   end
-                  cells[[x,y]] = false                # set false after we visit
+                  @cells[[x,y]] = false                # set false after we visit
                   x += 1
                end #while x
             end
@@ -427,11 +469,11 @@ module PhlatScript
 #               pt1 = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
 #               pt2 = Geom::Point3d.new(0, 0, 0)
                if (goingright)
-                  pt = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
-                  
+                  pt1 = Geom::Point3d.new(xstart + leftx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
+                  pt2 = Geom::Point3d.new(xstart + rightx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
                   #if line from prevpt to pt crosses anything, start new line segment
                   if (prevpt != nil)
-                     if (iscrossing(prevpt,pt,aface) )
+                     if (iscrossing(prevpt,pt1,aface) )
                         debugfile("iscrossing goingright #{x} #{y}")      if (@debug)
                         r += 1
                         result[r] = []
@@ -449,25 +491,44 @@ module PhlatScript
                         end
                      end
                   end
+                  #check that this line does not cross something, happens on sharp vertical points
+                  if (iscrossing(pt1,pt2,aface))
+                     cross = wherecrossing(pt1,pt2,aface)  # point where they cross
+                     #going right so create new point to the left of cross
+                     np = Geom::Point3d.new(cross.x - (stepOverinuse/2), cross.y, 0)
+                     result[r] << pt1
+                     result[r] << np
+                     #start new line
+                     r += 1
+                     result[r] = []
+                     #create new pt1 to the right of the crossing
+                     pt1 = Geom::Point3d.new(cross.x + (stepOverinuse/2), cross.y, 0)
+                  end
                   
-                  entities.add_cpoint(pt)       if (@debug)
-                  result[r] << pt
-                  pt = Geom::Point3d.new(xstart + rightx*stepOverinuse, ystart + y * stepOverinuse, 0)
-                  result[r] << pt
-                  entities.add_cpoint(pt)       if (@debug)
+                  entities.add_cpoint(pt1)       if (@debug)
+                  result[r] << pt1
+                  pt = pt1
+                  if (leftx != rightx)
+                     #pt = Geom::Point3d.new(xstart + rightx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
+                     result[r] << pt2
+                     pt = pt2
+                     entities.add_cpoint(pt)       if (@debug)
+                  else
+                     puts "singleton #{x} #{y}"    if (@debug)
+                  end
                else
                   #pt.x = xstart + rightx*stepOverinuse
                   #pt.y = ystart + y * stepOverinuse
-                  pt = Geom::Point3d.new(xstart + rightx*stepOverinuse, ystart + y * stepOverinuse, 0)
-                  
+                  pt1 = Geom::Point3d.new(xstart + rightx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
+                  pt2 = Geom::Point3d.new(xstart + leftx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
                   #if line from prevpt to pt crosses anything, start new line segment
                   if (prevpt != nil)
-                     if (iscrossing(prevpt,pt,aface) )
+                     if (iscrossing(prevpt,pt1,aface) )
                         debugfile("iscrossing goingleft #{x} #{y}")     if (@debug)
                         prevpt = nil
                         r += 1
                         result[r] = []
-                        debugfile(" R=#{r}")       if (@debug)
+                        debugfile("iscrossing left  R=#{r}")       if (@debug)
                      else   
                         if (py > -1)
                            if ((y - py) > 1)  # do not cross many y rows
@@ -475,18 +536,38 @@ module PhlatScript
                               r += 1
                               result[r] = []
                               prevpt = nil
-                              debugfile(" R=#{r}")                         if (@debug)
+                              debugfile("isyrows left R=#{r}")                         if (@debug)
                            end
                         end
                      end
                   end
                   
-                  result[r] << pt
-                  entities.add_cpoint(pt)    if (@debug)
+                  #check that this horiz line does not cross something, happens on sharp vertical points
+                  if (iscrossing(pt1,pt2,aface))
+                     cross = wherecrossing(pt1,pt2,aface)  # point where they cross
+                     #going left so create new point to the right of cross
+                     np = Geom::Point3d.new(cross.x + stepOverinuse/2, cross.y, 0)
+                     result[r] << pt1
+                     result[r] << np
+                     #start new line on other side of gap
+                     r += 1
+                     result[r] = []
+                     #create new pt1 to the left of the crossing
+                     pt1 = Geom::Point3d.new(cross.x - stepOverinuse/2, cross.y, 0)
+                  end
+                  
+                  result[r] << pt1
+                  pt = pt1
+                  entities.add_cpoint(pt1)    if (@debug)
                   #pt.x = xstart + leftx*stepOverinuse
-                  pt = Geom::Point3d.new(xstart + leftx*stepOverinuse, ystart + y * stepOverinuse, 0)
-                  result[r] << pt
-                  entities.add_cpoint(pt)    if (@debug)
+                  if (leftx != rightx)
+#                     pt = Geom::Point3d.new(xstart + leftx*(stepOverinuse/2), ystart + y * stepOverinuse, 0)
+                     result[r] << pt2
+                     pt = pt2
+                     entities.add_cpoint(pt2)    if (@debug)
+                  else
+                     puts "Singleton #{x} #{y}"  if (@debug)
+                  end
                end
                prevpt = Geom::Point3d.new(pt.x, pt.y, 0)
                py = y
@@ -497,14 +578,14 @@ module PhlatScript
          
          #debug output
          if (@debug)
-            if (someleft(cells,xmax,ymax)  )
+            if (someleft(@cells,xmax,ymax)  )
                debugfile("someleft #{r}")       if (@debug)
                yc = ymax
                while (yc >= 0) do
                   xc = 0
                   s = "Y #{yc}"
                   while (xc <= xmax) do
-                     if (cells[[xc,yc]])
+                     if (@cells[[xc,yc]])
                         s += " 1"
                      else
                         s += " 0"
@@ -532,9 +613,9 @@ module PhlatScript
    def draw_geometry(view)
       view.drawing_color = Color_pocket_cut
       #view.line_width = 3.0
-      
-      # if face has holes then do flood zigzag only
-      if (!@flood)
+
+      #use the flood zigzag if @flood is true  
+      if (!@flood)   #normal zigzag, works well for simple faces, and works with contour
          if (@keyflag == 1) || (@keyflag == 0)
             zigzag_points = get_zigzag_points(@active_face.outer_loop)
          else
@@ -557,7 +638,7 @@ module PhlatScript
                view.draw( GL_LINE_LOOP, contour_points)
             end
          end
-      else  # do floodfill only
+      else  # do floodfill only, contour must pre-exist because we need the face
          puts "  #{@active_face.loops.length} loops"  if (@debug)
          zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
          
@@ -583,14 +664,16 @@ module PhlatScript
       
       if (@flood)
          zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
-         zigzag_points.each { |zpoints|
-            if (zpoints.length > 1)
-               zedges = model.entities.add_curve(zpoints)
-               cuts = PocketCut.cut(zedges)
-               cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
-            end
-            }
-         @flood = false   
+         if (zigzag_points != nil)
+            zigzag_points.each { |zpoints|
+               if (zpoints.length > 1)
+                  zedges = model.entities.add_curve(zpoints)
+                  cuts = PocketCut.cut(zedges)
+                  cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+               end
+               }
+            @flood = false   # turn off flood to save time during debugging, might turn this off
+         end
       else
          if @keyflag == 1 || @keyflag == 0
             zigzag_points = get_zigzag_points(@active_face.outer_loop)
@@ -616,13 +699,8 @@ module PhlatScript
                contour_points.push(contour_points[0])  #close the loop for add_curve
    #use add_curve instead of add_face so that the entire outline can be selected easily for delete
                if PhlatScript.usePocketcw?
-   #               puts "pocket CW"
-   #               cface = model.entities.add_face(contour_points)
                   cedges = model.entities.add_curve(contour_points)
                else
-   #               puts "pocket CCW"
-   #               cface = model.entities.add_face(contour_points.reverse!)
-   #               cedges = cface.edges
                   cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
                end
                cuts = PocketCut.cut(cedges)
@@ -637,7 +715,7 @@ module PhlatScript
 #----------------------------------------------------------------------
 # generic offset points routine
 #----------------------------------------------------------------------
-
+=begin
    def get_intersect_points(lines)
       #               puts "Get intersect points"
       pts = []
@@ -691,7 +769,7 @@ module PhlatScript
       points = get_intersect_points(lines)
       return points
    end
-
+=end
 #----------------------------------------------------------------------
 # contour
 #----------------------------------------------------------------------
