@@ -75,6 +75,7 @@ module PhlatScript
       #PhlatScript.getString("GCode")
       #	 @statusmsg = "Pockettool: [shift] for only zigzag [ctrl] for only boundary, stepover is #{@stepover_percent}%"
       @statusmsgBase  = "Pockettool: [shift] only Zigzag [ctrl] only boundary : [END] toggle direction : [HOME] floodfill ZZ only : "
+      @statusmsgBase2  = "Pockettool: FLOOD mode: [CTRL] only boundary : [END] toggle direction : [HOME] floodfill off : "
       @statusmsg = @statusmsgBase
    end
 
@@ -106,7 +107,7 @@ module PhlatScript
       if key == VK_HOME    # toggle use of flood fill
          @flood = !@flood
          if (@flood)
-            @statusmsg = @statusmsgBase + "FLOOD #{@stepover_percent}%"
+            @statusmsg = @statusmsgBase2 + "FLOOD #{@stepover_percent}%"
          else
             @statusmsg = @statusmsgBase + "StepOver #{@stepover_percent}%"
          end
@@ -227,7 +228,7 @@ module PhlatScript
          @ip = Sketchup::InputPoint.new
          #puts "activate stepOver = #{@stepOver}  @stepover_percent #{@stepover_percent}"
          if (@flood)
-            @statusmsg = @statusmsgBase + "FLOOD #{@stepover_percent}%"
+            @statusmsg = @statusmsgBase2 + "FLOOD #{@stepover_percent}%"
          else
             @statusmsg = @statusmsgBase + "StepOver #{@stepover_percent}%"
          end
@@ -934,7 +935,7 @@ module PhlatScript
       #use the flood zigzag if @flood is true  
       if (!@flood)   #normal zigzag, works well for simple faces, and works with contour
          if (@keyflag == 1) || (@keyflag == 0)
-            zigzag_points = get_zigzag_points(@active_face.outer_loop)
+            zigzag_points = get_zigzag_points(@active_face.outer_loop) if (!@active_face.deleted?)
          else
             zigzag_points = nil
          end
@@ -956,19 +957,35 @@ module PhlatScript
             end
          end
       else  # do floodfill only, contour must pre-exist because we need the face
-         puts "  #{@active_face.loops.length} loops"  if (@debug)
-         zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
-         
-         if (zigzag_points != nil)
-            zigzag_points.each { |zpoints|
-               puts "draw #{zpoints.length}" if (@debug)
-#               debugfile("drawing #{zpoints.length}")
-#               zpoints.each { |pt|
-#                  debugfile("#{pt.x}  #{pt.y}")
-#                  }
-               view.draw(GL_LINE_STRIP, zpoints) if (zpoints.length > 1)
-               }
-         sleep(1)      if (@debug)
+         if (@keyflag == 2) # do advanced contours
+            contour_points = get_contour_points_adv()       if (!@active_face.deleted?)
+            if (contour_points != nil)
+               if (contour_points.length >= 1)  # at least 1 array of points
+                  contour_points.each { |cp|   
+                     if (cp.length > 2)
+                        view.draw( GL_LINE_LOOP, cp)   
+                     else
+                        puts "did not draw"
+                     end
+                     }
+               end
+            end
+            
+         else  # do zigzag
+            puts "  #{@active_face.loops.length} loops"  if (@debug)
+            zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
+            
+            if (zigzag_points != nil)
+               zigzag_points.each { |zpoints|
+                  puts "draw #{zpoints.length}" if (@debug)
+   #               debugfile("drawing #{zpoints.length}")
+   #               zpoints.each { |pt|
+   #                  debugfile("#{pt.x}  #{pt.y}")
+   #                  }
+                  view.draw(GL_LINE_STRIP, zpoints) if (zpoints.length > 1)
+                  }
+            sleep(1)      if (@debug)
+            end
          end
       end
 
@@ -980,16 +997,33 @@ module PhlatScript
       model.start_operation("Create Pocket",true,true)
       
       if (@flood)
-         zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
-         if (zigzag_points != nil)
-            zigzag_points.each { |zpoints|
-               if (zpoints.length > 1)
-                  zedges = model.entities.add_curve(zpoints)
-                  cuts = PocketCut.cut(zedges)
+         if (@keyflag == 2)  # CTRL held down in flood mode
+            contour_points = get_contour_points_adv()
+            if (contour_points.length >= 1)
+               contour_points.each { |cp|
+                  cp.push(cp[0])  #close the loop for add_curve
+                  #use add_curve instead of add_face so that the entire outline can be selected easily for delete
+                  if PhlatScript.usePocketcw?
+                     cedges = model.entities.add_curve(cp)
+                  else
+                     cedges = model.entities.add_curve(cp.reverse!)             # reverse points for counter clockwize loop
+                  end
+                  cuts = PocketCut.cut(cedges)
                   cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
-               end
-               }
-            @flood = false   # turn off flood to save time during debugging, might turn this off
+                  }
+            end
+         else
+            zigzag_points = get_zigzag_flood(@active_face)      # returns array of arrays of points
+            if (zigzag_points != nil)
+               zigzag_points.each { |zpoints|
+                  if (zpoints.length > 1)
+                     zedges = model.entities.add_curve(zpoints)
+                     cuts = PocketCut.cut(zedges)
+                     cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
+                  end
+                  }
+               @flood = false   # turn off flood to save time during debugging, might turn this off
+            end
          end
       else
          if @keyflag == 1 || @keyflag == 0
@@ -1096,6 +1130,24 @@ def get_contour_points(loop)
 #   return get_offset_points(loop, -(@bit_diameter * 0.5))
    return Offset.vertices(@active_face.outer_loop.vertices, -(@bit_diameter * 0.5)).offsetPoints
 end
+
+# advanced contour points, attempt to do both 'inside the outer loop' and 'outside the inner loops'
+# must return an array of loops
+def get_contour_points_adv()
+   result = []
+   idx = 0
+   result[idx] = Offset.vertices(@active_face.outer_loop.vertices, -(@bit_diameter * 0.5)).offsetPoints
+#   puts "   outer #{result[idx].length}  #{result[idx]} "
+   @active_face.loops.each { |lp|
+      if (!lp.outer?)
+         idx += 1
+         result[idx] = Offset.vertices(lp.vertices, -(@bit_diameter * 0.5) ).offsetPoints   
+#         puts "   inner[#{idx}] #{result[idx]}"         
+      end
+      }
+   return result   
+end
+
 
 #----------------------------------------------------------------------
 # zigzag

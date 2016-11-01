@@ -113,7 +113,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4c</b><br>xxx 2016</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4c</b><br>Nov 2016</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -235,12 +235,26 @@
 <tr>
    <td width="90%">
    <div class="intro">
-      <h4>New in V1.4c (xxx 2016)</h4>
+      <h4>New in V1.4c (Nov 2016)</h4>
       <dl>
          <dd>
          <dl>
             <dt>Help updates
-            <dd>added <a href="howto_3d.html">3D section</a>
+               <dd>added <a href="howto_3d.html">3D section</a>
+            <dt>arcmoveij() now always used for arc outputs
+               <dd>this improves arc accuracy and keep Marlin happy
+            <dt>Old files with arcs that have no center property will be rejected, they have to be recoded
+               <dd>Early versions did not store the arc centers and they are needed arcmoveij()
+            <dt>Errant G0 move with no code removed from plungebore in Marlin mode.
+               <dd>a bug prevented the output of a G0 when one was needed
+            <dt><a href="howto_options.html#a4">Marlin</a> mode streamlined
+               <dd>some changes to make Marlin code cleaner
+            <dt>Solve failure to find <a href="howto_profileexchange.html">profile path</a> on Mac due to iOS changing version string
+               <dd>The code was checking the iOS version to figure out where the files are, but that changed so it failed to find the files.
+            <dt>Update translation file {- still need to add a lot of strings though
+               <dd>The translation file is woefully out of date, but now has some new strings.
+            <dt><a href="sketchucamtoolbar.html#toolpocket">Pocketing</a> - new zigzag method for complicated faces
+               <dd>Pocketing complicated shapes just got a whole lot easier!
          </dl>
       </dl>
    </div>      
