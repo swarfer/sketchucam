@@ -74,18 +74,18 @@ module PhlatScript
          else
             Sketchup.active_model.selection.clear
             @entities = nil
-	    @group_already = 0
+            @group_already = 0
          end
       end
 
           # process mouse
       def onLButtonDown(flags, x, y, view)
-	 model = Sketchup.active_model
-	 sel = model.selection
-	 if (sel[0] != nil)
-	    sel[0].explode
-	    Sketchup.undo
-	 end
+          model = Sketchup.active_model
+          sel = model.selection
+          if (sel[0] != nil)
+             sel[0].explode
+             Sketchup.undo
+          end
       end
 
          # process keyboard

@@ -772,87 +772,94 @@
          </dl>
          
          <h4>Default mode</h4>
-         This mode will add both a contour outline and the zigzag with one mouse click.
-         <img src="images/pocket1.png" style="float: right;">
-         The following control keys can be used:
-         <dl>
-            <dt>SHIFT</dt>
-               <dd>Hold down shift to insert only the zigzag line.  You woudl use this after inserting the contour line.</dd>
-            <dt>CTRL</dt>   
-               <dd>Hold down control to insert only the contour outline.  This gives you the opportunity to check (and fix) the contour 
-               as it can generate odd shapes around sharp internal and external corners.</dd>
-            <dt>END</dt>
-               <dd>Each press of the END key will toggle the direction of the zigzag lines from vertical to horizontal and back.
-               This allows you to choose the direction that suites the shape, or that suites the machine dynamics.</dd>
-            <dt>HOME</dt>
-               Switch to FLOOD mode.
-         </dl>
+         <div style="margin-left: 30px;">
+            This mode will add both a contour outline and the zigzag with one mouse click.
+            <img src="images/pocket1.png" style="float: right;">
+            The following control keys can be used:
+            <dl>
+               <dt>CTRL</dt>   
+                  <dd>Hold down control to insert only the contour outline.  This gives you the opportunity to check (and fix) the contour 
+                  as it can generate odd shapes around sharp internal and external corners.</dd>
+               <dt>SHIFT</dt>
+                  <dd>Hold down shift to insert only the zigzag line.  You would use this after inserting the contour line.</dd>
+               <dt>END</dt>
+                  <dd>Each press of the END key will toggle the direction of the zigzag lines from vertical to horizontal and back.
+                  This allows you to choose the direction that suites the shape, or that suites the machine dynamics.</dd>
+               <dt>HOME</dt>
+                  <dd>Switch to FLOOD mode.
+            </dl>
+         </div>
          <br clear=all>
          <h4>FLOOD mode</h4>
-         While this mode can deal with more complicated polygons, using it is also a bit more complicated so please note the following:<br>
-         This is a 2 stage process, you will need to hold CTRL and insert the contours (left click), then point at the new face created
-         and left click again (without CTRL) to insert the zigzags.
-         
-         <p>Fuzzy stepover is always used in FLOOD mode.</p>
-         
-         To activate FLOOD mode, press the HOME key.  The status bar will change to indicate the mode.
-         <dl>
-            <dt>Normal mode</dt>
-               <dd><img src="images/pocket3.png"></dd>
-            <dt>FLOOD mode</dt>
-               <DD><img src="images/pocket4.png"><br></DD>
-         </ul>
-         <br>
+         <div style="margin-left: 30px;">
+            While this mode can deal with more complicated polygons, using it is also a bit more complicated so please note the following:<br>
+            This is a 2 stage process, you will need to hold CTRL and insert the contours (left click), then point at the new face created
+            and left click again (without CTRL) to insert the zigzags.
+            
+            <p>Fuzzy stepover is always used in FLOOD mode.</p>
+            
+            To activate FLOOD mode, press the HOME key.  The status bar will change to indicate the mode.
+            <dl>
+               <dt>Normal mode status bar</dt>
+                  <dd><img src="images/pocket3.png"></dd>
+               <dt>FLOOD mode status bar</dt>
+                  <DD><img src="images/pocket4.png"><br></DD>
+            </ul>
+            <br>
 
-         <img src="images/pocket2.png" style="float: right;">
-         
-         The following control keys can be used:
-         <dl>
-            <dt>CTRL</dt>   
-               <dd>Hold down control to insert only the contour outline.  This gives you the opportunity to check (and fix) the contour 
-               as it can generate odd shapes around sharp internal and external corners.  In particular you need to check for
-               overlaps between contours around internal shapes and the main outline.</dd>
-            <dt>END</dt>
-               <dd>Each press of the END key will toggle the direction of the zigzag lines from vertical to horizontal and back.
-               This allows you to choose the direction that suites the shape, or that suites the machine dynamics.</dd>
-            <dt>HOME</dt>
-               <dd>Switch to default mode.  Note that after inserting the zigzag, the tool will automatically switch to default mode.</dd>
-         </dl>
+            <img src="images/pocket2.png" style="float: right;">
+            
+            The following control keys can be used:
+            <dl>
+               <dt>CTRL</dt>   
+                  <dd>Hold down control to insert only the contour outline.  This gives you the opportunity to check (and fix) the contour 
+                  as it can generate odd shapes around sharp internal and external corners.  In particular you need to check for
+                  overlaps between contours around internal shapes and the main outline.</dd>
+               <dt>END</dt>
+                  <dd>Each press of the END key will toggle the direction of the zigzag lines from vertical to horizontal and back.
+                  This allows you to choose the direction that suites the shape, or that suites the machine dynamics.</dd>
+               <dt>HOME</dt>
+                  <dd>Switch to default mode.  Note that after inserting the zigzag, the tool will automatically switch to default mode.</dd>
+            </dl>
+         </div>   
          
          <h4>for both modes</h4>
-         <p>You can set the default direction in <a href="howto_options.html">Options menu</a></p>
+         <p>You can set the default zigzag direction in the <a href="howto_options.html">Options menu</a></p>
          
-         <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard.  The value is not accepted, until the "Enter" key
+         <p><b>Note:</b>  You can type custom depth values into the VCB, using your keyboard (in addition to using the arrow keys to select a depth).  
+         The value is <b>not accepted, until the "Enter" key</b>
          is pressed.  Then the % suffix will appear with the VCB value, which indicates the value is now set.  Max value allowed is 99%.
          &nbsp;</p>
          <p><b>Fuzzy stepover (new in V1.3a)</b><br>
-         The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
-         
-         <p>Using the exact stepover may result in a gap at the end of the zigzag that is much larger than the stepover%, causing the final outline cut to remove a chunk of material that is near to bit diameter.  
-         This could break the bit in harder materials.</p>
-         
-         <p>The option 'Use fuzzy pockets' defaults to ON since this results in a safer, optimal, zigzag spacing. 
-         You can change this setting on the Tools|Phlatboyz|Options|Features menu</p>
-         
-         <p>The stepover is recalculated such that there is no remainder at the end of the zigzag, making the final cut the same width as the first cut.
-         (This may vary for complex shapes, use a smaller stepover for complex shapes, and change zigzag direction to find the best fill).</p>
-         
-         <p>The stepover is calculated as a SMALLER value if stepover% is less than 50%.
-         It is calculated as a larger value if stepover% is LARGER than 50%.
-         if stepover% is exactly 50% is uses that value.   According to tool manufacturers using a 50% tool stepover will significantly shorten tool life so
-         you should never use this anyway.  </p>
-         
-         <p>The <b>offset</b> from the bounding rectangle to the zigzag edges is calculated from the stepover% as follows:</p>
-         <pre>stepover% &lt; 75%
+         <div style="margin-left: 30px;">
+            The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
+            
+            <p>Using the exact stepover may result in a gap at the end of the zigzag that is much larger than the stepover%, causing the final outline cut to remove a chunk of material that is near to bit diameter.  
+            This could break the bit in harder materials.</p>
+            
+            <p>The option 'Use fuzzy pockets' defaults to ON since this results in a safer, optimal, zigzag spacing. 
+            You can change this setting on the Tools|Phlatboyz|Options|Features menu</p>
+            
+            <p>The stepover is recalculated such that there is no remainder at the end of the zigzag, making the final cut the same width as the first cut.
+            (This may vary for complex shapes, use a smaller stepover for complex shapes, and change zigzag direction to find the best fill).</p>
+            
+            <p>The stepover is calculated as a SMALLER value if stepover% is less than 50%.
+            It is calculated as a larger value if stepover% is LARGER than 50%.
+            if stepover% is exactly 50% is uses that value.   According to tool manufacturers using a 50% tool stepover will significantly shorten tool life so
+            you should never use this anyway.  </p>
+            
+            <p>The <b>offset</b> from the bounding rectangle to the zigzag edges is calculated from the stepover% as follows:</p>
+            <pre>stepover% &lt; 75%
    offset = stepover% / 2
 stepover% &lt; 85%
    offset =  stepover% / 3 
 stepover% &lt;= 100%
    offset =  stepover% / 4</pre>
-         <p>This means that the offset is adjusted smaller as the stepover increases.  
-         This is done to prevent leaving large wedges for the final cut to handle, this happens especially on curved or sloped edges.
-         Note that in FLOOD mode the zigzag will approach very close to the contour lines in places.  This is normal.
-         </p>
+            <p>This means that the offset is adjusted smaller as the stepover increases.  
+            This is done to prevent leaving large wedges for the final cut to handle, this happens especially on curved or sloped edges.
+            Note that in FLOOD mode the zigzag will approach very close to the contour lines in places.  This is normal.
+            </p>
+         </div>
             
          <h4>MultiSelect pocketing (new in v1.4)</h4>
          <ul>

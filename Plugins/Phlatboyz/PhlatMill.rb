@@ -23,6 +23,7 @@ module PhlatScript
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
       @laser = PhlatScript.useLaser?         #frikken lasers!
+      @laser_grbl_mode = true
       @cboreinner = 0                        # diameter of inner hole for counterbores
 #
       @max_x = 48.0
@@ -1545,12 +1546,29 @@ module PhlatScript
    # should have a laseron() and laseroff() call, and a parameter for the delay
    # laser_dwell must be output as seconds, can be float
    # laser_dwell is stored as microseconds in the options
+   # GRBL v1.1 will hjave a mode where laser output is prevented unelss a G1/2/3 is in motion, thus 
+   # a plain spot will not be possible.   Instead, draw a small circle, scale power by depth?
    def plungelaser(xo,yo,zStart,zo,diam)   
-      out = "M3 S" + @spindle_speed.to_i.to_s + "\n"     #must have a spindle speed since it may not have bee set befor this, set max
-      dwell = sprintf("P%-5.*f", @precision, $phoptions.laser_dwell/1000.0)      
-      dwell = stripzeros(dwell,true)                     #want a plain integer if possible, keeps gplot happy
-      out += "G4 #{dwell}\n"                             #dwell time in seconds, can be less than 1
-      out += "M05\n"
+      depth = laserbright(zo)  # calculate laser brightness as function of depth
+      if (@laser_grbl_mode)
+         radius = 0.1.mm
+         out = 'G0' + format_measure('X',xo+radius) + "\n"
+         out += "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
+         #draw a tiny circle....   
+         out += 'G2' + format_measure('X',xo-radius)  + format_measure('I', -radius )  
+         if ( notequal(@speed_curr, @cs) )
+            out += (format_feed(@speed_curr))             
+            @cs = @speed_curr
+         end
+         out += "\n" + 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
+         out += "M05\n"
+      else
+         out = "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
+         dwell = sprintf("P%-5.*f", @precision, $phoptions.laser_dwell/1000.0)      
+         dwell = stripzeros(dwell,true)                     #want a plain integer if possible, keeps gplot happy
+         out += "G4 #{dwell}\n"                             #dwell time in seconds, can be less than 1
+         out += "M05\n"
+      end
       cncPrint(out)
    end
    

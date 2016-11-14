@@ -116,6 +116,7 @@ module PhlatScript
       #experimental - turn off for distribution
       @fakeorigin = false
       @optimize = true
+      @group = nil
 
       @current_bit_diameter = 0
       @tabletop = false
@@ -163,7 +164,7 @@ module PhlatScript
 #        UI.messagebox("GCode generation has been aborted due to the upgrade")
 #        return
 #      end
-
+      Sketchup.set_status_text("Generating G-code")
             #swarfer: need these so that all aMill calls are given the right numbers, aMill should be unaware of defaults
       # by doing this we can have Z0 on the table surface, or at top of material
       @tabletop = PhlatScript.tabletop?
@@ -257,6 +258,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             aMill.job_start(@optimize,ext)
 
 #   puts "amill jobstart done"
+            Sketchup.set_status_text("Processing loop nodes")
             if (Sketchup.active_model.selection.length > 0)
                loop_root = LoopNodeFromEntities(Sketchup.active_model.selection, aMill, material_thickness)
             else
@@ -267,6 +269,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
 
             #puts("done milling")
             if PhlatScript.UseOutfeed?
+               Sketchup.set_status_text("outfeed")
                aMill.retract(@safeHeight)
                aMill.cncPrintC("Outfeed")
                aMill.move(PhlatScript.safeWidth * 0.75,0)
@@ -300,6 +303,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
             end
 
             #puts("finishing up")
+            Sketchup.set_status_text("Job finish")
             aMill.job_finish() # output housekeeping code
           rescue
             puts $!
@@ -475,8 +479,11 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # the group.local_bounds.corner(0) in the future
          group_name = e.name
          if (!group_name.empty?) # the safe area labels are groups with names containing 'safearea', dont print them
+            @group = group_name
             aMill.cncPrintC("Group: #{group_name}")    if !group_name.include?("safearea")
             puts PhlatScript.gcomment("Group: #{group_name}")                 if !group_name.include?("safearea")
+         else
+            @group = nil
          end
          model.start_operation "Exploding Group", true
          es = e.explode
@@ -487,6 +494,7 @@ puts(" rampangle '#{@rampangle}'\n") if (@must_ramp)
          # abort the group explode
          model.abort_operation
          if (!group_name.empty?)
+            @group = nil
             aMill.cncPrintC("Group complete: #{group_name}")          if !group_name.include?("safearea")
             puts PhlatScript.gcomment("Group end: #{group_name}")                      if !group_name.include?("safearea")
          end
@@ -1159,8 +1167,8 @@ puts " new #{newedges[i-1]}\n"
       points = edges.size  # number of edges in this cut
       pass_depth = @tabletop ? material_thickness : 0
       max_depth = @zL
-      prog = PhProgressBar.new(edges.length)
-      prog.symbols("e","E")
+      prog = PhProgressBar.new(edges.length, @group)
+      prog.symbols("r","R")
       printPass = true
 
       @tab_top  = 100
@@ -1587,7 +1595,7 @@ puts " new #{newedges[i-1]}\n"
          pass_depth = 0
       end
       max_depth = @zL
-      prog = PhProgressBar.new(edges.length)
+      prog = PhProgressBar.new(edges.length, @group)
       prog.symbols("e","E")
       printPass = true
 # this is the offset for the plunge down to previous pass depth so the tool will not hit the surface
