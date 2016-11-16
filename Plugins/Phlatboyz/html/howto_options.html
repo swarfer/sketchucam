@@ -3,98 +3,14 @@
 <head>
 <title>SketchUcam: HOWTO set default options</title>
 <meta name="id" content="$Id$">
+<link type="text/css" rel="stylesheet" href="style.css">
 <style type="text/css">
-	body, div, span {
-			font-family: Verdana;
-	}
-	body {
-			background-color: grey;
-			text-align: center;
-			width: 1024px;
-			padding-left:0.5%;
-			padding-right:0.5%;
-	}
-	div.shell {
-			/*background-color: #eee;*/
-			background-color: #ddeeff;
-			/*background-color: white;*/
-			font-size: 1.05em;
-	}
-
-	div.intro-name {
-			text-align:center;
-			font-size: 1.20em;
-			font-weight: bold;
-			padding-top:25px;
-	}
-	div.intro-name div {
-			font-size: 0.60em;
-			font-weight: normal;
-	}
-	div.intro-title {
-			text-align:center;
-			margin:10px;
-			font-size: 1.10em;
-			font-weight: bold;
-			padding-top: 15px;
-	}
-	div.intro {
-			text-align:left;
-			margin:5px;
-			padding: 5px;
-			font-size: 0.90em;
-	}
-
-	.command-image {
-			/*background-color: #ededed;*/
-			background-color: #ddeeff;
-			height: 100px;
-			font-weight: bold;
-			font-size: 0.90em;
-			vertical-align:center;
-			padding:10px;
-			border-top: thin solid white;
-			border-left: thin solid white;
-			border-right: thin solid #cccccc;
-			border-bottom: thin solid #cccccc;
-	}
-	.command-description {
-			/*background-color: #ededed;*/
-			background-color: #eaecfa;
-			/*margin: 2px;*/
-			padding: 15px;
-			border-top: thin solid white;
-			border-left: thin solid white;
-			border-right: thin solid #cccccc;
-			border-bottom: thin solid #cccccc;
-			font-size: 0.90em;
-	}
-
-	.command-title {
-			font-size: 1.00em;
-			font-weight: bold;
-			/*border-bottom: thin solid blue;*/
-			text-align: center;
-			padding-top: 25px;
-			border-top: thin solid white;
-			border-left: thin solid white;
-			border-right: thin solid #cccccc;
-			border-bottom: thin solid #cccccc;
-			text-decoration: underline;
-	}
-	.command-subtitle {
-			font-size: 0.70em;
-			font-style: italic;
-	}
-   hr {
-      background-color: #6699ff; 
-      height: 2px; 
-      border: 0; 
-      }
    dt {
       margin-top: 7px;
-      font-weight: bold;
       font-size: smaller;
+      }
+   body {
+      min-width: 600px;
       }
 </style>
 
@@ -121,7 +37,7 @@ Current settings in Constants.rb and MyConstants.rb will be honored but overridd
 </div>
 
 <p>
-<img src="images/options.png" style="float: right;">
+<img alt="" src="images/options.png" style="float: right;">
 SketchUcam system has long had a file called Constants.rb which contains
 a long list of constant values.  Some of them are used only by the system and are not user settable 
 while others were designed to be user settings that you set once and forget.
@@ -162,7 +78,7 @@ The Options menu is found under Tools|PhlatBoyz|Options and comprises 5 items wi
 <hr>
 <h2><a id="a1">Tool Options</a></h2>
 <p>   
-<img src="images/options-tool.png" style="float: right;">
+<img alt="" src="images/options-tool.png" style="float: right;">
 These defaults will only be seen on new drawings.  
 These settings should reflect your most commonly used cutting tool and material.
 These settings can easily be overridden by using the Tool Profiles save and load mechanism.
@@ -201,7 +117,7 @@ These settings can easily be overridden by using the Tool Profiles save and load
 <hr>
 <h2><a id="a2">Misc Options</a></h2>
 <p>
-<img src="images/options-misc.png" style="float: right;">
+<img alt="" src="images/options-misc.png" style="float: right;">
 </p>
 <dl>
    <dt>Default_comment_remark
@@ -226,7 +142,7 @@ These settings can easily be overridden by using the Tool Profiles save and load
 <hr>
 <h2><a id="a3">Machine Options</a></h2>
 <p>
-<img src="images/options-machine.png" style="float: right;">
+<img alt="" src="images/options-machine.png" style="float: right;">
 These options set defaults taken from the size and shape of your CNC machine.  
 If you have more than one machine, set these to the largest machines values and be careful when generating code for the smaller ones.
 </p>
@@ -292,7 +208,7 @@ cuts = 3.3</pre>
 </dl>
 <hr>
 <h2><a id="a4">Feature Options</a></h2>
-<img src="images/options-feature.png" style="float: right;">
+<img alt="" src="images/options-feature.png" style="float: right;">
 <dl>
    <dt>Use_exact_path (G61)
       <dd>Set this to true to use G61. This will make the machine come to a complete
@@ -371,8 +287,8 @@ cuts = 3.3</pre>
    </dl>
 <hr>
 <h2><a id="a5">Hole Feature Options</a></h2>
-<img src="images/options-holefeatures.png" style="float: right;">
-   Some options that plunge hole feature Gcode generation.<br>
+<img alt="" src="images/options-holefeatures.png" style="float: right;">
+   Some options that affect plunge hole feature Gcode generation.<br>
    Note that the Ramping and stepover% settings also affect how hole boring is generated.  <a href="sketchucamtoolbar.html#toolplunge">Read more here</a>
 <dl>
    <dt>Use_reduced_safe_height
@@ -409,13 +325,20 @@ cuts = 3.3</pre>
          and GPLOT does not understand this format and will produce an error message, failing to display the file.<br>
          To see your G-code, set the well time to <b>1000</b>, generate G-code, preview, once satisfied, set the dwell to 
          what you really need and generate G-code for cutting.   We are working on modifying GPLOT but this will take some time.</i>
-         
+   <dt>LASER - GRBL 1.1 mode (new in 1.4c)
+      <dd>GRBL 1.1 features a dedicated laser mode.   In this mode the laser will not be turned on unless a G1/G2/G3 is in motion.
+         This means that burning just a spot with a G4 delay will not work.
+      <dd>TRUE : G-code is output to draw a small circle, 0.2mm diameter, at the location of the hole.
+      <dd>FALSE: G-code is output to burn a hole using a G4 delay at the location of the hole.
+      <dd>In both modes, if the hole is larger than bit diameter then a circle of that diameter will be drawn.<br>
+      The laser power will also be scled according to the hole depth setting, as for lines.<br>
+      (note that Gplot will not display these holes as circles, but the G-code is correct, this is a Gplot bug)
          
 </dl>   
    
    <hr>
 <h2><a id="a6">File Options</a></h2>
-<img src="images/options-file.png" style="float: right;">
+<img alt="" src="images/options-file.png" style="float: right;">
    Some options that affect saving G-code files.
 <dl>
    <dt>Default_file_name

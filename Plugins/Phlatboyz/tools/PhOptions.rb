@@ -81,6 +81,7 @@ module PhlatScript
          @quick_peck             =   (phoptions.quick_peck? ? '1' : '0')
          @depth_first            =   (phoptions.depth_first? ? '1' : '0')
          @laserdwell             =   phoptions.laser_dwell.to_i.to_s
+         @lasermode              =   (phoptions.laser_GRBL_mode? ? '1' : '0')
       end
    end
 
@@ -154,6 +155,7 @@ module PhlatScript
          @quick_peck             = false
          @depth_first            = true
          @laserdwell             = 250  # just an int
+         @lasermode              = true #default to grbl mode
          
          @toolnum                = -1        # also not saved, awaiting extension of tool profile code
          @useg43                 = false
@@ -334,6 +336,10 @@ module PhlatScript
             @depth_first = value > 0 ? true :  false            if (value != -1)
          #laser plunge dwell time
             @laserdwell            =   getvalue(optin['laserdwell']).to_i    if (optin.has_key?('laserdwell'))            
+         #laser mode
+            value = -1
+            value = getvalue(optin['lasermode'])             if (optin.has_key?('lasermode'))
+            @lasermode = value > 0 ? true :  false            if (value != -1)
          end
 
       end #initialize
@@ -820,6 +826,13 @@ module PhlatScript
          @laserdwell=newval.to_i
       end
       
+      def laser_GRBL_mode?
+         @lasermode
+      end
+      def laser_GRBL_mode=(newval)
+         @lasermode = newval == true
+      end
+      
       def quick_peck?
          @quick_peck
       end
@@ -1267,7 +1280,8 @@ end # class
             'Output helixes as quarter arcs ',
             'Use QuickPeck drill cycle ',
             'Use Depth first(true) or Diam first(false) ',
-            'LASER - plunge hole dwell time (ms) '
+            'LASER - plunge hole dwell time (ms) ',
+            'LASER - GRBL 1.1 mode'
             ];
          defaults=[
             @options.use_reduced_safe_height?.inspect(),
@@ -1275,7 +1289,8 @@ end # class
             @options.quarter_arcs?.inspect(),
             @options.quick_peck?.inspect(),
             @options.depth_first?.inspect(),
-            @options.laser_dwell.to_i
+            @options.laser_dwell.to_i,
+            @options.laser_GRBL_mode?.inspect()
             ];
          list=[
             'true|false',
@@ -1283,7 +1298,8 @@ end # class
             'true|false',
             'true|false',
             'true|false',
-            ''
+            '',
+            'true|false'
             ];
          begin
             input=UI.inputbox(prompts, defaults, list, 'Hole Feature Options (read the help!)')
@@ -1300,6 +1316,7 @@ end # class
             @options.quick_peck              = (input[3] == 'true')
             @options.depth_first             = (input[4] == 'true')
             @options.laser_dwell             = input[5]
+            @options.laser_GRBL_mode         = (input[6] == 'true')
             
             @options.save
          end # if input

@@ -3,110 +3,11 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 <meta name="id" content="$Id$">
 <title>SketchUcam Toolbar</title>
+<link type="text/css" rel="stylesheet" href="style.css">
    <style type="text/css">
-   body, div, span {
-           font-family: Verdana;
-   }
-   body {
-           background-color: grey;
-           text-align: center;
-           width: 1024px;
-           padding-left:0.5%;
-           padding-right:0.5%;
-   }
-   div.shell {
-           /*background-color: #eee;*/
-           background-color: #ddeeff;
-           /*background-color: white;*/
-           font-size: 1.05em;
-   }
-
-   div.intro-name {
-           text-align:center;
-           font-size: 1.20em;
-           font-weight: bold;
-           padding-top:25px;
-   }
-   div.intro-name div {
-           font-size: 0.60em;
-           font-weight: normal;
-   }
-   div.intro-title {
-           text-align:center;
-           margin:10px;
-           font-size: 1.10em;
-           font-weight: bold;
-           padding-top: 15px;
-   }
-   div.intro {
-           text-align:left;
-           margin:5px;
-           padding: 5px;
-           font-size: 0.90em;
-   }
-
-
-   .command-image {
-           /*background-color: #ededed;*/
-           background-color: #ddeeff;
-           height: 100px;
-           font-weight: bold;
-           font-size: 0.90em;
-           vertical-align:center;
-           padding:10px;
-           border-top: thin solid white;
-           border-left: thin solid white;
-           border-right: thin solid #cccccc;
-           border-bottom: thin solid #cccccc;
-   }
-   .command-description {
-           /*background-color: #ededed;*/
-           background-color: #eaecfa;
-           /*margin: 2px;*/
-           padding: 15px;
-           border-top: thin solid white;
-           border-left: thin solid white;
-           border-right: thin solid #cccccc;
-           border-bottom: thin solid #cccccc;
-           font-size: 0.90em;
-   }
-
-   .command-title {
-           font-size: 1.00em;
-           font-weight: bold;
-           /*border-bottom: thin solid blue;*/
-           text-align: center;
-           padding-top: 25px;
-           border-top: thin solid white;
-           border-left: thin solid white;
-           border-right: thin solid #cccccc;
-           border-bottom: thin solid #cccccc;
-           text-decoration: underline;
-   }
-   .command-subtitle {
-           font-size: 0.70em;
-           font-style: italic;
-           }
-   .newcolour {
-            color: #000000;
-            }
-   hr {
-      background-color: #6699ff; 
-      height: 2px; 
-      border: 0; 
-      }
-   td {
-      text-align: justify;
-      }
-   th.left, td.left {    
+   th.left, td.left {
       text-align: left;
-      }
-   dt {
-      margin-top: 5px;
-      }
-   .index {
-      line-height: 1.6em;
-      }
+      }   
    </style>
 </head>
 <body>
@@ -774,7 +675,7 @@
          <h4>Default mode</h4>
          <div style="margin-left: 30px;">
             This mode will add both a contour outline and the zigzag with one mouse click.
-            <img src="images/pocket1.png" style="float: right;">
+            <img alt="standard pocket" src="images/pocket1.png" style="float: right;">
             The following control keys can be used:
             <dl>
                <dt>CTRL</dt>   
@@ -801,13 +702,13 @@
             To activate FLOOD mode, press the HOME key.  The status bar will change to indicate the mode.
             <dl>
                <dt>Normal mode status bar</dt>
-                  <dd><img src="images/pocket3.png"></dd>
+                  <dd><img alt="normal status bar" src="images/pocket3.png"></dd>
                <dt>FLOOD mode status bar</dt>
-                  <DD><img src="images/pocket4.png"><br></DD>
-            </ul>
+                  <DD><img alt="flood status bar" src="images/pocket4.png"><br></DD>
+            </dl>
             <br>
 
-            <img src="images/pocket2.png" style="float: right;">
+            <img alt="flood pocket" src="images/pocket2.png" style="float: right;">
             
             The following control keys can be used:
             <dl>
@@ -832,7 +733,7 @@
          &nbsp;</p>
          <p><b>Fuzzy stepover (new in V1.3a)</b><br>
          <div style="margin-left: 30px;">
-            The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
+            <p>The pocket zigzag can use either the exact stepover% set in the parameters dialog, or it can use 'fuzzy stepover'.</p>
             
             <p>Using the exact stepover may result in a gap at the end of the zigzag that is much larger than the stepover%, causing the final outline cut to remove a chunk of material that is near to bit diameter.  
             This could break the bit in harder materials.</p>
@@ -867,11 +768,9 @@ stepover% &lt;= 100%
          <li>All selected entities will be UNselected after this process
          <li>If only one thing is selected, nothing is done, process is ignored
          <li> Make sure you have the correct pocket parameters before doing the multiselect operation!   
-               (this works for FLOOD mode as well, select flood mode then select multiple faces, then when you select the pocket tool again\
-               it will zigzag all selected faces.)
+               (this works for FLOOD mode as well, select flood mode then select multiple faces, 
+               then when you select the pocket tool again it will zigzag all selected faces.)
          </ul>
-            
-       
       </td>
    </tr>
 

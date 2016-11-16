@@ -23,7 +23,7 @@ module PhlatScript
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
       @laser = PhlatScript.useLaser?         #frikken lasers!
-      @laser_grbl_mode = true
+      @laser_grbl_mode = $phoptions.laser_GRBL_mode?
       @cboreinner = 0                        # diameter of inner hole for counterbores
 #
       @max_x = 48.0
@@ -241,7 +241,11 @@ module PhlatScript
         cncPrintC("Optimization is OFF")
       end
       if (@laser)    # swarfer - display laser mode status as part of header
-        cncPrintC("LASER is ON")
+         if (@laser_grbl_mode)
+            cncPrintC("LASER for GRBL")
+         else
+            cncPrintC("LASER is ON")
+         end
       end
       
       if (extra != "-")
@@ -1542,16 +1546,29 @@ module PhlatScript
       return ystep
    end
    
-   # do a plunge hole for laser engraving, just make a spot, laser on, delay, laser off
+   # do a plunge hole for laser engraving
    # should have a laseron() and laseroff() call, and a parameter for the delay
-   # laser_dwell must be output as seconds, can be float
-   # laser_dwell is stored as microseconds in the options
-   # GRBL v1.1 will hjave a mode where laser output is prevented unelss a G1/2/3 is in motion, thus 
-   # a plain spot will not be possible.   Instead, draw a small circle, scale power by depth?
+   # 2 modes
+   # non GRBL
+   #    just make a burnt spot,unless large hole then draw circle
+   #    laser_dwell must be output as seconds, can be float
+   #    laser_dwell is stored as microseconds in the options
+   # GRBL mode
+   #    GRBL v1.1 will have a mode where laser output is prevented unless a G1/2/3 is in motion, thus 
+   #    a plain spot will not be possible.   Instead, draw a small circle, scale power by depth?
+   #
+   #    for large holes, always draw a circle of the given size.
    def plungelaser(xo,yo,zStart,zo,diam)   
       depth = laserbright(zo)  # calculate laser brightness as function of depth
-      if (@laser_grbl_mode)
+      if ( (@laser_grbl_mode) or (notequal(diam,@bit_diameter)) )
          radius = 0.1.mm
+         if (notequal(diam,@bit_diameter))
+            radius = diam / 2.0
+            cncPrintC("plungelaser #{diam}")
+         else
+            cncPrintC("plungelaser")
+         end
+         
          out = 'G0' + format_measure('X',xo+radius) + "\n"
          out += "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
          #draw a tiny circle....   
@@ -1563,7 +1580,8 @@ module PhlatScript
          out += "\n" + 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
          out += "M05\n"
       else
-         out = "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
+         cncPrintC("plungelaser spot #{diam}")
+         out = "M3 S" + depth.to_i.to_s + "\n"     
          dwell = sprintf("P%-5.*f", @precision, $phoptions.laser_dwell/1000.0)      
          dwell = stripzeros(dwell,true)                     #want a plain integer if possible, keeps gplot happy
          out += "G4 #{dwell}\n"                             #dwell time in seconds, can be less than 1
