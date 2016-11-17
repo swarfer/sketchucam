@@ -14,16 +14,11 @@ module PhlatScript
          @menuText="Set Ramp VTabs"
       end
 
-      def torad(deg)
-         #puts deg
-         deg * Math::PI / 180
-      end  
-
-      def select
 # calculate the correct tab width, and recalculate the depth, such that the rampangle is obeyed for V tabs
-# tab has to be wider and higher in order to get the correct desired height
-# higher by tan(a) * ()bit/2)
-# wider by 1 bit diam
+#  tab has to be wider and higher in order to get the correct desired height
+#  higher by tan(a) * ()bit/2)
+#  wider by 1 bit diam
+      def select
 
 # T the tab width to get rampangle V tabs
 # a = rampangle in radians
@@ -36,7 +31,7 @@ module PhlatScript
 # new tab depth = 100 - (((th * mt) + o) / mt * 100)
 # new tab width = T + bitdiam
         msg = ''
-         a = torad(PhlatScript.rampangle.to_f)
+         a = PhlatScript.torad(PhlatScript.rampangle.to_f)
         msg += "a in radians #{a}\n"
          th = (100-PhlatScript.tabDepth.to_f) / 100  # tab thickness percent
         msg += "th = #{th}\n"

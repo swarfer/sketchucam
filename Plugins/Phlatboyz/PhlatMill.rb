@@ -596,16 +596,7 @@ module PhlatScript
          return true
       end
    end
-
-# convert degrees to radians   (SK8 needs this, V2014 on has it in the math lib)
-   def torad(deg)
-       deg * Math::PI / 180
-   end     
-#convert radians to degrees
-   def todeg(rad)
-      rad * 180 / Math::PI 
-   end
-   
+  
    # Do a ramped move, calls ramplimit() or rampnolimit() as needed
    def ramp(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)   
       if limitangle > 0
@@ -662,11 +653,11 @@ module PhlatScript
          bz = ((@cz-zo)/2).abs   #half distance from @cz to zo, not height to cut to
          
          anglerad = Math::atan(bz/distance)
-         angledeg = todeg(anglerad)
+         angledeg = PhlatScript.todeg(anglerad)
          
          if (angledeg > limitangle)  # then need to calculate a new bz value
             puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
-            bz = distance * Math::tan( torad(limitangle) )
+            bz = distance * Math::tan( PhlatScript.torad(limitangle) )
             if (bz == 0)
                puts "distance=#{distance} bz=#{bz}"     if (@debugramp)
                passes =4
@@ -896,11 +887,11 @@ module PhlatScript
          bz = ((@cz-zo)/2).abs   #half distance from @cz to zo, not height to cut to
          
          anglerad = Math::atan(bz/distance)
-         angledeg = todeg(anglerad)
+         angledeg = PhlatScript.todeg(anglerad)
          
          if (angledeg > limitangle)  # then need to calculate a new bz value
             puts "arcramp limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if(@debugramp)
-            bz = distance * Math::tan( torad(limitangle) )
+            bz = distance * Math::tan( PhlatScript.torad(limitangle) )
             if (bz == 0)
                puts "distance=#{distance} bz=#{bz}"                        if (@debugramp)
                passes = 4
@@ -1022,7 +1013,7 @@ module PhlatScript
          #calculate step for this diameter
          #calculate lead for this angle spiral
          circ = Math::PI * yoff.abs * 2   # yoff is radius
-         step = -Math::tan(torad(PhlatScript.rampangle)) * circ
+         step = -Math::tan(PhlatScript.torad(PhlatScript.rampangle)) * circ
          puts "(SpiralAt z step = #{step.to_mm} for ramp circ #{circ.to_mm}"         if (@debugramp)
          # now limit it to multipass depth or half bitdiam because it can get pretty steep for small diameters
          if PhlatScript.useMultipass?
@@ -1144,7 +1135,7 @@ module PhlatScript
          #calculate step for this diameter
          #calculate lead for this angle spiral
          circ = Math::PI * yoff.abs * 2   # yoff is radius
-         step = -Math::tan(torad(PhlatScript.rampangle)) * circ
+         step = -Math::tan(PhlatScript.torad(PhlatScript.rampangle)) * circ
          puts "(SpiralAtQ z step = #{step.to_mm} for ramp circ #{circ.to_mm}"         if (@debugramp)
          # now limit it to multipass depth or half bitdiam because it can get pretty steep for small diameters
          if PhlatScript.useMultipass?
@@ -1299,8 +1290,8 @@ module PhlatScript
             command_out += "\n"
 =begin            
             # 8 point circle, yoff is radius
-            xx = Math::cos(torad(45)) * yoff  # offsets to intermediate points
-            yy = Math::sin(torad(45)) * yoff
+            xx = Math::cos(PhlatScript.torad(45)) * yoff  # offsets to intermediate points
+            yy = Math::sin(PhlatScript.torad(45)) * yoff
             
             command_out += "g01 " + format_measure("X",xo) + format_measure("Y",yo-yoff) + "\n"
             
@@ -1696,7 +1687,7 @@ module PhlatScript
       outR = cdiam.to_f / 2.0    # radius to cut to
       downS = 0.25.mm            # step down for each layer
       alpha = ang / 2.0          # side wall angle - in degrees
-      xf = Math::tan(torad(alpha)) * downS   # x step to reduce radius by each step
+      xf = Math::tan(PhlatScript.torad(alpha)) * downS   # x step to reduce radius by each step
       puts "outR #{outR.to_mm}"     if @debug
       puts "downS #{downS.to_mm}"   if @debug
       puts "alpha #{alpha}"         if @debug

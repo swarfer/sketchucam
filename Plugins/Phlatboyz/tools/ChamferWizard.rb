@@ -14,29 +14,21 @@ module PhlatScript
          @menuText="Set Chamfer parameters"
       end
 
-      def torad(deg)
-         #puts deg
-         deg * Math::PI / 180
-      end  
 
-      def todeg(rad)
-         rad * 180 / Math::PI 
-      end
-
+      # a wizard to set tool diameter and cut depth that will achieve a chamfer cut with a v bit
+      # cut depth must be less than the current material thickness
+      # ==== inputs 
+      # +A+ included angle of the tool<br>
+      # +D+ tool diameter, total diam of sloped part<br>
+      # +CD+ cutter depth, tip to widest part<br>
+      # +TD+ Tip Diameter, can be 0, must be less than D<br>
+      # +WIDTH+    Width of desired chamfer, must be <= D/2
+      # ==== outputs
+      # +VD+    virtual tool diameter to use for cuts<br>
+      # +DD+    cut depth,  < material thickness
       def select
       
-      #a wizard to set tool diameter and cut depth that will achieve a chamfer cut with a v bit
-      # cut depth must be less than the current material thickness
-      # inputs 
-      #  A included angle of the tool
-      #  D tool diameter, total diam of sloped part
-      #  CD cutter depth, tip to widest part
-      #  TD Tip Diameter, can be 0, must be less than D
-      #  WIDTH    Width of desired chamfer, must be <= D/2
       
-      #outputs
-      #  VD    virtual tool diameter to use for cuts
-      #  DD    cut depth,  < material thickness
       
       prompts=[
             'Included angle ',
@@ -72,7 +64,7 @@ module PhlatScript
 #cross check, calculate the angle from the height width and tipwidth
             wo = (d - td)/2   # width of half cutter
             h = cd                # height of cutting portion
-            theta = 2 * todeg(Math::atan(wo/h))
+            theta = 2 * PhlatScript.todeg(Math::atan(wo/h))
             puts "theta #{theta}"
             if ( (theta - angle).abs > 1)
                UI.messagebox("Angle mismatch, please check parameters")
@@ -83,7 +75,7 @@ module PhlatScript
             a = angle/2
             b = 90.0 -a
             wo = (r1 - width) / 2 # we are centering cut on the cutter
-            d0 = wo / Math::tan(torad(b))
+            d0 = wo / Math::tan(PhlatScript.torad(b))
             
             dd = cd - d0               # cut depth
             vd = d - 2*wo - 2*width    # virtual cutter diam

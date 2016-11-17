@@ -1,5 +1,5 @@
 require 'sketchup.rb'
-
+# General method library
 module PhlatScript
 
 # Commented out all methods that are no longer used.
@@ -364,6 +364,16 @@ def PhlatScript.draw_safe_area(model=Sketchup.active_model)
 		end
 	end
 end
+
+# convert degrees to radians   (SK8 needs this, V2014 on has it in the math lib)
+   def PhlatScript.torad(deg)
+       deg * Math::PI / 180
+   end     
+#convert radians to degrees
+   def PhlatScript.todeg(rad)
+      rad * 180 / Math::PI 
+   end
+
 
 =begin
 def order_selected_edges

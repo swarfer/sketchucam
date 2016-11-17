@@ -1,8 +1,9 @@
-#some tools to allow quick changing of some options, only on quick toolbar
+# QuickTools - some tools to allow quick changing of some options, only on quick toolbar.
 
 require 'Phlatboyz/PhlatTool.rb'
-# $Id$
+
 module PhlatScript
+   # Turn comments on or off
    class UseCommentsTool < PhlatTool
 
       def initialize
@@ -23,7 +24,7 @@ module PhlatScript
       def cmmd=(val)
          @cmmd =  val
       end
-      
+      # Turn comments on or off
       def select
          $phoptions.usecomments = !$phoptions.usecomments?
          if (@cmmd != nil)
@@ -32,6 +33,7 @@ module PhlatScript
       end #select
    end # class
 
+# Change bracket mode
 class UseBracketsTool < PhlatTool
 
       def initialize
@@ -62,6 +64,7 @@ class UseBracketsTool < PhlatTool
       end #select
    end # class
 
+# Set fourth axis options   
 class FourthAxisTool < PhlatTool
 
       def initialize
@@ -133,6 +136,7 @@ class FourthAxisTool < PhlatTool
       end
    end # class
 
+# Set tool change options   
 class ToolChangeTool < PhlatTool
 
       def initialize
