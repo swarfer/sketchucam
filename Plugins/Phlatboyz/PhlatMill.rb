@@ -4,8 +4,8 @@ require 'sketchup.rb'
 module PhlatScript
 
   class PhlatMill
-
-    def initialize(output_file_name=nil, min_max_array=nil)
+   # Open an output file and set up initial state   
+   def initialize(output_file_name=nil, min_max_array=nil)
       #current_Feed_Rate = model.get_attribute Dict_name, $dict_Feed_Rate , nil
       #current_Plunge_Feed = model.get_attribute Dict_name, $dict_Plunge_Feed , nil
       @cz = 0.0
@@ -69,17 +69,20 @@ module PhlatScript
       @tooshorttoramp = 0.02     #length of an edge that is too short to bother ramping
     end
 
+    #feed the retract depth and tabel zero into this object
    def set_retract_depth(newdepth, tableflag)
       @retract_depth = newdepth
       @table_flag = tableflag
    end
 
+   # feed bit diameter into this object, also calculates tooshorttoramp
     def set_bit_diam(diameter)
       #@curr_bit.diam = diameter
       @bit_diameter = diameter
       @tooshorttoramp = diameter / 2   # do not ramp edges that are less than a bit radius long - also affect optimizer
     end
-    
+   
+   # get too short to ramp value
     def tooshorttoramp
        @tooshorttoramp
     end
@@ -89,6 +92,7 @@ module PhlatScript
        return (a-b).abs > 0.0001
     end
 
+   # print a cnc statement to the cnc file, multiple args will be separate lines
     def cncPrint(*args)
       if(@mill_out_file)
         args.each {|string| 
@@ -148,6 +152,9 @@ module PhlatScript
       return out
    end
 
+   #format a measurement for output as Gcode
+   #axis will be left stripped
+   #measure will be converted to mm if needed, and formated to @precision
     def format_measure(axis, measure)
       #UI.messagebox("in #{measure}")
       m2 = @is_metric ? measure.to_mm : measure.to_inch
@@ -160,11 +167,13 @@ module PhlatScript
       return out
     end
 
+    #format a feedrate for output
     def format_feed(f)
       feed = @is_metric ? f.to_mm : f.to_inch
       sprintf(" F%-4d", feed.to_i)
     end
 
+    # Start the job and output the header info to the cnc file
     def job_start(optim, extra=@extr)
       if(@output_file_name)
         done = false
@@ -323,6 +332,7 @@ module PhlatScript
       end
     end
 
+    #end the job, output the footer and close the file
    def job_finish
       cncPrint("M05\n") # M05 - Spindle off
       if ($phoptions.useA? || $phoptions.useB? || $phoptions.useC?)
@@ -358,9 +368,9 @@ module PhlatScript
    def moveWarning(axis,dest,comp,max)
       cncPrintC("Warning move #{axis}=" + dest.to_l.to_s.sub(/~ /,'') + " #{comp} of " + max.to_l.to_s + "\n")
    end   
-   
+
+   # calculate 'laser brightness' as a percentage of material thickness and output as a proportion of max spindle speed
    def laserbright(zo)
-         # calculate 'laser brightness' as a percentage of material thickness
       if (@table_flag)
          depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
       else  # zo is negative
@@ -369,6 +379,8 @@ module PhlatScript
       return depth
    end
 
+   # Move to xo,yo,zo
+   # only outputs axes that have changed
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
      #cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n") 
      #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
@@ -467,7 +479,9 @@ module PhlatScript
          @cc = cmd
       end
    end
-
+   
+   # Retract Z to the retract height
+   # Obeys @Limit_up_feed
    def retract(zo=@retract_depth, cmd=@cmd_rapid)
       #      cncPrintC("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
       #      if (zo == nil)
@@ -583,15 +597,16 @@ module PhlatScript
       end
    end
 
-# convert degrees to radians   
+# convert degrees to radians   (SK8 needs this, V2014 on has it in the math lib)
    def torad(deg)
        deg * Math::PI / 180
    end     
-
+#convert radians to degrees
    def todeg(rad)
       rad * 180 / Math::PI 
    end
    
+   # Do a ramped move, calls ramplimit() or rampnolimit() as needed
    def ramp(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)   
       if limitangle > 0
          ramplimit(limitangle, op, zo, so, cmd)
@@ -600,7 +615,8 @@ module PhlatScript
       end
    end
 
-## this ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+# This ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle 
+# We are ramping instad of plunging
    def ramplimit(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (!notequal(zo, @cz) )
@@ -734,8 +750,8 @@ module PhlatScript
       end
    end
 
-## this ramps down to half the depth at otherpoint, and back to cut_depth at start point
-## this may end up being quite a steep ramp if the distance is short
+# This ramps down to half the depth at otherpoint (op), and back to cut_depth at start point.
+# This may end up being quite a steep ramp if the distance is short.
    def rampnolimit(op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp "+ sprintf("%10.6f",zo)+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (!notequal(zo,@cz) )
@@ -800,13 +816,13 @@ module PhlatScript
       end
    end
 
-#If you mean the angle that P1 is the vertex of then this should work:
+# If you mean the angle that P1 is the vertex of then this should work:
 #    arcos((P12^2 + P13^2 - P23^2) / (2 * P12 * P13))
-#where P12 is the length of the segment from P1 to P2, calculated by
+# where P12 is the length of the segment from P1 to P2, calculated by
 #    sqrt((P1x - P2x)^2 + (P1y - P2y)^2)
 
-# cunning bit of code found online, find the angle between 3 points, in radians
-#just give it the three points as arrays
+#Cunning bit of code found online, find the angle between 3 points, in radians
+# just give it the three points as arrays
 # p1 is the center point; result is in radians
    def angle_between_points( p0, p1, p2 )
      a = (p1[0]-p0[0])**2 + (p1[1]-p0[1])**2
@@ -815,9 +831,9 @@ module PhlatScript
      Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
    end
    
-## this arc ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
-## not going to write an unlimited version, always limited to at most 45 degrees
-## though some of these arguments are defaulted, they must always all be given by the caller
+#Arc with Ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+# not going to write an unlimited version, always limited to at most 45 degrees
+# though some of these arguments are defaulted, they must always all be given by the caller
    def ramplimitArc(limitangle, op, rad, cent, zo, so=@speed_plung, cmd=@cmd_linear)
       if (limitangle == 0)
          limitangle = 45   # always limit to something
@@ -976,9 +992,9 @@ module PhlatScript
    end
    
 
-# generate code for a spiral bore and return the command string
-# if ramping is on, lead angle will be limited to rampangle
- #sh = safeheight, where @cz is now, usually
+   #Generate code for a spiral bore and return the command string
+   # if ramping is on, lead angle will be limited to rampangle
+   # sh = safeheight, where @cz is now, usually
    def SpiralAt(xo,yo,zstart,zend,yoff)
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
@@ -1079,12 +1095,14 @@ module PhlatScript
       @precision -= 1
       return command_out
     end # SpiralAt
-    
+   
+   #Calculate a Z step size based on the bit_diameter , round down
    def StepFromBit(zstart, zend)
       s = ((zstart-zend) / (@bit_diameter/2)).ceil #;  // each spiral Z feed will be bit diameter/2 or slightly less
       step = -(zstart-zend) / s
    end
    
+   #Calculate a Z step based on .multipassDepth
    def StepFromMpass(zstart,zend,step)
       c = (zstart - zend) / PhlatScript.multipassDepth  # how many passes will it take
       if ( ((c % 1) > 0.01) && ((c % 1) < 0.5))  # if a partial pass, and less than 50% of a pass, then scale step smaller
@@ -1094,8 +1112,9 @@ module PhlatScript
       return step
    end
 
-# generate code for a spiral bore and return the command string, using quadrants
+#Generate code for a spiral bore and return the command string, using quadrants
 # if ramping is on, lead angle will be limited to rampangle
+# Gplot does not display arcs nicely, by using quadrants we can at least see where the circels are.
    def SpiralAtQ(xo,yo,zstart,zend,yoff)
 #   @debugramp = true
       @precision += 1
@@ -1367,7 +1386,7 @@ module PhlatScript
       return command_out
     end # SpiralAtQ
 
-# generate code for a spiral bore and return the command string, using quadrants
+#Generate code for a spiral bore and return the command string, using quadrants
 # this one does center out to diameter, an outward spiral at zo depth
 # must give it the final yoff, call it after doing the initial 2D bore.
 # if cboreinner > 0 then use that for starting diam
@@ -1464,7 +1483,7 @@ module PhlatScript
       return command_out
    end # SpiralOut
     
-    
+#Calculate a step that gives an exact number of steps
 # take the existing diam and ystep and possibly modify the ystep to get an exact number of steps
 # if stepover is 50% then do nothing
 # if ystep will use up all the remainder space, do not change
@@ -1571,13 +1590,25 @@ module PhlatScript
          
          out = 'G0' + format_measure('X',xo+radius) + "\n"
          out += "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
-         #draw a tiny circle....   
-         out += 'G2' + format_measure('X',xo-radius)  + format_measure('I', -radius )  
-         if ( notequal(@speed_curr, @cs) )
-            out += (format_feed(@speed_curr))             
-            @cs = @speed_curr
+         if (!notequal(radius, 0.1.mm))
+            #draw a tiny circle....   
+            out += 'G2' + format_measure('I', -radius )  + format_measure('J', 0 )  # full circle
+            if ( notequal(@speed_curr, @cs) )
+               out += (format_feed(@speed_curr))             
+               @cs = @speed_curr
+            end
+            #out += "\n" + 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
+         else  # draw a 4 sector large circle
+            out += 'G2' + format_measure('X',xo) + format_measure('Y',yo-radius) + format_measure('I', -radius)+ format_measure('J', 0) 
+            if ( notequal(@speed_curr, @cs) )
+               out += (format_feed(@speed_curr))             
+               @cs = @speed_curr
+            end
+            out += "\n" 
+            out += 'G2' + format_measure('X',xo-radius) + format_measure('Y',yo) + format_measure('I', 0)+ format_measure('J', radius)  + "\n"
+            out += 'G2' + format_measure('X',xo) + format_measure('Y',yo+radius) + format_measure('I', radius)+ format_measure('J', 0)  + "\n"
+            out += 'G2' + format_measure('X',xo+radius) + format_measure('Y',yo) + format_measure('I', 0)+ format_measure('J', -radius)  + "\n"
          end
-         out += "\n" + 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
          out += "M05\n"
       else
          cncPrintC("plungelaser spot #{diam}")
@@ -2090,10 +2121,11 @@ module PhlatScript
    #@debug = false   
    end
    
-#swarfer: instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral
-#handles multipass by itself, also handles ramping
-# this is different enough from the old plunge bore that making it conditional within 'plungebore' would make it too complicated
-#must also obey @cboreinner
+#Instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral
+# handles multipass by itself, also handles ramping
+# this is different enough from the old plunge bore that making it conditional within 'plungebore' 
+# would make it too complicated
+# must also obey @cboreinner
    def plungeborediam(xo,yo,zStart,zo,diam,needretract=true)
    #@debug = true
       zos = format_measure("depth=",(zStart-zo))
@@ -2329,8 +2361,8 @@ module PhlatScript
       end
    end   
 
-# use IJ format arc movement, more accurate, definitive direction (2016 - finds centers)
-#if print is false then return the string rather than cncprint it, for ramplimitarc
+#Use IJ format arc movement, more accurate, definitive direction (2016v1.4c - finds centers)
+# if print is false then return the string rather than cncprint it, for ramplimitarc
    def arcmoveij(xo, yo, centerx,centery, radius, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc, print=true)
       cmd = (g3) ? @cmd_arc_rev : @cmd_arc
       #puts "g3: #{g3} cmd #{cmd}"
@@ -2411,7 +2443,7 @@ module PhlatScript
       end
    end
 
-
+   # Send the mill home after retracting
     def home
       if (!notequal(@cz, @retract_depth)) && (!notequal(@cy, 0)) && (!notequal(@cx, 0) )
         @no_move_count += 1

@@ -13,9 +13,9 @@ require 'Phlatboyz/PhlatProgress.rb'
 
 module PhlatScript
 
-  class GroupList < PhlatTool
     # this tool gets the list of groups containing phlatcuts and displays them in the cut order
     # it displays 2 levels deep in the case of a group of groups
+  class GroupList < PhlatTool
     def initialize
        super()
        @tooltype=(PB_MENU_MENU)

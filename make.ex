@@ -55,3 +55,4 @@ delau*
 MyConst*
 sr_cutlist*
 sketchup-stl*
+PhlatBoyz\doc\*

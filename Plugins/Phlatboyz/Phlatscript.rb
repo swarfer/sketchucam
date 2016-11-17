@@ -41,11 +41,11 @@ module PhlatScript
   def PhlatScript.modelChangeObserver
     return @@ModelChangeObserver
   end
-
+  # Return internationalized string
   def PhlatScript.getString(s)
     return @@phlatboyzStrings.GetString(s)
   end
-
+   #try to figure out what the decimal separator is
    def PhlatScript.decimal_separator
       begin
          '1.0'.to_l
@@ -327,7 +327,7 @@ module PhlatScript
     Sketchup.active_model.set_attribute(Dict_name, Dict_laser, og)
   end
 
-  # vastly increases large file load time if this is false, default for 1.4a
+  # vastly increases large file load time if this is true, default for 1.4a
    def PhlatScript.tryUpgrade?
       return false
    end
@@ -491,7 +491,7 @@ module PhlatScript
   end
 
   private
-
+  # Load all the tools
   def PhlatScript.loadTools
     @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz") + ' SketchUcam')
     @@qToolbar = UI::Toolbar.new('SketchUcam Quick Tools')
@@ -605,7 +605,7 @@ module PhlatScript
     @@commandToolbar.show
 #    @@qToolbar.show
   end
-
+   # Add a tool item according to tooltype
    def PhlatScript.addToolItem(tool, submenu=@@phlatboyz_tools_submenu)
       cmd = UI::Command.new(tool.menuText) { tool.select }
       cmd.tooltip = tool.tooltip

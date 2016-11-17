@@ -38,6 +38,11 @@ REM   goto spath
    
    
    :spath
+   REM refresh the doc for the code
+   cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins\Phlatboyz"
+   call rdoc *.rb *.rb tools\*.rb utils\*.rb
+   cd "C:\Program Files (x86)\Google\Google SketchUp 8\"
+   
    @set PATH=%git_install_root%\bin;%git_install_root%\mingw\bin;%git_install_root%\cmd;%PATH%
 
    @set PLINK_PROTOCOL=ssh

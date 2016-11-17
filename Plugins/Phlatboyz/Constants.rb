@@ -74,7 +74,8 @@ Default_show_gplot = false
 
 Default_tabletop = false
 
-# - - - - - - - - - - - - - - - - - do not edit this
+# - - - - - - - - - - - - - - - - - 
+# do not edit this
 #           Cursor image files
 # - - - - - - - - - - - - - - - - -
 Cursor_directory = "Plugins/Phlatboyz/images"
@@ -87,7 +88,8 @@ Cursor_safe_tool = "cursor_safetool.png"
 Cursor_centerline_tool = "cursor_centerlinetool.png"
 Cursor_plunge_tool = "cursor_plungetool.png"
 
-# - - - - - - - - - - - - - - - - - do not edit this
+# - - - - - - - - - - - - - - - - - 
+# do not edit this
 #           Dictionary Keys
 # - - - - - - - - - - - - - - - - -
 Dict_name = "phlatboyzdictionary"
@@ -140,7 +142,8 @@ Dict_mustramp = "must_ramp"
 Dict_zerooffsetx = "offset_x"
 Dict_zerooffsety = "offset_y"
 
-# - - - - - - - - - - - - - - - - - do not edit this
+# - - - - - - - - - - - - - - - - - 
+# do not edit this
 #           Cut Keys
 # - - - - - - - - - - - - - - - - -
 
@@ -154,7 +157,8 @@ Key_pocket_cut = "pocket_cut"
 
 Key_reg_cut_arr = [Key_inside_cut, Key_outside_cut, Key_tab_cut]
 
-# - - - - - - - - - - - - - - - - - you may put your changes to these in MyConstants.rb
+# - - - - - - - - - - - - - - - - - 
+# you may put your changes to these in MyConstants.rb
 #         misc  parameters
 # - - - - - - - - - - - - - - - - -
 Construction_font_height = 0.6.inch
@@ -168,9 +172,10 @@ Max_fold_depth_factor = 140
 Reverse_loop_direction = false
 Reflection_output = false
 
-# - - - - - - - - - - - - - - - - - do not edit this
-# http://download.sketchup.com/OnlineDoc/gsu6_ruby/Docs/ruby-color.html
-#http://www.sketchup.com/intl/en/developer/docs/ourdoc/color
+# - - - - - - - - - - - - - - - - - 
+# do not edit this
+#  http://download.sketchup.com/OnlineDoc/gsu6_ruby/Docs/ruby-color.html
+#  http://www.sketchup.com/intl/en/developer/docs/ourdoc/color
 Color_inside_cut = "DeepSkyBlue"
 Color_outside_cut = "Orange"
 Color_cut_drawing = "red"
@@ -199,8 +204,9 @@ else
   Rendering_edge_color_mode = 0
 end
 
-# ------------------------- you may put your changes to these in MyConstants.rb
+# ------------------------- 
 # PhlatScript Features
+#  These are user settable in the Tools|Phlatboyz|Options menus
 # -------------------------
 
 # Set this to true if you have problems with the parameter dialog being blank or crashing SU
