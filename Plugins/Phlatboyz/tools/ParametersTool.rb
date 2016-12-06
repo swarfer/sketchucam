@@ -118,7 +118,11 @@ module PhlatScript
       wd.setCaption('overheadgantry_id', PhlatScript.getString("Overhead Gantry"))
       wd.execute_script("setCheckbox('overheadgantry','"+PhlatScript.useOverheadGantry?.inspect()+"')")
       if ($phoptions.laser_GRBL_mode?)
-         wd.setCaption('laser_id', PhlatScript.getString("Laser Control (GRBL)"))
+         if ($phoptions.laser_power_mode?)
+            wd.setCaption('laser_id', PhlatScript.getString("Laser Control") + " (GRBL PWR)")
+         else
+            wd.setCaption('laser_id', PhlatScript.getString("Laser Control") + " (GRBL)")
+         end
       else
          wd.setCaption('laser_id', PhlatScript.getString("Laser Control"))
       end

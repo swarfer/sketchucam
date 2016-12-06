@@ -315,11 +315,11 @@ cuts = 3.3</pre>
       <dd>FALSE : use a diameter first method.  First helical bore 2xbitdiam to final depth. Then, for each multipass depth, 
          spiral out to final diameter before doing the next pass.   If multipass is off this will do a full depth spiral cut which is the fastest way to 
          bore a large hole.   For harder materials with multipass this method is recommended.
-   <dt>LASER - plunge hole dwell time (ms)
-      <dd>When laser control G-code is generated, plunge holes (of all sizes) become a single burnt dot.
+   <dt><a id="a5a">LASER - plunge hole dwell time (ms)</a>
+      <dd>When laser control G-code is generated, plunge holes (of all sizes) become a single burnt dot (unless GRBL mode is true).
       <dd>The depth of the burn will depend on the time spent stationary at that position.
       <dd>Set the default dwell time here, in milliseconds (1000 = 1 second).
-      <dd>See more about <a href="sketchucamtoolbar.html#toolparameters">Laser control</a>
+      <dd>See more about <a href="sketchucamtoolbar.html#a5a">Laser control</a>
       <dd><i>NOTE: when the dwell time is less than 1 second, say 750 milliseconds, then the Gcode is output as<br>
          G4 P0.75<br>
          and GPLOT does not understand this format and will produce an error message, failing to display the file.<br>
@@ -331,8 +331,16 @@ cuts = 3.3</pre>
       <dd>TRUE : G-code is output to draw a small circle, 0.2mm diameter, at the location of the hole.
       <dd>FALSE: G-code is output to burn a hole using a G4 delay at the location of the hole.
       <dd>In both modes, if the hole is larger than bit diameter then a circle of that diameter will be drawn.<br>
-      The laser power will also be scled according to the hole depth setting, as for lines.<br>
+      The laser power will also be scaled according to the hole depth setting, as for lines.<br>
       (note that Gplot will not display these holes as circles, but the G-code is correct, this is a Gplot bug)
+   
+   <dt>LASER- GRBL M4 power control mode
+      <dd>GRBL 1.1 has the option to scale laser power according to the acceleration rate.  This prevents
+      over-burning in corners.
+      <dd>GRBL uses the M3 command to control the laser in simple on/off mode
+      <dd>GRBL uses the M4 command to contrll the laserin power scaled mode.
+      <dd>Set this option true (and the GRBL mode one above) to generate G-code that uses M4 commands.
+      
          
 </dl>   
    

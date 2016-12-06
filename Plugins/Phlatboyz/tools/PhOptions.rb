@@ -82,6 +82,7 @@ module PhlatScript
          @depth_first            =   (phoptions.depth_first? ? '1' : '0')
          @laserdwell             =   phoptions.laser_dwell.to_i.to_s
          @lasermode              =   (phoptions.laser_GRBL_mode? ? '1' : '0')
+         @laserpowermode         =   (phoptions.laser_power_mode? ? '1' : '0')
       end
    end
 
@@ -156,6 +157,7 @@ module PhlatScript
          @depth_first            = true
          @laserdwell             = 250  # just an int
          @lasermode              = true #default to grbl mode
+         @laserpowermode         = true #default to grbl power mode
          
          @toolnum                = -1        # also not saved, awaiting extension of tool profile code
          @useg43                 = false
@@ -339,7 +341,11 @@ module PhlatScript
          #laser mode
             value = -1
             value = getvalue(optin['lasermode'])             if (optin.has_key?('lasermode'))
-            @lasermode = value > 0 ? true :  false            if (value != -1)
+            @lasermode = value > 0 ? true :  false           if (value != -1)
+         #laser power mode
+            value = -1
+            value = getvalue(optin['laserpowermode'])             if (optin.has_key?('laserpowermode'))
+            @laserpowermode = value > 0 ? true :  false           if (value != -1)
          end
 
       end #initialize
@@ -589,8 +595,7 @@ module PhlatScript
       def default_laser=(newval)
          @default_laser = newval
       end
-      
-      
+
       def default_multipass?
          @default_multipass
       end
@@ -831,6 +836,13 @@ module PhlatScript
       end
       def laser_GRBL_mode=(newval)
          @lasermode = newval == true
+      end
+
+      def laser_power_mode?
+         @laserpowermode
+      end
+      def laser_power_mode=(newval)
+         @laserpowermode = newval == true
       end
       
       def quick_peck?
@@ -1119,6 +1131,7 @@ end # class
             'true|false',
             'true|false',
             'true|false',
+            'true|false',
             '',
             '',
             '',
@@ -1281,7 +1294,8 @@ end # class
             'Use QuickPeck drill cycle ',
             'Use Depth first(true) or Diam first(false) ',
             'LASER - plunge hole dwell time (ms) ',
-            'LASER - GRBL 1.1 mode'
+            'LASER - GRBL 1.1 mode ',
+            'LASER - GRBL M4 power control mode  '
             ];
          defaults=[
             @options.use_reduced_safe_height?.inspect(),
@@ -1290,7 +1304,8 @@ end # class
             @options.quick_peck?.inspect(),
             @options.depth_first?.inspect(),
             @options.laser_dwell.to_i,
-            @options.laser_GRBL_mode?.inspect()
+            @options.laser_GRBL_mode?.inspect(),
+            @options.laser_power_mode?.inspect()
             ];
          list=[
             'true|false',
@@ -1299,6 +1314,7 @@ end # class
             'true|false',
             'true|false',
             '',
+            'true|false',
             'true|false'
             ];
          begin
@@ -1317,6 +1333,7 @@ end # class
             @options.depth_first             = (input[4] == 'true')
             @options.laser_dwell             = input[5]
             @options.laser_GRBL_mode         = (input[6] == 'true')
+            @options.laser_power_mode        = (input[7] == 'true')
             
             @options.save
          end # if input

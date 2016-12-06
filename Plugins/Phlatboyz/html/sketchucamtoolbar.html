@@ -106,6 +106,7 @@
          <ol>
          <li> "<u>Generate Multipass</u>" - for cutting hard materials, where you want to limit the depth of cut
          by cutting multiple thin layers. <br><br>
+         <hr>         
          <li> "<u>Overhead Gantry</u>".  The original 2
          Phlatprinters cut from the bottom with a reversed Y axis. Use this option if you have a Phlatprinter3 or your
          cnc machine has an overhead gantry.  This will reverse the direction of the Inside and Outside cuts.<br>
@@ -116,31 +117,74 @@
          </p>
          
          See the <a href="howto_options.html">Options Menu help</a> for setting this as a default<br><br>
-         
+
+         <hr>
          <li>"<u>Table top is Z-zero</u>" - tick this to use the table surface as the zero reference point for Z.<br>
          If this is OFF then the top of the material is the Z zero reference point.<br><br>
-         
-         <li><u>"Laser Control"</u> [checkbox] <i>New in 1.4a</i>
-            <ul>
-            <li>Check this to control a laser engraver
-            <li>works with both Z-Zero options
-            <li>No Z motion will be in the Gcode output
-            <li>M03 (spindle on) and M05 (spindle off) will control the laser
-            <li>The S word will be set to control the brightness via PWM spindle control.
-            <li>The S word is set to a proportion of the current spindle speed, according to the depth of the cut.<br>
-               Thus a 50% deep centerline cut will set the S word to 50% of the spindle speed.
-            <li>If your laser needs on/off control, then simply always use 100% deep cuts and max spindle speed (1000rpm for default GRBL 0.9 settings).
-               With these settings the PWM control will effectively only turn hard on and hard off.
-            <li>See <A href="howto_options.html#a5">Hole Feature Options</a>
-            <li><a href="help.html#laser">see this</a> in "What's new in 1.4a"
-            <li>Use normal tabs, not V-tabs.  Only half of a Vtab will be 'cut' at the defined power.
-            </ul>
+         <hr>
+         <li><a id="a5a"><u>"Laser Control"</u></a> [checkbox] <i>New in 1.4a and updated in 1.4c</i>
+            <p>Tick the Laser Control box on the parameters dialog and G-code will be output suitable for laser cutting on a machine that uses spindle commands to control the laser.
+            <p>The current control scheme replaces all Z movements (start and end of cuts) with M03/M04 and M05 spindle motor on/off commands.
+            <p>The M03/4 is combined with an S word giving PWM control of the laser power.
+            <p>This value is set to the cut depth percentage of the current 'Spindle speed' set in the parameters dialog.
+
+            <p>For example, if your controller accepts 10000rpm as the maximum spinde speed, then set that in the parameters dialog.</p>
+
+               Now, for a 100% deep centerline cut, laser on command will be
+               <dl><dd>    <b>M03 S10000</b> </dl>
+               and a 50% deep centerline cut will be
+               <dl><dd>    <b>M03 S5000</b> </dl>
+
+            <p>If you are using GRBL 0.9 (and later) the default max spindle speed is 1000.</p>
+
+            <p>If your laser only supports full on and full off and cannot use PWM, then always use 100% deep cuts 
+               (and a correctly set maximum spindle speed as well) and the spindle control output will always be 
+               either on or off.</p>
+
+            <p><b>DO NOT</b> select 'multipass', 'ramping' nor 'Gen3D' when Laser Control is desired.<br>
+            Ramping and Gen3D will be turned off automatically.</br>
+            Multipass can be used to get cleaner edges in some materials. Experiment for yourself!</p>
+
+            <p><u>Plunge holes:</u> there are 2 modes: GRBL mode will draw a 0.2mm diam circle, not GRBL mode will create 
+            a dot at the center of the hole. The length of the delay at this dot can be adjusted via the 
+            Hole Feature Options dialog.<br>
+            Large holes will draw a circle of the defined diameter (with no allowance for beam width). </p>
+            
+            <p>The display of the parameters dialog will change according to the laser mode selected:</p>
+            <dl>
+            <dt>If GRBL mode is 'false'
+               <dd><img alt="laser 1 a" border=1 src="images/laser1a.png">
+            <dt>If GRLB mode is 'true' and GRBL power mode is 'false'
+               <dd><img alt="laser 2 a" border=1 src="images/laser2a.png">
+            <dt>If GRLB mode is 'true' and GRBL power mode is 'true'
+               <dd><img alt="laser 3 a" border=1 src="images/laser3a.png">
+            </dl>
+            
+
+            <p>Summary:   </p>
+               <ul>
+               <li>works with both Z-Zero options
+               <li>No Z motion will be in the Gcode output
+               <li>M03 or M4(spindle on) and M05 (spindle off) will control the laser
+               <li>The S word will be set to control the brightness via PWM spindle control.
+               <li>The S word is set to a proportion of the current spindle speed, according to the depth of the cut.<br>
+                  Thus a 50% deep centerline cut will set the S word to 50% of the spindle speed.
+               <li>If your laser needs on/off control, then simply always use 100% deep cuts and max spindle speed (1000rpm for default GRBL settings).
+                  With these settings the PWM control will effectively only turn hard on and hard off.
+                  (also leave GRBL Power mode = false in hole feature options!)
+               <li>See <A href="howto_options.html#a5a">Hole Feature Options</a> for an explanation of how the 
+                  laser setting interacts with <b>GRBL's laser modes</b>.
+               <li>Use normal tabs, not V-tabs.  Only half of a Vtab will be 'cut' at the defined power.
+               </ul>
+               
+            <p>You can read more about GRBL's laser mode in the <a target="_blank" href="https://github.com/gnea/grbl/blob/edge/doc/markdown/laser_mode.md">GRBL documentation</a></p>
          </ol>
 
          <p><u>Note</u>: When you press "OK", these settings will be saved as attributes to your
          sketchup model.  So each sketchup file will retain their individual settings.
          </p>
          <br clear=all>
+         <hr>
          <h3>Profiles</h3>
          <p class="newcolour">
          <img alt="profiles" src="images/profiles.png" align=right border=1  style="margin-left: 10px;">

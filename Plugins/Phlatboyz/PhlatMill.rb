@@ -23,7 +23,8 @@ module PhlatScript
       @depthfirst = $phoptions.depth_first? #depth first is old way, false gives diam first, spiralout()
       @fastapproach = true
       @laser = PhlatScript.useLaser?         #frikken lasers!
-      @laser_grbl_mode = $phoptions.laser_GRBL_mode?
+      @laser_grbl_mode = $phoptions.laser_GRBL_mode?  # affects how holes are coded
+      @laser_power_mode = $phoptions.laser_power_mode?  # M4 if true, M3 is false
       @cboreinner = 0                        # diameter of inner hole for counterbores
 #
       @max_x = 48.0
@@ -153,8 +154,8 @@ module PhlatScript
    end
 
    #format a measurement for output as Gcode
-   #axis will be left stripped
-   #measure will be converted to mm if needed, and formated to @precision
+   #* axis will be left stripped
+   #* measure will be converted to mm if needed, and formated to @precision
     def format_measure(axis, measure)
       #UI.messagebox("in #{measure}")
       m2 = @is_metric ? measure.to_mm : measure.to_inch
@@ -167,13 +168,15 @@ module PhlatScript
       return out
     end
 
-    #format a feedrate for output
+    # format a feedrate for output
+    # This could output inch feedrates as floats, but gplot chokes on that
     def format_feed(f)
       feed = @is_metric ? f.to_mm : f.to_inch
       sprintf(" F%-4d", feed.to_i)
     end
 
     # Start the job and output the header info to the cnc file
+    # * outputs A B C axis commands if needed
     def job_start(optim, extra=@extr)
       if(@output_file_name)
         done = false
@@ -251,8 +254,10 @@ module PhlatScript
       end
       if (@laser)    # swarfer - display laser mode status as part of header
          if (@laser_grbl_mode)
-            cncPrintC("LASER for GRBL")
+            cncPrintC("LASER for GRBL") if (!@laser_power_mode)
+            cncPrintC("LASER for GRBL PWR") if (@laser_power_mode)
          else
+            @laser_power_mode = false  # force off if not in GRBL mode
             cncPrintC("LASER is ON")
          end
       end
@@ -332,7 +337,9 @@ module PhlatScript
       end
     end
 
-    #end the job, output the footer and close the file
+   # end the job, output the footer and close the file
+   # * Returns A B C to 0 if used
+   # * closes file
    def job_finish
       cncPrint("M05\n") # M05 - Spindle off
       if ($phoptions.useA? || $phoptions.useB? || $phoptions.useC?)
@@ -364,12 +371,12 @@ module PhlatScript
       end
     end
    
-   #output a generic warning about exceeded limits
+   # Output a generic warning about exceeded limits
    def moveWarning(axis,dest,comp,max)
       cncPrintC("Warning move #{axis}=" + dest.to_l.to_s.sub(/~ /,'') + " #{comp} of " + max.to_l.to_s + "\n")
    end   
 
-   # calculate 'laser brightness' as a percentage of material thickness and output as a proportion of max spindle speed
+   # Calculate 'laser brightness' as a percentage of material thickness and output as a proportion of max spindle speed
    def laserbright(zo)
       if (@table_flag)
          depth = ((@material_thickness-zo) / @material_thickness) * @spindle_speed
@@ -380,7 +387,8 @@ module PhlatScript
    end
 
    # Move to xo,yo,zo
-   # only outputs axes that have changed
+   # * only outputs axes that have changed
+   # * Obeys @laser
    def move(xo, yo=@cy, zo=@cz, so=@speed_curr, cmd=@cmd_linear)
      #cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n") 
      #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
@@ -443,14 +451,15 @@ module PhlatScript
             depth = laserbright(zo)
             #insert the pwm command before current move
             if ( notequal(zo, @cz) )
+               lcmd = (@laser_power_mode) ? "M04" : "M03"            
                #cncPrintC("move Z laser")
                if (hasx || hasy)
-                  command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+                  command_out = lcmd + " S" + depth.abs.to_i.to_s + "\n" + command_out
                else
-                  command_out = "M3 S" + depth.abs.to_i.to_s
+                  command_out = lcmd + " S" + depth.abs.to_i.to_s
+                  cmd = lcmd
                end
 #               @cs = 3.14 #make sure feed rate gets output on next move
-               cmd = "M3"   # force output of motion commands at next move
             end   
          else
             if ( notequal(zo, @cz) )
@@ -475,13 +484,13 @@ module PhlatScript
          @cx = xo
          @cy = yo
          @cz = zo
-         
          @cc = cmd
       end
    end
    
    # Retract Z to the retract height
-   # Obeys @Limit_up_feed
+   # * Obeys @Limit_up_feed
+   # * Obeys @laser
    def retract(zo=@retract_depth, cmd=@cmd_rapid)
       #      cncPrintC("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
       #      if (zo == nil)
@@ -527,10 +536,12 @@ module PhlatScript
       end
    end
 
-   # zo is Z level to go to
-   # so is feed speed to use
-   # cmd = default cmd, normally G01
-   # fast = use fastappraoch , set to false to force it off
+   # Plunge to +zo+ depth
+   # * +zo+ is Z level to go to
+   # * +so+ is feed speed to use
+   # * +cmd+ = default cmd, normally G01
+   # * +fast+ = use fastappraoch , set to false to force it off
+   # * Obeys @laser
    def plung(zo, so=@speed_plung, cmd=@cmd_linear, fast=true)
       #      cncPrintC("plung "+ sprintf("%10.6f",zo.to_mm)+ ", @cs="+ @cs.to_mm.to_s+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"\n")
       if (!notequal(zo, @cz) )
@@ -552,10 +563,10 @@ module PhlatScript
          if (@laser)
             # calculate 'laser brightness' as a percentage of material thickness
             depth = laserbright(zo)
-            #puts "laser depth #{depth.to_i}"
-            cncPrint("M3 S", depth.abs.to_i)
-            so = 1 #make sure feed rate gets output on next move
-            cmd = "g1"   # force output of motion commands at next move
+            cmd = (@laser_power_mode) ? "M04" : "M03"            
+            cncPrint(cmd + " S", depth.abs.to_i)
+            so = 3.14 #make sure feed rate gets output on next move
+            cmd = "m3"   # force output of motion commands at next move
          else
             # if above material, G00 to near surface, fastapproach
             if (fast && @fastapproach)
@@ -607,7 +618,10 @@ module PhlatScript
    end
 
 # This ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle 
-# We are ramping instad of plunging
+# * We are ramping instad of plunging, ramping along this entire segment
+# * +limitangle+ - angle limit in degrees
+# * +op+ - the Opposite Point, the other end of the line segment
+# * +zo+ - destination depth
    def ramplimit(limitangle, op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp limit #{limitangle}deg zo="+ sprintf("%10.6f",zo)+ ", so="+ so.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (!notequal(zo, @cz) )
@@ -742,7 +756,7 @@ module PhlatScript
    end
 
 # This ramps down to half the depth at otherpoint (op), and back to cut_depth at start point.
-# This may end up being quite a steep ramp if the distance is short.
+# * This may end up being quite a steep ramp if the distance is short.
    def rampnolimit(op, zo, so=@speed_plung, cmd=@cmd_linear)
       cncPrintC("(ramp "+ sprintf("%10.6f",zo)+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"  op="+op.to_s.delete('()')+")\n") if (@debugramp) 
       if (!notequal(zo,@cz) )
@@ -812,9 +826,9 @@ module PhlatScript
 # where P12 is the length of the segment from P1 to P2, calculated by
 #    sqrt((P1x - P2x)^2 + (P1y - P2y)^2)
 
-#Cunning bit of code found online, find the angle between 3 points, in radians
-# just give it the three points as arrays
-# p1 is the center point; result is in radians
+# Cunning bit of code found online, find the angle between 3 points, in radians
+# * just give it the three points as arrays
+# * p1 is the center point; result is in radians
    def angle_between_points( p0, p1, p2 )
      a = (p1[0]-p0[0])**2 + (p1[1]-p0[1])**2
      b = (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
@@ -822,9 +836,9 @@ module PhlatScript
      Math.acos( (a+b-c) / Math.sqrt(4*a*b) ) 
    end
    
-#Arc with Ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
-# not going to write an unlimited version, always limited to at most 45 degrees
-# though some of these arguments are defaulted, they must always all be given by the caller
+# Arc with Ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle   
+# * not going to write an unlimited version, always limited to at most 45 degrees
+# * though some of these arguments are defaulted, they must always all be given by the caller
    def ramplimitArc(limitangle, op, rad, cent, zo, so=@speed_plung, cmd=@cmd_linear)
       if (limitangle == 0)
          limitangle = 45   # always limit to something
@@ -983,9 +997,9 @@ module PhlatScript
    end
    
 
-   #Generate code for a spiral bore and return the command string
-   # if ramping is on, lead angle will be limited to rampangle
-   # sh = safeheight, where @cz is now, usually
+   # Generate code for a spiral bore and return the command string
+   # * if ramping is on, lead angle will be limited to rampangle
+   # * sh = safeheight, where @cz is now, usually
    def SpiralAt(xo,yo,zstart,zend,yoff)
       @precision += 1
       cwstr = @cw ? 'CW' : 'CCW';
@@ -1103,9 +1117,9 @@ module PhlatScript
       return step
    end
 
-#Generate code for a spiral bore and return the command string, using quadrants
-# if ramping is on, lead angle will be limited to rampangle
-# Gplot does not display arcs nicely, by using quadrants we can at least see where the circels are.
+# Generate code for a spiral bore and return the command string, using quadrants.
+# * if ramping is on, lead angle will be limited to rampangle
+# * Gplot does not display arcs nicely, by using quadrants we can at least see where the circles are.
    def SpiralAtQ(xo,yo,zstart,zend,yoff)
 #   @debugramp = true
       @precision += 1
@@ -1377,11 +1391,17 @@ module PhlatScript
       return command_out
     end # SpiralAtQ
 
-#Generate code for a spiral bore and return the command string, using quadrants
-# this one does center out to diameter, an outward spiral at zo depth
-# must give it the final yoff, call it after doing the initial 2D bore.
-# if cboreinner > 0 then use that for starting diam
-# will set feed to speed_curr
+# Generate code for a spiral bore and return the command string, using quadrants.
+# This one does center out to diameter, an outward spiral at zo depth.
+# Must give it the final yoff, call it after doing the initial 2D bore.
+# If cboreinner > 0 then use that for starting diam.
+# Will set feed to speed_curr
+# * +xo+ - X center
+# * +yo+ - Y center
+# * +zstart+ - starting Z level
+# * +zend+ - ending Z level
+# * +yoff+ - offset to final Y destination value (effective radius)
+# * +ystep+ - stepover for each full turn
    def SpiralOut(xo,yo,zstart,zend,yoff,ystep)
    #@debugramp = true
       @precision += 1
@@ -1474,13 +1494,13 @@ module PhlatScript
       return command_out
    end # SpiralOut
     
-#Calculate a step that gives an exact number of steps
-# take the existing diam and ystep and possibly modify the ystep to get an exact number of steps
-# if stepover is 50% then do nothing
-# if ystep will use up all the remainder space, do not change
-# if stepover < 50 then make ystep smaller
-# if stepover > 50% make ystep larger
-# if cboreinner is > 0 AND > 2D, then start there instead of 2D
+# Calculate a step that gives an exact number of steps
+# * take the existing diam and ystep and possibly modify the ystep to get an exact number of steps
+# * if stepover is 50% then do nothing
+# * if ystep will use up all the remainder space, do not change
+# * if stepover < 50 then make ystep smaller
+# * if stepover > 50% make ystep larger
+# * if cboreinner is > 0 AND > 2D, then start there instead of 2D
    def GetFuzzyYstep(diam,ystep, mustramp, force)
       was = @debug
       cncPrintC("GetFuzzyYstep #{diam.to_mm}, #{ystep.to_mm}, #{mustramp}, #{force}")  if @debug
@@ -1558,16 +1578,18 @@ module PhlatScript
    
    # do a plunge hole for laser engraving
    # should have a laseron() and laseroff() call, and a parameter for the delay
-   # 2 modes
-   # non GRBL
+   # === 2 modes
+   # [non GRBL]
    #    just make a burnt spot,unless large hole then draw circle
    #    laser_dwell must be output as seconds, can be float
    #    laser_dwell is stored as microseconds in the options
-   # GRBL mode
+   # [GRBL mode]
    #    GRBL v1.1 will have a mode where laser output is prevented unless a G1/2/3 is in motion, thus 
    #    a plain spot will not be possible.   Instead, draw a small circle, scale power by depth?
+   #    * If grlb_power_mode is true then the spindle enable command M4 is used.  This enables
+   #      GRBL 1.1 to scale the laser power during acceleration.
    #
-   #    for large holes, always draw a circle of the given size.
+   # for large holes, always draw a circle of the given size.
    def plungelaser(xo,yo,zStart,zo,diam)   
       depth = laserbright(zo)  # calculate laser brightness as function of depth
       if ( (@laser_grbl_mode) or (notequal(diam,@bit_diameter)) )
@@ -1580,15 +1602,18 @@ module PhlatScript
          end
          
          out = 'G0' + format_measure('X',xo+radius) + "\n"
-         out += "M3 S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
+         cmd = (@laser_power_mode) ? "M04" : "M03"
+         
+         out += "#{cmd} S" + depth.to_i.to_s + "\n"     #must have a spindle speed since it may not have been set before this
          if (!notequal(radius, 0.1.mm))
             #draw a tiny circle....   
-            out += 'G2' + format_measure('I', -radius )  + format_measure('J', 0 )  # full circle
+            out += 'G2' + format_measure('X',xo+radius) + format_measure('I', -radius )  + format_measure('J', 0 )  # full circle
             if ( notequal(@speed_curr, @cs) )
                out += (format_feed(@speed_curr))             
                @cs = @speed_curr
             end
-            #out += "\n" + 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
+            out += "\n"
+            #out += 'G2' + format_measure('X',xo+radius)  + format_measure('I', radius )  + "\n"
          else  # draw a 4 sector large circle
             out += 'G2' + format_measure('X',xo) + format_measure('Y',yo-radius) + format_measure('I', -radius)+ format_measure('J', 0) 
             if ( notequal(@speed_curr, @cs) )
@@ -1601,13 +1626,15 @@ module PhlatScript
             out += 'G2' + format_measure('X',xo+radius) + format_measure('Y',yo) + format_measure('I', 0)+ format_measure('J', -radius)  + "\n"
          end
          out += "M05\n"
+         @cc = 'M5'
       else
          cncPrintC("plungelaser spot #{diam}")
          out = "M3 S" + depth.to_i.to_s + "\n"     
          dwell = sprintf("P%-5.*f", @precision, $phoptions.laser_dwell/1000.0)      
          dwell = stripzeros(dwell,true)                     #want a plain integer if possible, keeps gplot happy
          out += "G4 #{dwell}\n"                             #dwell time in seconds, can be less than 1
-         out += "M05\n"
+         out += "M5\n"
+         @cc = 'M5'
       end
       cncPrint(out)
    end
@@ -1779,7 +1806,16 @@ module PhlatScript
    end
 
 # beta testers wanted a counterbore option, so here it is
-# ang will be -90
+# * ang will be -90
+# * +xo+ - X center
+# * +yo+ - Y center
+# * +zStart+ - Z start level
+# * +zo+ - Z hole depth
+# * +diam+ - hole diameter
+# * +ang+ - Set to -90 to indicate this is a counterbore
+# * +cdiam+ - counterbore diam
+# * +cdepth+ - counterbore depth, must be < material thickness
+# * calls plungebore() for the 2 holes
    def plungeCbore(xo,yo,zStart,zo,diam, ang, cdiam, cdepth)
       #@debug = true
       if (@debug)
@@ -2275,7 +2311,8 @@ module PhlatScript
    end
 
 # use R format arc movement, suffers from accuracy and occasional reversal by CNC controllers
-# if radius is <= 0.01.inch then output a linear move since really small radii cause issues with controllers and simulators
+# * if radius is <= 0.01.inch then output a linear move since really small radii cause issues with controllers and simulators
+# * If laser is enabled then the correct M3/M4 command is output before the move
    def arcmove(xo, yo=@cy, radius=0, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc)
       cmd = @cmd_arc_rev if g3
       #puts "g3: #{g3} cmd #{cmd}"
@@ -2290,8 +2327,9 @@ module PhlatScript
          if (@laser)
             if (notequal(zo , @cz))
                depth = laserbright(zo)
+               lcmd = (@laser_power_mode) ? "M04" : "M03"            
                #insert the pwm command before current move
-               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+               command_out = lcmd + " S" + depth.abs.to_i.to_s + "\n" + command_out
             end   
          else
             command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
@@ -2308,8 +2346,9 @@ module PhlatScript
          if (@laser)
             if (notequal(zo , @cz))
                depth = laserbright(zo)
+               lcmd = (@laser_power_mode) ? "M04" : "M03"                           
                #insert the pwm command before current move
-               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+               command_out = lcmd + " S" + depth.abs.to_i.to_s + "\n" + command_out
             end
          else
             command_out += (format_measure("Z", zo)) if (zo != @cz)
@@ -2352,8 +2391,9 @@ module PhlatScript
       end
    end   
 
-#Use IJ format arc movement, more accurate, definitive direction (2016v1.4c - finds centers)
-# if print is false then return the string rather than cncprint it, for ramplimitarc
+# Use IJ format arc movement, more accurate, definitive direction (2016v1.4c - finds centers)
+# * if print is false then return the string rather than cncprint it, for ramplimitarc
+# * If @laser is enabled then the correct M3/M4 will be output before the move
    def arcmoveij(xo, yo, centerx,centery, radius, g3=false, zo=@cz, so=@speed_curr, cmd=@cmd_arc, print=true)
       cmd = (g3) ? @cmd_arc_rev : @cmd_arc
       #puts "g3: #{g3} cmd #{cmd}"
@@ -2398,15 +2438,16 @@ module PhlatScript
          centery = nc.y
 
          command_out += cmd   if ((cmd != @cc) || @gforce)
-         @precision +=1  # circles like a bit of extra precision so output an extra digit
+         @precision += 1  # circles like a bit of extra precision so output an extra digit
          command_out += (format_measure("X", xo)) #if (xo != @cx) x and y must be specified in G2/3 codes
          command_out += (format_measure("Y", yo)) #if (yo != @cy)
 
          if (@laser)
             if (notequal(zo , @cz))
                depth = laserbright(zo)
+               lcmd = (@laser_power_mode) ? "M04" : "M03"            
                #insert the pwm command before current move
-               command_out = "M3 S" + depth.abs.to_i.to_s + "\n" + command_out
+               command_out = lcmd + " S" + depth.abs.to_i.to_s + "\n" + command_out
             end   
          else
             command_out += (format_measure("Z", zo)) if (zo != @cz)   # optional Z motion
