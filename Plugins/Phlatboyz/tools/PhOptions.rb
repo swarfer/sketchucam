@@ -1131,7 +1131,6 @@ end # class
             'true|false',
             'true|false',
             'true|false',
-            'true|false',
             '',
             '',
             '',
@@ -1156,7 +1155,7 @@ end # class
             @options.default_laser           = (input[5] == 'true');
             @options.default_multipass       = (input[6] == 'true');
             @options.default_multipass_depth = input[7];
-            @options.default_stepover        = input[8]  if (input[7] > 0)
+            @options.default_stepover        = input[8];
             @options.min_z                   = input[9];
             @options.max_z                   = input[10];
             @options.bracket                 = (input[11] == 'true');
