@@ -87,16 +87,16 @@ end
          Dir.mkdir(path)
       end      
       trying = true
-      #deal with the pre 2014 dialog bug
+      #deal with the pre 2014 dialog bug, still present in Mac version Make2015 and later
+      #do not use wildcards in Mac, savepanel will never open
       @vv = Sketchup.version.split(".")[0].to_i  #primary version number      
-      if (@vv >= 14)
-         wildcard = '.tpi Files|*.tpi|All tool files|*.t*||'
+      if ((@vv >= 14) && (!PhlatScript.isMac?))
+         wildcard = '.tpi Files|*.tpi|All tool files|*.t*||'  
       else
-         wildcard = "default.tpi"
+         wildcard = 'default.tpi' #Mac does not like wildcards for savepanel()
       end
-      
       while trying do
-         result = UI.savepanel(PhlatScript.getString("Save Tool Profile"), path, wildcard)
+         result = UI.savepanel(PhlatScript.getString('Save Tool Profile'), path, wildcard)
          if (result != nil)
             result = File.basename(result)  # remove path because we force it later
             result += '.tpi' if (File.extname(result).empty?)
