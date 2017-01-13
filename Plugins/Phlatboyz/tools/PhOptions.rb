@@ -60,6 +60,7 @@ module PhlatScript
       #features
          @use_vtab_speed_limit   =   (phoptions.use_vtab_speed_limit? ? '1' : '0')
          @use_exact_path         =   (phoptions.use_exact_path? ? '1' : '0')
+         @use_incremental_ij     =   (phoptions.use_incremental_ij? ? '1' : '0')
          @always_show_safearea   =   (phoptions.always_show_safearea? ? '1' : '0')
          @use_pocket_cw          =   (phoptions.use_pocket_cw? ? '1' : '0')
          @use_plunge_cw          =   (phoptions.use_plunge_cw? ? '1' : '0')
@@ -130,6 +131,7 @@ module PhlatScript
          #features
          @use_vtab_speed_limit = Use_vtab_speed_limit
          @use_exact_path = Use_exact_path
+         @use_incremental_ij = false
          @always_show_safearea = Always_show_safearea
          @use_reduced_safe_height = Use_reduced_safe_height
          @use_pocket_cw = Use_pocket_CW
@@ -261,6 +263,11 @@ module PhlatScript
             value = getvalue(optin['use_exact_path'])                if (optin.has_key?('use_exact_path'))
             @use_exact_path = value > 0 ? true :  false              if (value != -1)
 
+         # Use_incremental_ij = false
+            value = -1
+            value = getvalue(optin['use_incremental_ij'])                if (optin.has_key?('use_incremental_ij'))
+            @use_incremental_ij = value > 0 ? true :  false              if (value != -1)
+            
          # Always_show_safearea = true
             value = -1
             value = getvalue(optin['always_show_safearea'])                if (optin.has_key?('always_show_safearea'))
@@ -662,6 +669,14 @@ module PhlatScript
          @use_exact_path = newval
       end
 
+      def use_incremental_ij?
+         @use_incremental_ij
+      end
+      def use_incremental_ij=(newval)
+         @use_incremental_ij = newval
+      end
+      
+      
       def always_show_safearea?
          @always_show_safearea
       end
@@ -1182,6 +1197,7 @@ end # class
          # prompts
          prompts=[
             'Use_exact_path (G61) ',
+            'Use_Incremental_IJ (G91.1)',
             'Always_show_safearea ',
             'Use_pocket_CW ',
             'Use_plunge_CW ',
@@ -1200,6 +1216,7 @@ end # class
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
+            @options.use_incremental_ij?.inspect(),
             @options.always_show_safearea?.inspect(),
             @options.use_pocket_cw?.inspect(),
             @options.use_plunge_cw?.inspect(),
@@ -1225,6 +1242,7 @@ end # class
             'true|false',
             'true|false',
             'true|false',
+            'true|false',
             '',
             'true|false',
             '',
@@ -1242,27 +1260,28 @@ end # class
          end         # input is nil if user cancelled
          if (input)
             @options.use_exact_path          = (input[0] == 'true')
-            @options.always_show_safearea    = (input[1] == 'true')
-            @options.use_pocket_cw           = (input[2] == 'true')
-            @options.use_plunge_cw           = (input[3] == 'true')
-            @options.use_outfeed             = (input[4] == 'true')
-            @options.use_vtab_speed_limit    = (input[5] == 'true')
-            @options.profile_save_material_thickness         = (input[6] == 'true')
-            @options.use_home_height         = (input[7] == 'true')
-            @options.default_home_height     = input[8] # length
+            @options.use_incremental_ij      = (input[1] == 'true')
+            @options.always_show_safearea    = (input[2] == 'true')
+            @options.use_pocket_cw           = (input[3] == 'true')
+            @options.use_plunge_cw           = (input[4] == 'true')
+            @options.use_outfeed             = (input[5] == 'true')
+            @options.use_vtab_speed_limit    = (input[6] == 'true')
+            @options.profile_save_material_thickness         = (input[7] == 'true')
+            @options.use_home_height         = (input[8] == 'true')
+            @options.default_home_height     = input[9] # length
 
-            @options.use_end_position        = (input[9] == 'true')
+            @options.use_end_position        = (input[10] == 'true')
             if (@options.use_outfeed?)     # only one of them
                @options.use_end_position = false
             end
-            @options.end_x                   = input[10] #length
-            @options.end_y                   = input[11] #length
+            @options.end_x                   = input[11] #length
+            @options.end_y                   = input[12] #length
 
-            @options.use_fuzzy_pockets       = (input[12] == 'true')
+            @options.use_fuzzy_pockets       = (input[13] == 'true')
 
-            @options.ramp_angle              = input[13]  #float
-            @options.must_ramp               = (input[14] == 'true')
-            @options.gforce                  = (input[15] == 'true')
+            @options.ramp_angle              = input[14]  #float
+            @options.must_ramp               = (input[15] == 'true')
+            @options.gforce                  = (input[16] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save

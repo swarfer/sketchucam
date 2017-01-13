@@ -76,6 +76,7 @@
             <ul style="padding-left: 3px;">
             <li><a href="afterinstall.html" style="color: red">After install - things to do</a>
             <li><a href="sketchucamtoolbar.html"><b>The Toolbar</b></a>  very important!
+            <li><a href="machelp.html">Help for MAC users</a>
             </ul>
             <b>HOWTO:</b><br>
             <ul style="padding-left: 2px;">
@@ -135,6 +136,25 @@
 <tbody>
 <tr>
    <td width="90%">
+   
+   <div class="intro">
+      <h4>New in V1.4d (Jan 2017)</h4>
+      <dl>
+         <dd>
+         <dl>
+            <dt>Help updates
+               <dd>added <a href="machelp.html">MAC help section</a>
+            <dt>arcmoveij() is INCREMENTAL mode.
+               <dd>the 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
+               <dd>you can add this code to the G-code via the <a href="howto_options.html#a4">Options menu</a>
+               <dd>an option to output G91.1 as part of the Gcode header has been added to the Feature Options menu.
+            <dt>Solve failure to find <a href="howto_profileexchange.html">profile path</a> on Mac (for real this time)
+               <dd>Sketchup on MAC still has the old .openpanel bug that prevents the use of wildcards.  Mac platform is now detected and wildcards avoided.
+               <dd>Note that the file select dialog allows selection of a flder, but the profiles folder will always be used no matter what you select.
+         </dl>
+      </dl>
+   </div>      
+   
    <div class="intro">
       <h4>New in V1.4c (Dec 2016)</h4>
       <dl>
@@ -144,6 +164,7 @@
                <dd>added <a href="howto_3d.html">3D section</a>
             <dt>arcmoveij() now always used for arc outputs
                <dd>this improves arc accuracy and keeps Marlin happy
+               <dd>the 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
             <dt>Old files with arcs that have no center property will be rejected, they have to be recoded
                <dd>Early versions did not store the arc centers and they are needed for arcmoveij()
             <dt>Errant G0 move with no code removed from plungebore in Marlin mode.

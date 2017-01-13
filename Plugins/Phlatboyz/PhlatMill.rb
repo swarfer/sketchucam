@@ -280,16 +280,22 @@ module PhlatScript
         unit_cmd, @precision, @is_metric = ["G20", 4, false]
       end
 
-      stop_code = $phoptions.use_exact_path? ? " G61" : "" # G61 - Exact Path Mode
+      stop_code = $phoptions.use_exact_path? ? "G61" : "" # G61 - Exact Path Mode
+      ij_code = $phoptions.use_incremental_ij? ? "G91.1" : "" # G91.1 - set incremental IJ mode
       if (@gforce) # output the header on separate lines for Marlin 
          cncPrint("G90\n#{unit_cmd}\nG49\nG17\n"); # G90 - Absolute programming (type B and C systems)
          if (stop_code != "")
             cncPrint("#{stop_code}\n") 
          end
+         if (ij_code != "")
+            cncPrint("#{ij_code}\n") 
+         end
          cncPrint(format_feed(@speed_plung).strip)  #output an initial feed rate so system always has it defined
          cncPrint("\n")
       else
-         cncPrint("G90 #{unit_cmd} G49 G17#{stop_code}") # G90 - Absolute programming (type B and C systems)
+         cncPrint("G90 #{unit_cmd} G49 G17") # G90 - Absolute programming (type B and C systems)
+         cncPrint(" #{stop_code}")   if (stop_code != "")
+         cncPrint(" #{ij_code}")     if (ij_code != "")
          cncPrint(format_feed(@speed_plung))  #output an initial feed rate so system always has it defined
          cncPrint("\n")
       end   

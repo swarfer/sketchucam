@@ -34,6 +34,7 @@ module PhlatScript
             "  Use_compatible_dialogs = #{$phoptions.use_compatible_dialogs?}\n" +
             "  Use_vtab_speed_limit = #{$phoptions.use_vtab_speed_limit?}\n" +
             "  Use_exact_path = #{$phoptions.use_exact_path?}\n" +
+            "  Use_incremental_ij = #{$phoptions.use_incremental_ij?}\n" +
             "  Always_show_safearea = #{$phoptions.always_show_safearea?}\n" +
             "  Use_reduced_safe_height = #{$phoptions.use_reduced_safe_height?}\n" +
             "  Use_pocket_CW = #{$phoptions.use_pocket_cw?}\n" +
