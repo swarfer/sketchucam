@@ -11,7 +11,7 @@
 <br>
 <a href="http://www.phlatboyz.com/">PHLATBOYZ.COM</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4c</b><br>Dec 2016</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4d</b><br>Jan 2016</div></div>
 
 <br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
@@ -145,12 +145,16 @@
             <dt>Help updates
                <dd>added <a href="machelp.html">MAC help section</a>
             <dt>arcmoveij() is INCREMENTAL mode.
-               <dd>the 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
-               <dd>you can add this code to the G-code via the <a href="howto_options.html#a4">Options menu</a>
-               <dd>an option to output G91.1 as part of the Gcode header has been added to the Feature Options menu.
+               <dd><ul>
+               <li>the 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
+               <li>Setting or un-setting this does not change the actual Gcode, arcs are ALWAYS incremental mode, this setting just tells the controller what to expect.
+               <li>you can add this code to the G-code via the <a href="howto_options.html#a4">Options menu</a>
+               <li>an option to output G91.1 as part of the Gcode header has been added to the Feature Options menu.
+               <li>GPLOT will NOT like this option and will not display the plot.  You should rather set your controller to default to this mode.
+               </ul>   
             <dt>Solve failure to find <a href="howto_profileexchange.html">profile path</a> on Mac (for real this time)
                <dd>Sketchup on MAC still has the old .openpanel bug that prevents the use of wildcards.  Mac platform is now detected and wildcards avoided.
-               <dd>Note that the file select dialog allows selection of a flder, but the profiles folder will always be used no matter what you select.
+               <dd>Note that the file select dialog allows selection of a folder, but the profiles folder will always be used no matter what you select.
          </dl>
       </dl>
    </div>      
