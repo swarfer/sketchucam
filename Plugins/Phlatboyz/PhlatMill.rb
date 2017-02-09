@@ -8,9 +8,9 @@ module PhlatScript
    def initialize(output_file_name=nil, min_max_array=nil)
       #current_Feed_Rate = model.get_attribute Dict_name, $dict_Feed_Rate , nil
       #current_Plunge_Feed = model.get_attribute Dict_name, $dict_Plunge_Feed , nil
-      @cz = 0.0
-      @cx = 0.0
-      @cy = 0.0
+      @cz = 1e10     # user bug, if the offset is at 0,0 and there is a plunge hole there, XY were not output
+      @cx = 1e10     # so set these to non0 to force the output of a goto 0,0
+      @cy = 1e10
       @cs = 0.0
       @cc = ""
       @debug = false   # if true then a LOT of stuff will appear in the ruby console

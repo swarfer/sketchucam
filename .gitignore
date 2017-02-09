@@ -83,3 +83,8 @@ Plugins/voronoi*
 Plugins/delauney3.rb
 Plugins/sketchup-stl*
 Plugins/Phlatboyz/doc*
+Plugins/nb_skptolaser/nb_skptolaser.rb
+Plugins/nb_skptolaser.rb
+Plugins/nb_skptolaser/gpl.txt
+Plugins/__MACOSX/nb_skptolaser/._.DS_Store
+Plugins/__MACOSX/nb_skptolaser/._gpl.txt
