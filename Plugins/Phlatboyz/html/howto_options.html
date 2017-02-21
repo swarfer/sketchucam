@@ -220,9 +220,10 @@ cuts = 3.3</pre>
          that the momentum of the machine can be maintained.<br>
          Turn this off for GRBL and related controllers.
    
-   <dt>Use_Incremental_IJ (G91.1)
-      <dd>Set this to true to put a G91.1 in th eG-code header.
-      <dd>G91.1 sets the G2/G3 arc commands to incremental mode.  Some controllers default to absolute mode but since our G-code uses incremental mode,
+   <dt>Use_Incremental_IJ (G91.1)  (<u>Mach3</u> and some other controllers)
+      <dd>Set this to true to put a G91.1 in the G-code header.
+      <dd>G91.1 sets the G2/G3 arc commands to incremental mode.  
+      Some controllers default to absolute mode but since our G-code uses incremental mode,
       we have to change the controller mode to incremental mode by giving a G91.1 command.
       <dd>Note that this is modal, your controller should remember it once you have set it so you probably do not need it in every G-code file.
       <dd>You know you need this command if your controller displays very large circles instead of sort arc segments for curved sections of your drawing.
@@ -230,7 +231,7 @@ cuts = 3.3</pre>
       
    <dt>Always_show_safearea
       <dd>Set this to true, if you want the safe area to always show, when parameters are saved.<br>
-         Otherwise the safe area will only show, if it's size has been changed.
+         Otherwise the safe area will only show, if its size has been changed.
             
    <dt>Use_pocket_CW
       <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
