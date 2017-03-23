@@ -1,0 +1,101 @@
+   body, div, span {
+           font-family: Verdana;
+   }
+   body {
+           background-color: grey;
+           text-align: center;
+           max-width: 1024px;
+           padding-left:0.5%;
+           padding-right:0.5%;
+   }
+   div.shell {
+           /*background-color: #eee;*/
+           background-color: #ddeeff;
+           /*background-color: white;*/
+           font-size: 1.05em;
+   }
+
+   div.intro-name {
+           text-align:center;
+           font-size: 1.20em;
+           font-weight: bold;
+           padding-top:25px;
+   }
+   div.intro-name div {
+           font-size: 0.60em;
+           font-weight: normal;
+   }
+   div.intro-title {
+           text-align:center;
+           margin:10px;
+           font-size: 1.10em;
+           font-weight: bold;
+           padding-top: 15px;
+   }
+   div.intro {
+           text-align:left;
+           margin:5px;
+           padding: 5px;
+           font-size: 0.90em;
+   }
+
+
+   .command-image {
+           /*background-color: #ededed;*/
+           background-color: #ddeeff;
+           height: 100px;
+           font-weight: bold;
+           font-size: 0.90em;
+           vertical-align:center;
+           padding:10px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+   }
+   .command-description {
+           /*background-color: #ededed;*/
+           background-color: #eaecfa;
+           /*margin: 2px;*/
+           padding: 15px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           font-size: 0.90em;
+   }
+
+   .command-title {
+           font-size: 1.00em;
+           font-weight: bold;
+           /*border-bottom: thin solid blue;*/
+           text-align: center;
+           padding-top: 25px;
+           border-top: thin solid white;
+           border-left: thin solid white;
+           border-right: thin solid #cccccc;
+           border-bottom: thin solid #cccccc;
+           text-decoration: underline;
+   }
+   .command-subtitle {
+           font-size: 0.70em;
+           font-style: italic;
+           }
+   .newcolour {
+            color: #000000;
+            }
+   hr {
+      background-color: #6699ff; 
+      height: 2px; 
+      border: 0; 
+      }
+   td {
+      text-align: justify;
+      }
+   dt {
+      margin-top: 5px;
+      font-weight: bold;
+      }
+   .index {
+      line-height: 1.6em;
+      }

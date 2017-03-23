@@ -1,0 +1,400 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="id" content="$Id$">
+<title>Phlatboyz SketchUcam Help</title>
+<link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+<br>
+<a href="http://www.phlatboyz.com/">PHLATBOYZ.COM</a>
+
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4d</b><br>Jan 2016</div></div>
+
+<br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
+<hr width="100%">
+
+<table summary="help 1" cellpadding="1" cellspacing="0">
+<tbody>
+<tr>
+   <td valign="top">
+        <div class="intro-title">
+        Introduction
+        </div>
+   
+      <div class="intro">
+      <img alt="" src="../images/andy.png" title="Andy the Aviator" border="0" style="float: right;">
+      
+         SketchUcam is a set of tools in the form of a plugin for Google
+         SketchUp. It allows for assigning of CNC cut/fold/drill/mill, etc.
+         functions to SketchUp designs as a full featured CAM solution. It was
+         designed for use with the Phlatboyz easy to assemble and learn CNC
+         machine kits and has since been extended to work with harder materials in the newer
+         breed of CNC routers. 
+         For more information about these affordable Kits, please
+         visit <a href="http://www.openbuilds.com/" target="_blank">Phlatboyz Machines</a>
+         <br><br>
+         The vision and direction of SketchUcam is Mark and Trish Carew's
+         of Phlatboyz, LLC and is released under GLN licensing terms. Since this
+         code and the ideas behind it is a collaborative effort among many
+         people, it can not be sold in any form. For more information, please
+         contact Mark and Trish Carew through www.phlatboyz.com or
+         <a href="mailto:kram2422@comcast.net">kram2422@comcast.net</a>. 
+         It has come to fruition through the help of many
+         volunteer programmers, testers, and users. We want to thank everyone
+         for your efforts put forth to make this a reality. SketchUcam is
+         an ever changing and evolving program. <br><br>
+         <i>This is a great project and if you would like to contribute your time and talents to help SketchUcam grow,
+         please <a href="mailto:kram2422@comcast.net">contact us</a></i>
+         </div>
+         
+      <div class="intro">
+         Since SketchUcam is released as open source, anyone and everyone
+         is welcome to download it and experiment with it. The ultimate goal is
+         to create a complete and powerful CAM solution directly within SketchUp
+         capable of outputting 3D tool paths and possibly in the future will be
+         the ability to not only output the g-code but control the Phlatprinter
+         as well :) Have fun and please let us know how you are using 
+         SketchUcam at <a href="http://www.Phlatforum.com">www.Phlatforum.com</a> 
+         </div>
+         <div class="intro"> SketchUcam or any form of this
+            code can not be used for commercial gain or sold in any form. This code
+            is a volunteer collaboration project that consist of the efforts of
+            many people. We are keeping this truly open source. <br>
+            <b>Please send questions or comments to </b><a href="mailto:kram2422@comcast.net">Phlatboyz,LLC</a>
+            <br>
+            <a href="http://www.phlatboyz.com/">
+            Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
+         </div>
+         
+   </td>
+   <td style="text-align: left;">
+         <div class="command-description" style="float: right; width: 325px; display: block; margin-left: 10px; font-size: 0.80em;">
+            <b>Jump to:</b>
+            <ul style="padding-left: 3px;">
+            <li><a href="afterinstall.html" style="color: red">After install - things to do</a>
+            <li><a href="sketchucamtoolbar.html"><b>The Toolbar</b></a>  very important!
+            <li><a href="machelp.html">Help for MAC users</a>
+            </ul>
+            <b>HOWTO:</b><br>
+            <ul style="padding-left: 2px;">
+               <li><a class="index" href="howto_options.html#compat">Set <b>Use_compatible_dialogs</b> when Parameters dialog is blank</a>
+               <li><a class="index" href="howto_options.html">Change Default Options</a>
+               <ul>
+                  <li><a href="howto_options.html#a1">Tool Options</a> 
+                  <li><a href="howto_options.html#a2">Misc Options</a> 
+                  <li><a href="howto_options.html#a3">Machine Options</a> 
+                  <li><a href="howto_options.html#a4">Feature Options</a> 
+                  <li><a href="howto_options.html#a5">Hole Feature Options</a>   
+                  <li><a href="howto_options.html#a6">File Options</a> 
+               </ul>
+                           
+               <li><a class="index" href="sketchucamtoolbar.html">Toolbar Icons</a>
+               <ul>
+                  <li><a href="sketchucamtoolbar.html#toolparameters"><img alt="" src="../images/parameterstool_small.png" title="Enter Phlatboyz Parameters" width="16"> Parameters</a>
+                  <li><a href="sketchucamtoolbar.html#tooloutside"><img alt="" src="../images/outsidecuttool_small.png" title="Phlatboyz Outside Cut Tool" width="16"> Outside cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolinside"><img alt="" src="../images/insidecuttool_small.png" title="Phlatboyz Inside Cut Tool" width="16"> Inside cut</a>
+                  <li><a href="sketchucamtoolbar.html#tooltab"><img alt="" src="../images/tabtool_small.png" title="Phlatboyz Tab Tool" width="16"> Tab tool</a>
+                  <li><a href="sketchucamtoolbar.html#toolfold"><img alt="" src="../images/foldtool_small.png" title="Phlatboyz Fold Tool" width="16"> Fold cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolplunge"><img alt="" src="../images/plungetool_small.png" title="Phlatboyz Plunge Tool" width="16"> Plunge hole</a>
+                  <li><a href="sketchucamtoolbar.html#toolcsink"><img alt="" src="../images/csinktool_small.png" title="Phlatboyz Countersink Tool" width="16"> CounterSink hole</a>
+                  <li><a href="sketchucamtoolbar.html#toolcenterline"><img alt="" src="../images/centerlinetool_small.png" title="Phlatboyz Centerline Tool" width="16"> Centerline cut</a>
+                  <li><a href="sketchucamtoolbar.html#toolpocket"><img alt="" src="../images/Pocket_small.png" title="Phlatboyz Pocket Tool" width="16"> Pocket</a>
+                  <li><a href="sketchucamtoolbar.html#tooleraser"><img alt="" src="../images/erasetool_small.png" title="Phlatboyz Erase Tool" width="16"> Eraser</a>
+                  <li><a href="sketchucamtoolbar.html#toolsafe"><img alt="" src="../images/safetool_small.png" title="Safetool" width="16"> Safe Area mover</a>
+                  <li><a href="sketchucamtoolbar.html#toolreorder"><img alt="" src="../images/reorder_small.png" title="reorder tool" width="16"> Group reorder</a>
+                  <li><a href="sketchucamtoolbar.html#toolzero"><img alt="" src="../images/zerotool_small.png" title="zero tool" width="16"> Zero Offset</a>
+                  <li><a href="sketchucamtoolbar.html#tooljoiner"><img alt="" src="../images/joiner_small.png" title="G-Code Joiner" width="16"> G-code Joiner</a>         
+                  <li><a href="sketchucamtoolbar.html#toolgcode"><img alt="" src="../images/gcode_small.png" title="Phlatboyz G-Code" width="16"> Generate G-code</a>
+                  <li><a href="sketchucamtoolbar.html#toolgoto"><img alt="" src="../images/Phlatboyz_homepage_small.png" title="Go To Phlatboyz Homepage" width="16"> Goto Phlatforum</a>
+                  <li><a href="sketchucamtoolbar.html#toolhelp"><img alt="" src="../images/helptool_small.png" title="Open Phlatboyz Help" width="16"> Help</a>
+               </ul>
+               <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
+               <li><a class="index" href="howto_phlatbones.html">Use the <b>PhlatBones</b> tool</a>
+               <li><a class="index" href="howto_profileexchange.html">Exchange Profiles with friends</a>
+               <li><a class="index" href="quicktools.html">QuickTools Toolbar</a>
+                  <ul>
+                  <li>Comments on/off
+                  <li>Comment format
+                  <li>Setup rotary axis ABC
+                  <li>Toolchange setup
+                  </ul>
+               <li><a class="index" href="edgemenu.html">Edge Context Menu</a>
+               <li><a class="index" href="toolsmenu.html">Tools|PhlatBoyz Menu</a>
+               <li><a class="index" href="howto_3d.html"><b>How to use 3D</b></a>
+               <li><a class="index" href="howto_ramping.html"><b>How to use Ramping</b></a>
+               <li><a class="index" href="#laser">Laser control</a>
+               <li><a class="index" href="howto_chamfer.html">How to use the Chamfer Wizard</a>
+            </ul>
+         </div>						
+   </td>   
+</tr>
+</table>
+<table summary="new features per release" cellspacing=0 cellpadding=1>
+<tbody>
+<tr>
+   <td width="90%">
+   
+   <div class="intro">
+      <h4>New in V1.4d (Jan 2017)</h4>
+      <dl>
+         <dd>
+         <dl>
+            <dt>Help updates
+               <dd>added <a href="machelp.html">MAC help section</a>
+            <dt>arcmoveij() is INCREMENTAL mode.
+               <dd><ul>
+               <li>The 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
+               <li>If your controller is in the absolute mode it will display arc segments as <b>HUGE CIRCLES</b> (<u>Mach3 does this</u>).
+               <li>Setting or un-setting this does not change the actual Gcode, arcs are ALWAYS incremental mode, this setting just tells the controller what to expect.
+               <li>An option to output G91.1 as part of the Gcode header has been added to the <a href="howto_options.html#a4">Feature Options</a> menu.
+               <li>GPLOT will NOT accept this option and will not display the plot.  You should rather set your controller to default to this mode.
+               </ul>   
+            <dt>Solve failure to find <a href="howto_profileexchange.html">profile path</a> on Mac (for real this time)
+               <dd>Sketchup on MAC still has the old .openpanel bug that prevents the use of wildcards.  Mac platform is now detected and wildcards avoided.
+               <dd>Note that the file select dialog allows selection of a folder, but the profiles folder will always be used no matter what you select.
+         </dl>
+      </dl>
+   </div>      
+   
+   <div class="intro">
+      <h4>New in V1.4c (Dec 2016)</h4>
+      <dl>
+         <dd>
+         <dl>
+            <dt>Help updates
+               <dd>added <a href="howto_3d.html">3D section</a>
+            <dt>arcmoveij() now always used for arc outputs
+               <dd>this improves arc accuracy and keeps Marlin happy
+               <dd>the 'incremental' form of IJ is used so make sure you set your controller to incremental mode by issuing G91.1
+            <dt>Old files with arcs that have no center property will be rejected, they have to be recoded
+               <dd>Early versions did not store the arc centers and they are needed for arcmoveij()
+            <dt>Errant G0 move with no code removed from plungebore in Marlin mode.
+               <dd>a bug prevented the correct output of a G0 move 
+            <dt><a href="howto_options.html#a4">Marlin</a> mode streamlined
+               <dd>some changes to make Marlin code cleaner
+            <dt>Solve failure to find <a href="howto_profileexchange.html">profile path</a> on Mac due to iOS changing version string
+               <dd>The code was checking the iOS version to figure out where the files are, but that changed so it failed to find the files.
+            <dt>Update translation file {- still need to add a lot of strings though
+               <dd>The translation file is woefully out of date, but now has some new strings.
+            <dt><a href="sketchucamtoolbar.html#toolpocket">Pocketing</a> - new method for complicated faces
+               <dd>Pocketing complicated shapes just got a whole lot easier!
+            <dt>laser mode holes
+               <dd>GRBL 1.1 in laser mode will not make a simple spot without motion, so we now draw a small circle.
+               <dd>for large holes > bit_diameter, always draw a circle of the given diameter
+               <dd>Change options at <a href="howto_options.html#a5a">Hole Feature Options</a>   
+            <dt>GRBL 1.1 laser power control mode
+               <dd>Using M4 to enable GRBL's new <a href="howto_options.html#a5a">laser power control</a> mode
+         </dl>
+      </dl>
+   </div>      
+            
+   <div class="intro">
+      <h4>New in V1.4b (July 2016)</h4>
+      <dl>
+         <dd>
+         <dl>
+            <dt>TABs in laser cut mode
+               <dd>Tabs and Vtabs fixed for laser cutting.
+               <dd>Do not use V-tabs, only half of a V-tab will be cut.
+               <dd>Set tab depth to 0% 'to be removed' if you want the laser OFF during the tab cut.
+            <dt>Fix for compatibility menu
+               <dd>The order of multipass options was incorrect, preventing depth setting.
+            <dt>Streamlined Countersinks and Counterbores
+               <dd>They now avoid recutting the hole that has already been cut if it is larger than 2xBitdiam.
+               <dd>Feed speeds adjusted.
+            <dt>Feedrates
+               <dd>Sometimes a required feedrate was not output because of using the wrong comparison method.  
+               Now using notequal() to compare to 0.0001".
+               <dd>Initial plungefeed rate will be output on the G90... header line so that there is always a defined feedrate.
+            <dt>Toolchange
+               <dd>Help updated with improved examples.
+            <dt>Centerlines
+               <dd>Fix for 'backtacking' when centerlines are sometimes cut forward and sometimes backward within 
+                  one curve.
+         </dl>
+      </dl>
+      <h4>New in V1.4a (June 2016)</h4>
+      <dl>   
+      <dt>Bug fixes
+         <dd>
+         <dl>
+         <dd>Many additions to help.
+         </dl>
+         </dd>
+      <dt>New Features
+         <dd>
+         <dl>
+         <dt>Centerline cuts: prevent retract when possible
+            <dd>If doing multipass cuts, centerline cuts that form loops do not need to retract between passes since start and end  point are equal.
+            <dd>This applies to all cuts based on centerline cuts, centerline, fold, and pockets.
+         <dt>Fast approach:
+            <dd>Approach the surface using G00 to within 0.5mm, then switch to G01 to begin cutting.<br>
+            This reduces cut time greatly when the safe height is relatively high, and to a lesser extent for normal safe heights.
+            <dd>(This was already implemented for ramping cuts, and has now been added to non-ramping cuts).
+         <dt>Very small arcs converted to lines
+            <dd>Arc segments with radius <= 0.010" can cause problems with some simulators and controllers.   Convert them to line segments.
+            Note that drawing such a small arc is almost impossible in Sketchup, but they can result from scaling a drawing, or from importing
+            a scanned DXF file.
+         <dt>Chamfer wizard
+            <dd>Tool to set cutter diameter and depth for a chamfer cut
+            <dd>Accessed via Tools|Phlatboyz|Set Chamfer parameters
+            <dd>Note: set the cutline AFTER using this tool, and delete and redo it if you change parameters.  Generate Gcode directly after creating cut line.
+            <dd>See the <a href="howto_chamfer.html">full HOWTO here</a>
+         <dt>Gcode Joiner
+            <dd>adds default extension if not user supplied
+         <dt>Number formatting
+            <dd>remove trailing 0's in plunge holes to shorten lines for GRBL
+         <dt>Plunge holes
+            <dd>streamlined G00 moves when 'use reduced safe height' is true
+            <dd>added 'force all Gcodes on' processing for spirals in plunge holes
+         <dt id="laser">Laser cutter/engraver control   
+            <dd>Tick the Laser Control box on the 
+            <a href="sketchucamtoolbar.html#a5a">parameters dialog</a> and G-code will be output suitable for laser cutting on a machine that uses spindle commands to control the laser.<br>
+            The current control scheme replaces all Z movements (start and end of cuts) with M03 and M05 spindle motor on/off commands.<br>
+            The M03 is combined with an S word giving PWM control of the laser power.<br>
+            This value is set to the cut depth percentage of the current 'Spindle speed' set in the parameters dialog.<br><br>
+            
+            For example, if your controller accepts 10000rpm as the maximum spinde speed, then set that in the parameters dialog.
+            <dl>
+               <dt>Now, for a 100% deep centerline cut, laser on command will be<br>
+               <dd>M03 S10000
+            <dt>and a 50% deep centerline cut will be
+               <dd>M03 S5000
+            </dl>
+            
+            <p>If you are using GRBL 0.9 the default max spindle speed is 1000.   </p>
+            
+            <p>If your laser only supports full on and full off and cannot use PWM, then always use 100% deep cuts (and a correctly set maximum spindle 
+            speed as well) and the spindle control output will always be either on or off.</p>
+            
+            <p>DO NOT select 'multipass', 'ramping' nor 'Gen3D' when Laser Control is desired.<br>
+               Ramping and Gen3D will be turned off automatically.<br>
+               Multipass can be used to get cleaner edges in some materials.  Experiment for yourself!
+            </p>
+            
+            <p>Plunge holes: there are 2 modes: GRBL mode will draw a 0.2mm diam circle, not GRBL mode will 
+               create a dot at the center of the hole.   The length of the delay at this dot can be
+               adjusted via the <A href="howto_options.html#a5">Hole Feature Options dialog</a>.<br>
+               Large holes will draw a circle of the defined diameter.
+         <dt>Large file load speed
+            <dd>A very old version of SketchUcam (Phlatscript 0.918) used attributes that had to be upgraded for 0.919 and up.
+            <dd>This upgrade checks every edge and takes a long time for large files.
+            <dd>The upgrader is now turned off by default.   If you have very old Sketchup files that are encoded
+               using 0.918 edge format (they will generate very bad G-code, if anything at all), 
+               you need to delete all the cut lines and re-insert them.
+            
+         </dl>
+         </dd>
+      </dl>
+   </div>
+   <div class="intro">
+      
+      <h4>New in V1.4 (Nov 2015)</h4>
+   <dl>   
+   <dt>Bug fixes
+      <dd>
+      <dl>
+         <dt>Fix for Phlatten tool.
+            <dd>Since Make 2014, Phlatten has failed to actually phlatten due to not liking the order
+            used for deleting faces.   Faces are now deleted separately from edge collection.
+         <dt>Fold/centerline/pocket tool depth in VCB.
+            <dd>The depth can now be set to floating point number, eg 10.6% or 34.15% etc.
+         <dt>Inputbox error checking.
+            <dd> All input boxes use exception rescuing to detect errors in number formats and 'retry'. &nbsp;This is a step on the way to
+            handling regionalized number formats.
+            <dd>Note that a side effect of this is that the main parameters dialog will fail silently if it is given an invalid number and the
+            corresponding variable will not be set.  For example if you type 45t for Safe Height the safe height 
+            will not be changed AND you will not be notified.
+         <dt>Joiner tool - bug in long filenames.
+            <dd>When the joiner tried to create a comment from a long filename, the chunking operation failed.  Replaced with .scan().
+      </dl>   
+   <dt>Added features
+      <dd><dl>
+      <dt><a href="howto_options.html#a5">Make the path to the gplot program a string in options so it is preserved between versions.</a>
+         <dd>By setting a path to a program that can display Gcode files you can use any program that takes 
+         a Gcode file as a parameter for preview.
+         <dd>Tools|PhlatBoyz|Options|File options|Gcode plotter program
+         <dd>set to 'default' to use Gplot.exe the default plotter
+         <dd>set to the full path and filename of your choice of plotter program, such as NC-Plot.
+
+      <dt><a href="sketchucamtoolbar.html#toolpocket">Multiselect pockets</a>
+         <dd>If multiple faces are selected when the pocket tool is selected, all the faces will be pocketed.
+         <dd>All selected entities will be Unselected after this process.
+         <dd>If only one thing is selected, nothing is done, process is ignored.
+         <dd> Make sure you have the correct pocket parameters before doing the multiselect operation!
+      
+      <dt><a href="sketchucamtoolbar.html#toolplunge">Large plunge holes with sticky size</a>
+         <dd>Holding
+down shift when clicking for a plunge hole allows you to set size, but
+until now you had to do that for every hole. Now you can tap the HOME
+key to set 'LARGE LOCK' on and be prompted for a hole diameter that
+will persist until you select another tool or tap HOME again. 
+   
+      <dt><a href="sketchucamtoolbar.html#toolplunge">Holes in a grid</a>
+         <dd>Select the Plunge hole tool
+         <dd>Hold down ALT and select the point for the bottom left hole
+         <dd>You will be prompted for the spacing and number of holes
+         <dd>A grid of holes is created
+         <dd>You can hold SHIFT at the same time and give a size for the gridded holes
+      <dt><a href="sketchucamtoolbar.html#toolcsink">CounterSink/CounterBore tool</a> <img alt="" src="../images/csinktool_large.png">
+         <dd>CounterSink, extension of the plunge tool, does counter sinks at the top of holes.
+         <dd>Grids and size selection same as for plunge tool.
+         <dd>Depth is always overcut% - hopefully always deeper than the bottom of the countersink.
+         <dd>&nbsp;
+         <dd>CounterBore, does a counter bore on top of a hole.
+         <dd>Grids and size selection same as for plunge tool.
+         <dd>Depth is always overcut% - make sure it is deeper than the counterbore!     
+         <dd>Ramping is forced ON for the counterbore to prevent the unnecessary center drill op.
+
+      <dt><a href="quicktools.html">Simple ABC axis commands <img alt="" src="../images/rotate_large.png"><img alt="" src="images/quicktoolbar.png" align=right></a>
+         <dd>On the Quicktools toolbar, use the rotate icon to set values for A, B and C axes, values will be output before all other motion, and zeroed after homing
+      <dt><a href="quicktools.html">Toolchange <img alt="" src="../images/toolchange_large.png"></a>
+         <dd><a href="quicktools.html"><img alt="" src="images/toolchange01.png" width="50%" align="right"></a>
+         The T icon on the Quicktools toolbar enables the use of toolchange 
+         commands.  For controllers that understand the 'Tx M6' 
+         command you can output the command with a given tool number.  Optionally include G43 (apply offset) and Hx, select offset.<br><br>
+         <dd>The alternative option for controllers that do not understand T1 commands is to include a 'macro' file of Gcode commands that
+         achieve the tool change for you.   The tool commands can include a '%s' string: this is where the tool offset is inserted.
+         <dd>Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+      <dt>Rapid approach for Z plunge
+         <dd>When starting a cut, Z will now rapid down to within 0.5mm of the surface before switching to plunge feed rate in the same way that ramping does.
+            This should make cutting with high safe heights much quicker.
+      </dl>
+   </dl>
+   </div>   
+   <div class="intro">
+   <a href="changes.html">view previous changes</a> (V1.2 through V1.3a)
+   </div>
+      
+<!--   <td width="10%" valign="top">
+      <img alt="" src="../images/andy.png" title="Andy the Aviator" border="0">
+   </td>
+-->   
+</tr>
+</tbody>
+</table>
+		
+<h3>Where to go next</h3>
+<ol>
+<li><a href="afterinstall.html">First things to do after install</a>
+<li><a href="sketchucamtoolbar.html">Learn about the toolbar</a>
+</ol>
+        
+        
+        
+
+   <div>
+   <p>&nbsp;</p>
+        <br/><hr width="100%" >
+
+   <i><b>Thank you for your interest in the Phlatboyz project. Please take the time to visit the <a href="http://www.phlatforum.com/">Phlatforum</a> 
+   for lots of great people sharing great ideas and designs created with SketchUcam on their Phlatboyz machines!</b></i>
+   <hr width="100%" ><br/>
+   </div>
+</div>
+
+</body>
+</html>
