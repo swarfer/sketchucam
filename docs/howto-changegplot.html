@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO change the default G-code plotter</title>
+<link type="text/css" rel="stylesheet" href="style.css">
+<style type="text/css">
+      body {
+         min-width: 830px;
+         }
+</style>
+
+</head>
+<body>
+
+
+<div class="shell">
+
+<br>
+<div class="intro-name">Phlatboyz PhlatScripT
+	<div><b>SketchUcam Version 1.4</b><br>Oct 2015</div>
+</div>
+<hr width="100%" size="2" style="color: #6699ff; ">
+<div class="intro">
+<span style="float: right;"><a href="help.html">Back to help index</a></span>
+<h2>HOWTO change the default G-code plotter</h2>
+<p>SketchUcam is provided with the Gplot program to visualize the G-code that
+you have output from your drawing.</p>
+<p>
+You can change the program to any G-code plotter that takes a filename as command line parameter, such as
+NCPlot.   NCPlot will be used as an example here, replace references to NCPlot with your G-code plotter.
+</p>
+Follow these steps (new method, V1.4):
+<img src="images/howto01.png" align=right alt='screen image'>
+<ol>
+	<li>Close Sketchup
+	<li>Find your NCPlot icon or menu entry, and <b>right click</b> it
+	<li>Select 'Properties'
+	<li>Under 'Target', select all the text as in image at right
+	<li>Press CTRL-C to copy it to the clipboard
+   <br clear=all>
+   <li><img src="images/options-file.png" align=right>
+   Open the <i>Tools|PhlatBoyz|Options|File Options</i> dialog pictured at right
+   <li>paste the path to your Gcode previewer into the 'G-code Plotter Program' field, replacing the text 'default' entirely.
+   <li>Close the dialog.
+   <li>Now the program you have specified will open for all 'Plot Gcode' operations.
+</ol>
+
+   To go back to the default Gplot program   
+<ol>
+   <li>   Open the <i>Tools|PhlatBoyz|Options|File Options</i> dialog pictured above.
+   <li>Set the 'G-code Plotter Program' field to 'default'.
+   <li>Close the dialog.
+</ol>
+
+<br clear=all>
+<h3>Old Method</h3>   
+<p style="color: red;">Do not use this unless you have a version of SketchUcam prior to V1.4.  Once you upgrade to V1.4 you will
+need to follow the procedure above to set your previewer.  Once set, future upgrades will no affect the setting.</p>
+<ol>
+	<li>Close Sketchup
+	<li>Find your NCPlot icon or menu entry, and <b>right click</b> it
+	<li>Select 'Properties'
+	<li>Under 'Target', select all the text as in image at right
+	<li>Press CTRL-C to copy it to the clipboard
+   
+	<li>Open the file 'gplot.rb' in the folder <b>C:\Program Files\Google\Google SketchUp 8\Plugins</b> 
+		or <b>C:\Program Files (x86)\Google\Google SketchUp 8\Plugins</b> if you have 64bit Windows.<br>
+      For Sketchup 2014 the path will be something like<br>
+      <u>C:\Users\<i>username</i>\AppData\Roaming\SketchUp\SketchUp 2014\SketchUp\Plugins</u><br>
+      
+      
+		You need to open it in Notepad or a similar plain text editor.  NOT MSWord!
+		(to open Notepad, Start|All Programs|Accessories|Notepad)<br clear=all><br>
+	<li><img src="images/howto02.png" align=right>
+		The file open in Notepad should appear as at right.<br clear=all>
+	<li>In front of the line 
+		<pre>@exe = Sketchup.find_support_file("GPlot.exe", "/Plugins")</pre>
+		place a '#' like this
+		<pre><b>#</b>@exe = Sketchup.find_support_file("GPlot.exe", "/Plugins")</pre>
+	<li>add a line below that one
+	<li> in the blank line type<br>
+		<pre>@exe = ""</pre>
+	<li>now, between the "", paste the path to NCPLot.exe we copied to the clipboard earlier<br>
+		<pre>@exe = "D:\myapps\NCPlotv1.2\NCPlot.exe"</pre>
+	<li><b>for each \	character in the path, add another one next to it like this</b><br>
+		<pre>@exe = "D:\\myapps\\NCPlotv1.2\\NCPlot.exe"</pre>	
+	<li><img src="images/howto03.png" align=right>
+		Save the file, which should look as in the image at right
+	</ol>
+<h3>Now let us test Sketchup	</h3>
+<ol>	
+	<li>Open Sketchup, 
+	<li>open a drawing for which you have created G-code, 
+	<li>select Plugins|Plot G-code
+	<li>NCPlot should open with the existing G-code file
+</ol>	
+<br clear=all>
+</div>
+<hr>
+</div>
+</body>
+</html>

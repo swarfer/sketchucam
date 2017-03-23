@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO use Ramping</title>
+<link type="text/css" rel="stylesheet" href="style.css">
+<style type="text/css">
+   li {
+      margin-top: 10px;
+      }
+   dt {
+      margin-top: 7px;
+      font-size: smaller;
+      }
+</style>
+
+</head>
+<body>
+
+
+<div class="shell">
+
+<br>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)
+	<div><b>SketchUcam Version 1.4a</b><br>June 2016</div>
+</div>
+<hr width="100%">
+<div class="intro">
+<span style="float: right;"><a href="help.html">Back to help index</a></span>
+<h2>HOWTO use the Chamfer Wizard</h2>
+
+   <p>In order to achieve a particular width of chamfer you need to set the correct tool depth and width such that a cutline
+   at the correct distance from the object is created.</p>
+   
+   <p>While it is possible to guess or calculate these values manually, it is much easier to use the chamfer wizard!</p>
+   
+   <p>This wizard calculates a 'virtual diameter' and cut depth (as a percentage of current material thickness) and sets these parameters for you.
+   After this, all you need to do is apply the cut lines to your drawing and generate G-code.</p>
+   
+   <p><b>NOTE:</b> you will want to save your current tool as a tool profile so that it is easy to restore after the wizard changes the 
+   settings for the chamfer.
+   You may also want to save the chamfer settings as a tool profile so that it is easy to re-use the already calculated settings.</p>
+
+   How to use the tool:
+   <ol>
+   <li>Here are my tool settings for my normal cuts, 10mm material and a 6mm bit<br>
+      <img alt="" src="images/chamfer01.png" align=top>
+   <li>Access the wizard via <b>Tools|Phlatboyz|Set Chamfer parameters</b> menu
+   <li><img alt ="" src="images/chamfer02.png" align=top><br>
+      The default parameters for the tool are for a chamfer tool this writer owns.<br>
+      Here I have set my desired chamfer width to 2mm.
+    
+   <li>When you click the OK button the program will calculate the following values:<br>
+   <img alt="" src="images/chamfer-diag.png" style="float: right;">
+      A <b>Bitdiam</b><br>
+      A <b>Depth</b><br>
+      Such that the center of the cutting edge is centered on the desired chamfer (the red bit) and will give
+      the chamfer 'Width' as entered above.<br><br>
+      
+      In the illustration the pale blue is the cutter, the brown is the part material, 
+   and the red is the chamfer material that will be removed.
+
+   <br clear=all>   
+      
+   <li>After clicking OK on the Chamfer Wizard, the settings in the parameters dialog are changed to those shown below:<br>
+      <img alt="" src="images/chamfer03.png"><br>
+      As you can see, the Overcut% has been set to 35% and the Bit Diameter has been set to 5mm.<br>
+      The combination of these settings will result in a 2mm wide chamfer on the part.
+   <li>Now set Outside and Inside cutlines on a copy of your part.
+   <li>Generate G-code for this copy of the part.
+   </ol>
+   
+   Notes:
+   <ul>
+   <li>set the cutline AFTER using this tool, and delete and redo it if you change parameters. Generate Gcode directly after creating cut line. 
+   <li>The chamfer cutter may plow a groove that is wider than the tool used for the outlines, thus cutting into the
+   waste material outside of the part.   You may want to use <b>multipass cuts</b> with ramping since the V shaped bit can
+   use up a lot of power unexpectedly.  You also need to leave room around the part for this overlapping chamfer cut.
+   
+   <li>You cannot cut a chamfer that is wider than the chamfer bit.  
+      In the above case chamfers are limited to 5mm as that is the height 
+      (and width) of the chamfered portion of the bit.
+   </ul>
+   
+   <h3>Example simulated cuts using the above data:</h3>
+   <img alt="" src="images/chamfer-s1.png" style="float: left;">
+   This is the part after the cut by the straight 6mm bit.
+   <br clear="all"><br>
+   
+   <img alt="" src="images/chamfer-s2.png" style="float: left;">
+   This shows the result after the chamfer cut with a 90 degree chamfer bit.  Chamfer is 2mm wide.
+   <br clear="all"><br>
+   <img alt="" src="images/chamfer-s3.png" style="float: left;">
+   Here is a detail view of the chamfer cut in progress.   You can see that the chamfer bit is cutting on both sides
+   of the initial slot cut.    As the chamfer gets wider this effect gets worse and the chamfer can end up taking quite a large cut.
+   <br clear="all">
+
+<br clear=all>
+</div>
+<hr><br>
+</div>
+</body>
+</html>

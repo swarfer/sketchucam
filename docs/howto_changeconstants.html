@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SketchUcam: HOWTO change the default settings in Constants.rb</title>
+<meta name="id" value="$Id$">
+<link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<div class="shell">
+
+<br>
+<div class="intro-name">Phlatboyz PhlatScripT
+	<div><b>SketchUcam Version 1.1</b><br>31/08/2013</div>
+</div>
+<hr width="100%" color="#6699ff" size="2">
+<div class="intro">
+<h2>HOWTO change the default settings in Constants.rb</h2>
+
+<div  style="background-color: cyan;">
+<p>
+Please note that this mechanism has been superceded by the Tools|Phlatboyz|Options menu system.<br>
+Current settings in Constants.rb and MyConstants.rb will be honored but overridden by the new settings mechanism, so it is best if you use that.
+</p>
+<p><a href="howto_options.html">READ ABOUT THE NEW OPTIONS MENUS HERE</a></p>
+</div>
+
+<p>
+The Phlatscript system has long had a file called Constants.rb which contains
+a long list of contant values.  Some of them are used only by the system and are not user settable 
+while others are designed to be user settings that you set once and forget.
+</p>
+<p>Current development of the system revealed that Constants.rb will be changing often as new features 
+are added, thus presenting the problem of 'merging' the new file with your existing options such as default 
+safe cut area and so on.
+</p>
+<p>
+A new system had to be designed and the simplest is to have a secondary constants file in which you set your options.
+This file will never be updated by a SketchUcam system upgrade, and so the developers can happily add features
+without it impacting the upgrade process.
+</p>
+<h3>MyConstants.rb</h3>
+<p>
+
+<table border=1 align=right width="20%" cellspacing=0>
+<tr>
+<td>
+<a id="mac" ><b>Windows/Mac/Linux users : finding the Plugins/Phlatboyz folder</b></a>
+<ol>
+<li>Open Sketchup
+<li>Open the Ruby console, <i>Window|Ruby Console</i>
+<li>Paste this string into the Ruby command line   
+   <code>Sketchup.find_support_file('Plugins')</code>
+   and press enter
+<li>The path to your Plugins folder will be displayed, Phlatboyz is a subfolder, and the MyConstants-example.rb file is in there.   
+</ol>
+</td>
+</tr>
+</table>
+
+This new file is named MyConstants.rb and the distribution .RBZ file <b>does not contain one</b><br>
+WHAT!?<br>
+Well, if the distribution contained one it would get overwritten by an upgrade.
+Instead, there is a file<br> 
+<code>C:\Program Files\Google\Google SketchUp 8\Plugins\Phlatboyz\MyConstants-example.rb</code> 
+<a href="#path">(see path note for Sketchup Make)</a>
+which contains mostly the same defaults as Constants.rb except that some are metric and all the system specific
+stuff that you don't need to mess with (and shouldn't mess with) has been left out.
+</p>
+
+<h3>How to use this file?</h3>
+<p>
+The distributed files assume you have a Phlatprinter that is not a Phlatprinter 3, and thus the
+option for using an overhead gantry is false.   Now, you can try to remember to always set that 'true' in the
+parameters dialog, or you can set the default, BUT HOW?
+</p>
+
+<h4>Follow these steps:</h4>
+
+<ol>
+	<li>Close Sketchup
+	<li>Navigate to <code>C:\Program Files\Google\Google SketchUp 8\Plugins\Phlatboyz </code>
+	<li>RIGHT-click Drag & drop 'MyConstants-example.rb' in that same folder and select 'Copy' from the
+		menu that pops up.  It will be named something like <b>'MyConstants-example - Copy.rb'</b>
+	<li>Select the file
+	<li>Press 'F2' to enter rename mode
+	<li>rename it to <b>MyConstants.rb</b>
+	</ol>
+	Yay, you have a file you can personalize, lets do that....
+	<ol>
+	<li>Click Start|All Programs|Accessories|Notepad
+	<li>now drag and drop MyConstants.rb onto Notepad
+	<li>Find <code>Default_overhead_gantry </code> and change 'false' to 'true'. (The example 
+		file will sometimes have this set true, and sometimes not).<br>
+		So now it looks like<br>
+			<code>Default_overhead_gantry = true</code>
+	<li>Note that because you are editing a computer language file the format has to be followed EXACTLY 
+		since the computer is dumb and cannot 'interpret' language it was not designed for.  So, take 
+		special care to keep spaces and symbols etc in keeping with what is already there.  <br>
+		<b>Sketchup will fail to load the SketchUcam toolbar if you get anything wrong in this file.</b>
+	</ol>
+<h3>Now let us test Sketchup	</h3>
+<ol>	
+	<li>Open Sketchup
+	<li>Click the icon for the Parameters Dialog <img src="../images/parameterstool_large.png"> in the SketchUcam toolbar.
+	<li>You should see that the checkbox for 'Overhead Gantry' is ticked.  Success!
+	<li>If it is not checked, or the toolbar does not load, you need to check the syntax of 
+	whatever you changed in MyConstants.rb and fix it.<br>  
+	If all your efforts fail, just rename the file to anything but the current name and it will be ignored.
+	Now make a new copy of the example file and try again.
+</ol>	
+
+<h3>Number formats</h3>
+<p>Number formats in the contants file are particularly tricky, so let us look at those:</p>
+<dl>
+<dt>An Inch number constant
+	<Dd>10.5.inch
+	<dd>Note the '.' between the last numeral and the 'inch'.  This is not optional.
+<dt>A millimeter constant
+	<dd>12.7.mm
+	<dd>Note the '.' between the last numeral and the 'mm'.  This is not optional.	
+<dt>'Just a number'
+	<dd>1.25
+	<dd>This will usually be interpreted as a value in inches since the default for measurements in Sketchup is inches.
+	In fact all internal measurements are in inches, but the models default units may change, 
+	which is why we have to be careful to specify the units 
+	using <code>.inch</code> or <code>.mm</code> to tell Sketchup exactly what we mean.
+</dl>
+
+<h3>what can I change in MyConsants.rb?</h3>
+Here is the complete MyConstants.rb example file, the constants are named in such a way as to be
+self explanatory.<br>   Hopefully, they are!<br>   Lines beginning with '#' are comments and will be ignored by
+the Sketchup system.
+
+<pre class="command-description">
+require 'sketchup.rb'
+
+# Name Begins With Variable Scope
+# $  A global variable
+# @  An instance variable
+# [a-z] or _  A local variable
+# [A-Z]  A constant
+# @@ A class variable
+
+module PhlatScript
+
+# - - - - - - - - - - - - - - - - -
+#           Default Values
+# - - - - - - - - - - - - - - - - -
+Default_file_name = "gcode_out.nc"
+Default_file_ext = ".nc"
+Default_directory_name = Dir.pwd + "/"
+
+Default_spindle_speed = 15000
+Default_feed_rate = 2000.0.mm
+Default_plunge_rate = 1500.mm
+Default_safe_travel = 3.mm
+Default_material_thickness = 4.mm
+Default_cut_depth_factor = 110
+Default_bit_diameter = 3.2.mm
+Default_tab_width = 8.mm
+Default_tab_depth_factor = 50
+Default_vtabs = false
+Default_fold_depth_factor = 50
+
+Default_safe_origin_x = 0.0.inch
+Default_safe_origin_y = 0.0.inch
+Default_safe_width = 1300.mm
+Default_safe_height = 2500.mm
+Default_comment_remark = "Davids defaults"
+
+Default_overhead_gantry = true
+Default_multipass = false
+Default_multipass_depth = 2.mm
+Default_gen3d = false
+Default_stepover = 30
+
+# -------------------------
+# PhlatScript Features - things you can set here and not in the parameters dialog
+# -------------------------
+
+# Set this to true if you have problems with the parameter dialog being blank or crashing SU
+# on Mac, you will probably need this true
+# on Linux, you might need this, if you do, you can fix Wine by searching the web for the howto on fixing Sketchup WebDialogs
+Use_compatible_dialogs = false
+
+# Set this to true to enable multipass fields in the parameters dialog. When it is false
+# you will not be prompted to use multipass. When true you will be able to turn it off and
+# on in the parameters dialog
+Use_multipass = true
+
+# Set this to true if you have an older version of Mach that does not slow down
+# to the Z maximum speed during helical linear interpolation (G2/3 with Z
+# movement A.K.A vtabs on an arc). vtabs on arcs will cut at the plunge rate
+# defined in this file or overriden in the parameters dialog
+Use_vtab_speed_limit = false
+
+# Set this to true to use G61. This will make the machine come to a complete
+# stop when changing directions instead of rounding out square corners. When
+# set to false the default for your CNC software will be used. Without G61
+# the machine might be in G64 mode, this will maintain the best possible speed 
+# for the cut even if the tool isn't true to the cut path. 
+# Rounded corners at low feedrates aren't very noticeable but anything over 
+# 200"/min starts to generate large radii so that the momentum of the machine can be maintained.
+Use_exact_path = true
+
+# Set this to true, if you want the safe area to always show, when parameters are saved.
+# Otherwise the safe area will only show, if it's size has been changed.
+Always_show_safearea = true
+
+# Set this to true to use 1/3 of the usual safe travel height during plunge boring moves
+# this saves a lot of air cutting time
+Use_reduced_safe_height = true
+
+# Set this true and set the height and the Z will retract to this at the end of the job
+# really only useful for overhead gantries
+Use_Home_Height = false
+Default_Home_Height = 100.mm
+
+# Set this true to generate pocket outlines that cut in CW instead of usual CCW direction
+# Please research 'climb milling' before changing this.
+# Note this is a draw time option, if you change it in the G-code you have to redraw all pocket cuts.
+Use_pocket_CW = false
+
+# Set this true to generate plunge cuts in CW instead of usual CCW cut direction
+# Please research 'climb milling' before changing this.
+Use_plunge_CW = false
+
+# Outfeed: phlatprinters only!
+# Set this to true to enable outfeed.  At the end of the job it will feed the material out the front of the
+# machine instead of stopping at X0 with the material out the back.
+# It will feed to 75% of the material size as given by the safe area settings
+Use_outfeed = false
+
+#Set this to true to have pocket zigzags default to along Y axis, false for along X axis
+#setting can be changed on the fly with the END key
+Default_pocket_direction = false
+
+
+end # module PhlatScript
+</pre>
+
+<h2>What not to touch, ever...</h2>
+<p>The following lines must stay as they are, where they are, otherwise the file will fail to load, preventing 
+the toolbar from showing, and in fact preventing SketchUcam from operating at all.
+<pre class="command-description">
+require 'sketchup.rb'
+
+module PhlatScript
+	# some contants may be here
+end # module PhlatScript
+</pre>
+
+<h3><a id="path" >Path Note</a></h3>
+<p>
+The paths quoted here assume you have Sketchup 8.<br>
+If you have Sketchup Make (the 2013 release) then your path will be<br>
+<code>C:\Program Files\SketchUp\SketchUp 2013\Plugins\Phlatboyz</code><br>
+unless you installed it in a custom place.  If you can do that, we'll have to assume you can find it again.<br>
+If you still cannot find it, <A href="#mac">follow the instructions</a> in the sidebar.
+</p>
+
+
+<br clear=all>
+</div>
+<hr>
+</div>
+</body>
+</html>

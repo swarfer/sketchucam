@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="id" content="$Id$">
+<title>SketchUcam - Thing to do After Instal</title>
+<link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+
+   <br>
+   <div class="intro-name">After install...</div>
+   <hr width="100%">
+   <div class="intro">
+   <span style="float: right;"><a href="help.html">Back to help index</a></span>
+
+<div>
+<p>After installing Sketchucam all features will work without further setup.
+However, there are some settings you will want to change to suite your machines size and capabilities.
+</p>
+<img src="images/options-machine.png" align="right">
+
+To make these changes you need to access the "<b>Tools|Phlatboyz|Options|Machine Options</b>" menu item as illustrated at right.
+<h3>Things you may need to change</h3>
+<dl>
+<dt>Default_safe_width (X)
+    <dd>Set this to the largest workpiece your machine can take in the X direction. 
+<dt>Default_safe_height (Y)
+    <dd>Set this to the largest workpiece Y size.
+<dt>Default_overhead_gantry
+    <dd>If all you have is a Phlatprinter, set this to false. If all you have is a gantry type machine, set this to true. If you have both styles, set to the one you use the most.
+</dl>
+<br clear=all>
+<dl>    
+<dt><b>Min_z </b>
+   <span style="color: red; float: right; width: 50%;">It is VERY IMPORTANT that you get these settings correct.  
+      Do NOT set Min_Z to zero unless you also set <b>Default_tabletop is Z-Zero</b> on the Misc Options dialog to TRUE, and NEVER change it
+      in the parameters dialog.  Failing to do this correctly will result in faulty G-code generation.<br>
+      Min_z = -maxZtravel<br>
+      Max_z = maxZtravel<br>
+      are the preferred settings, allowing both 'material top' and 'table top' as Z-zero to work properly. 
+   </span>
+    <dd>Set this to negative (-) your Z travel. G-code will never contain negative Z travel more than this figure. 
+<dt><b>Max_z</b>
+    <dd>Set this to your Z travel. G-code will never contain Z travel more than this figure.     
+</dl>
+
+You can read the full help for <a href="howto_options.html#a3">that dialog here</a>.
+
+</div>
+<br clear="all">
+<hr>
+<div>
+<img src="images/options-tool.png" align="right">
+Now visit the "<b>Tools|Phlatboyz|Options|Tool Options</b>" menu item as illustrated at right.<br>
+If you have a flat bed machine you will want to set the <br>
+<b>Default_cut_depth_factor</b> to 100%<br>
+This will prevent it cutting into the table.   A cut depth factor greater 100% will cut through the material and into the table.<br>
+Read the <a href="howto_options.html#a1">full help for that dialog</a> here
+</div>
+
+<br clear="all">
+<hr>
+<div>
+<img src="images/options-feature.png" align="right">
+Now visit the "<b>Tools|Phlatboyz|Options|Feature Options</b>" menu item as illustrated at right.<br>
+Read the <a href="howto_options.html#a4">help for those options</a> and make changes as needed for your machine.
+
+<p><b>GRBL:</b> if you are running the GRBL controller will will want to set 'Use_exact_path' to false
+</p>
+
+</div>
+
+
+</div>
+
+        
+        
+<br clear="all">        
+
+   <div>
+   <p>&nbsp;</p>
+        <br/><hr width="100%" >
+
+   <i><b>Thank you for your interest in the Phlatboyz project. Please take the time to visit the <a href="http://www.phlatforum.com/">Phlatforum</a> 
+   for lots of great people sharing great ideas and designs created with SketchUcam on their Phlatboyz machines!</b></i>
+   <hr width="100%" ><br/>
+   </div>
+</div>
+
+</body></html>

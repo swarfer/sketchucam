@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="id" content="$Id$">
+<title>Phlatboyz SketchUcam Help</title>
+<link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+<br>
+<a href="http://www.phlatboyz.com/">PHLATBOYZ.COM</a>
+
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4c</b><br>Dec 2016</div></div>
+
+<br> <a href="http://www.phlatforum.com/xenforo/index.php?forums/sketchucam-download/">Check for Latest Version of SketchUcam</a>
+<hr width="100%">
+
+   <span style="float: right;"><a href="help.html">Back to help index</a></span>
+<p>notes on previous changes....</p>
+
+<table summary="new features per release" cellspacing=0 cellpadding=1 border=1>
+<tbody>
+<tr>
+   <td width="90%">
+      <div class="intro">
+      <h4>New in V1.3a (June 2015)</h4>
+      <ul>
+      <li>Bugfix: Concave arcs on the edge of rectangle were not cut in the correct direction, causing scalloped edges.
+      <li>Pocket zigzags now use <i>fuzzy stepover</i>.  A new stepover is calculated from the given stepover such that the zigzag always
+         starts and ends at the given offset from the edges.  This prevents leaving large gaps at the end of the zigzag which
+         might break a tool in hard materials.  Note that complicated shapes can still leave oversize (larger than stepover) nubs
+         that will be removed by the final outline pass.  To mitigate this effect, use small stepovers in hard materials.
+      <li>Pocket zigzag <i>offset</i> (the gap between the edge of the face and the edges of the zigzag) is now related to stepover instead
+         of being a fixed 10%.  This means that for large stepovers the cut takes less time, and for small stepovers the
+         final outline cut is <=50% of the stepover value.  <a href="sketchucamtoolbar.html#toolpocket">Read here for details</a>
+      <li>Pocket tool now uses the same offset routine as the inside and outside cut tools making it much less prone to folded corners
+         and other artifacts.
+      <li>G-code Joiner will not output any comments if <I>Use Comments</I> is false.  However, it <b>will not remove</b> comments already
+         in the files being joined.
+      <li>G-code Joiner now has an icon <img alt="" src="../images/joiner_large.png"> on the toolbar.
+      <li>New 'Quick Tools' toolbar that allows you to quickly toggle the status of the 
+         'Use Comments' and 'Comment Style' options.   Using these will NOT affect the default settings set via the 
+         <i>Tools|Phlatboyz|Options|Machine Options</i>
+         menu.  Activate this toolbar by ticking the <i>View|Toolbars|SketchUcam Quick Tools</i> item.
+         <b>NOTE</b> that these icons have no visible effect until you output Gcode, though you will see the current status
+         of the setting when you hover over the icon (except in SK7).
+      <li>Bug fixes that prevented Gcode generation in Sketchup v7.
+      <li>All Gcodes and axis letters are uppercased in accordance with the RS-274-D standard.
+      <li><a href="howto_options.html#a4">Tools|Phlatboyz|Options|Feature Options</a> 'Force all Gcodes on for Marlin' will force the output of a Gcode on every line instead of the normal optimized output.
+      </ul>
+      </div>
+      
+      <div class="intro">
+      <h4>New in V1.3 (May 2015)</h4>
+      <ul>
+      <li><a href="howto_ramping.html">Ramping:</a> (option on parameters dialog) instead of plunging Z straight down into the workpiece, the tool will ramp down along the first segment, optionally using the given ramp angle limit.
+      <li><a href="toolsmenu.html#rvtab">Set Ramp VTabs</a> on Tool|Phlatboyz menu: this will set the ramping parameters for Vtabs so they use the ramp angle limit, do this BEFORE creating the Vtabs.
+      <li><a href="howto_options.html#comments">Commenting options</a>, switch between using () and ; so you can use whatever your controller prefers in the G-code.
+      <li><a href="howto_options.html#comments">Use Comments</a> option allows you to generate G-code with no comments in it at all.
+      <li>G-code Joiner is happy with both comment formats.
+      <li>G-code Joiner file selection remembers the folder, and remembers a change in extension.   Also detects Sketchup versions
+         prior to Make2014 and works around the wildcard bug
+      <li>Bugfix: Polygons are now correctly identified and output as line segments instead of arc segments.
+      <li>Bugfix: 'Restore Defaults' button on parameters dialog was not metric aware and filled in incorrect values, now fixed.
+      <li>G-code lines have been shortened to be more GRBL friendly.
+      </ul>
+      </div>
+      
+      <div class="intro">
+      <h4>New in V1.2a</h4>
+         <ul>
+         <li>G-code Joiner - on the Phlatboyz menu, this tool allows you to join 2 or more G-code files together to make a single file that 
+            does all of the cuts in the order specified.  This is handy for combining files generated from a drawing that needs seperate operations
+            carried out on the same part.
+         <li>Use_End_Position - on the Options|Features menu, setting this true allows you to select an ending position other than X0 Y0 for the gantry.
+            TIP: use in combination with the Use_Home_Height option.
+         <li>Bug fixes in the 3D G-code generator.
+         <li>3D code that uses multipass will now stop early once all features have been cut, ie it will not 
+            continue to full material depth if all features have been cut. 
+         <li>Plunge holes are automatically grouped.  This prevents underlying geometry from interfering with G-code generation.
+            Only an underlying horizontal line will interfere but in this case it is very easy to delete the part that overlaps the colored 'hole' line.
+            Ordinary holes have no name while enlarged holes are named with the diameter and depth.
+            For example a plain 8mm hole will be named "_diam_8.0mm" and a depth restricted 9mm hole will be "_diam_9.0mm_depth_76.0".            <br>
+            This implies that holes will be cut in group order so don't forget to set the order with the Group Reorder tool.
+         </ul>
+      </div>
+ 
+      
+      <div class="intro">
+      <h4>New in V1.2</h4>
+         <ul>
+         <li>The '<u>Table top is Z-Zero</u>' checkbox.  If this is ticked the table top will be used as the Z zero reference instead of the material top surface.  This is most useful on overhead gantry machines, and <i>not at all useful</i> on Phlatprinters.
+         <li>The <a href="howto_options.html">Options Menu</a> allows you to set default options that will be applied to new drawings.  These options affect such things as your machine type (overhead gantry?) and size (default safe area), common tool settings (feed speeds), and G-code generation options.
+            <i>This menu system replaces the MyConstants.rb file in a transparent way.  Your existing settings will be used until you use the Options menu to change them.</i>
+         <li>  Profile file format was changed to ini format, extension .pri
+         <li>  Fix for parameters tool on mac
+         <li>  PhlatBones preferences file moved to profiles folder, solves write permissions issue on Win7/8
+         <li>  Pocketcut: improved undo so entire pocket cut will undo in one operation
+         <li>  Arcs, extra digit of precision
+         <li>  3D - removed full depth plunge at start of last multipass pass that may remove extra material
+         <li>  Added Z-Zero option to parameters dialog 
+         </ul>
+      </div>
+      
+   </td>
+</tr>
+</tbody>
+</table>
+		
+        
+        
+        
+
+   <div>
+   <p>&nbsp;</p>
+        <br/><hr width="100%" >
+
+   <i><b>Thank you for your interest in the Phlatboyz project. Please take the time to visit the <a href="http://www.phlatforum.com/">Phlatforum</a> 
+   for lots of great people sharing great ideas and designs created with SketchUcam on their Phlatboyz machines!</b></i>
+   <hr width="100%" ><br/>
+   </div>
+</div>
+
+</body>
+</html>
