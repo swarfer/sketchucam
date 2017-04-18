@@ -16,7 +16,7 @@ Thank You, Mark and Trish Carew <br>
 http://www.Phlatforum.com <br>
 http://www.OpenBuilds.com 
 
-#Installing
+# Installing
 Please get the latest release from<br>
 http://openbuilds.com/projectresources/sketchucam.1/
 or
