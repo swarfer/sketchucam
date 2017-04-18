@@ -18,10 +18,10 @@ http://www.OpenBuilds.com
 
 # Installing
 Please get the latest release from<br>
-http://openbuilds.com/projectresources/sketchucam.1/
-or
+http://openbuilds.com/projectresources/sketchucam.1/<br>
+or<br>
 http://www.phlatforum.com/xenforo/threads/sketchucam-download.3128/ <br>
-or
+or<br>
 https://github.com/swarfer/sketchucam/releases <br>
 and **follow the install instructions**.
 
@@ -30,9 +30,9 @@ If you download the master.zip (link at right) and follow the howtobuild.txt ins
 to create your own .rbz install file.  You must install the correct tools first, *follow the instructions!*
 (This is not trivial, you should rather download a [RELEASE](https://github.com/swarfer/sketchucam/releases))
 
-The MANUAL is available after you install by clicking the big blue question mark in the toolbar.
+The MANUAL is available after you install by clicking the big blue question mark in the toolbar.<br>
 OR
-You can view it [online here](http://swarfer.github.io/sketchucam/)
+You can view it [online here](http://swarfer.github.io/sketchucam/)<br>
 Note that the online version may mention features that have not yet made it into a release.
 
 A playlist of HowTo videos is available on [Youtube[(https://www.youtube.com/watch?v=TShp4_e6Z-U&list=PLm728rLHCWOw-vRvTJwS_5MmKG1fs4sZ0)
