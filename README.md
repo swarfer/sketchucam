@@ -35,4 +35,4 @@ OR
 You can view it [online here](http://swarfer.github.io/sketchucam/)<br>
 Note that the online version may mention features that have not yet made it into a release.
 
-A playlist of HowTo videos is available on [Youtube[(https://www.youtube.com/watch?v=TShp4_e6Z-U&list=PLm728rLHCWOw-vRvTJwS_5MmKG1fs4sZ0)
+A playlist of HowTo videos is available on [Youtube](https://www.youtube.com/watch?v=TShp4_e6Z-U&list=PLm728rLHCWOw-vRvTJwS_5MmKG1fs4sZ0)
