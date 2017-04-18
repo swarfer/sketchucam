@@ -319,6 +319,10 @@ module PhlatScript
                   if !line.match(/%s/)
                      tool += line
                   else  # stick in the tooloffset in the %s place
+                     li = line.index(/\(|;/)  # remove the comment first, just in case it has %s in it
+                     if (li > 0)
+                        line = line[0,li] + "\n"
+                     end
                      line = sprintf(line,format_measure('',$phoptions.tooloffset).strip )
                      tool += line
                   end
