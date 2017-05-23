@@ -1724,7 +1724,7 @@ module PhlatScript
                                        # can we rapid down to near the previous pass depth?
                                        if !retractp && (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth)
                                           if aMill.plung(prev_pass_depth + hzoffset, 1, 'G0', false)
-                                             aMill.cncPrintC('Plunged to previous pass')
+                                             aMill.cncPrintC('Plunged to previous pass') if !PhlatScript.useLaser?
                                           end
                                        end
                                        aMill.plung(cut_depth, PhlatScript.plungeRate)

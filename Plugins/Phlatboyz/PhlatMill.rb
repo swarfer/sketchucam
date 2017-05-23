@@ -56,17 +56,17 @@ module PhlatScript
 
          @comment = PhlatScript.commentText
          @extr = '-'
-         @cmd_linear = 'G01' # Linear interpolation
-         @cmd_rapid = 'G0' # Rapid positioning - do not change this to G00 as G00 is used elsewhere for forcing mode change
-         @cmd_arc = 'G02' # coordinated helical motion about Z axis
+         @cmd_linear = 'G01'  # Linear interpolation
+         @cmd_rapid = 'G0'    # Rapid positioning - do not change this to G00 as G00 is used elsewhere for forcing mode change
+         @cmd_arc = 'G02'     # coordinated helical motion about Z axis
          @cmd_arc_rev = 'G03' # counterclockwise helical motion about Z axis
          @output_file_name = output_file_name
          @mill_out_file = nil
 
-         @Limit_up_feed = false # swarfer: set this to true to use @speed_plung for Z up moves
-         @cw = PhlatScript.usePlungeCW? # swarfer: spiral cut direction
+         @Limit_up_feed = false           # swarfer: set this to true to use @speed_plung for Z up moves
+         @cw = PhlatScript.usePlungeCW?   # swarfer: spiral cut direction
 
-         @tooshorttoramp = 0.02 # length of an edge that is too short to bother ramping
+         @tooshorttoramp = 0.02           # length of an edge that is too short to bother ramping
        end
 
       # feed the retract depth and tabel zero into this object
@@ -362,18 +362,25 @@ module PhlatScript
       end
 
       # Calculate 'laser brightness' as a percentage of material thickness and output as a proportion of max spindle speed
+      # if multipass is on, always use max power as we are probably cutting and scaling the output is not required
+      # user can still adjust power by setting max spindle speed
       def laserbright(zo)
-         if @table_flag
-            depth = ((@material_thickness - zo) / @material_thickness) * @spindle_speed
-         else # zo is negative
-            depth = (zo / -@material_thickness) * @spindle_speed
+         if PhlatScript.useMultipass?
+            depth = @spindle_speed
+         else
+            if @table_flag
+               depth = ((@material_thickness - zo) / @material_thickness) * @spindle_speed
+            else # zo is negative
+               depth = (zo / -@material_thickness) * @spindle_speed
+            end
          end
-         depth
+         return depth
       end
 
       # Move to xo,yo,zo
       # * only outputs axes that have changed
       # * Obeys @laser
+      # * if multipass is on, AND @laser, then every pass will be at 100% power
       def move(xo, yo = @cy, zo = @cz, so = @speed_curr, cmd = @cmd_linear)
          # cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n")
          # puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
@@ -433,6 +440,7 @@ module PhlatScript
 
             if @laser # then set PWM power if changed
                # calculate 'laser brightness' as a percentage of material thickness
+               # if multipass then use full power, else scale to Z depth
                depth = laserbright(zo)
                # insert the pwm command before current move
                if notequal(zo, @cz)
