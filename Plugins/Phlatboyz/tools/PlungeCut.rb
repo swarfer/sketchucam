@@ -92,9 +92,11 @@ module PhlatScript
    end
 
 
-#if cnt is > 0 then it is used in the groupname
-#if ang > 0 then it is used for the countersink angle
-# cdia is the countersink diam, 'diam' is used for the actual hole as usual
+# make the cut
+#  if cnt is > 0 then it is used in the groupname
+#  if ang > 0 then it is used for the countersink angle
+#  cdia is the countersink diam, 'diam' is used for the actual hole as usual
+#  add a face to the center hole to make ordering easier
     def cut(pt, dfactor, diam, cnt, ang, cdia, cdepth)
       Sketchup.active_model.start_operation "Cutting Plunge", true
       if (pt.z != 0.0)
@@ -129,11 +131,9 @@ module PhlatScript
       newedges = group.entities.add_edges(pt, end_pt)
       vectz = Geom::Vector3d.new(0,0,-1)
       circleInner = group.entities.add_circle(pt, vectz, rad, 12)
-      #group.entities.add_face(circleInner)
+      fce = group.entities.add_face(circleInner)
+      fce.back_material = [255,225,225,64]
 #      group.description = "Hole"
-      if (ang > 0.0)
-         group.description = 'countersink'
-      end
 
       newedges[0].set_attribute(Dict_name, Dict_edge_type, Key_plunge_cut)
       if diam > 0 # if exists set the attribute
@@ -146,6 +146,7 @@ module PhlatScript
         end
       end
       if (ang > 0.0)  # countersink
+         group.description = 'countersink'
          #puts "angle > #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 8)
          circleInner.each { |e|
@@ -156,11 +157,13 @@ module PhlatScript
          #puts "set cdia #{cdia} #{cdia.to_inch} #{cdia.to_f} #{cdia.class}"
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  #if this exists, then cut countersink
          newedges[0].material = Color_plunge_csink
+         fce.back_material = [200,200,240,64]
          group.name = group.name + "_ca_#{stripzeros(ang.to_s,false)}"
          group.name = group.name + "_cd_#{stripzeros(cdia.to_s,false)}"
          dfactor = [PhlatScript.cutFactor, 100.0].max   #always at least 100% deep
       end   
       if (ang < 0.0)   #counterbore
+         group.description = 'counterbore'
          #puts "angle < #{ang}"
          circleInner = group.entities.add_circle(pt, vectz, cdia/2, 9)
          circleInner.each { |e|
@@ -170,6 +173,7 @@ module PhlatScript
          newedges[0].set_attribute(Dict_name, Dict_csink_diam,  cdia.to_f)  
          newedges[0].set_attribute(Dict_name, Dict_cbore_depth,  cdepth.to_f)  
          newedges[0].material = Color_plunge_cbore
+         fce.back_material = [200,240,200,64]
          group.name = group.name + "_cb_#{stripzeros(cdepth.to_s,false)}"
          group.name = group.name + "_cd_#{stripzeros(cdia.to_s,false)}"
          dfactor = [PhlatScript.cutFactor,100].max   #always at least 100% deep
@@ -178,6 +182,7 @@ module PhlatScript
       if (dfactor != PhlatScript.cutFactor) # if different set the attribute and color
          newedges[0].set_attribute(Dict_name, Dict_plunge_depth_factor, dfactor.to_s)  # class is float
          newedges[0].material = Color_plunge_cutd   if (ang == 0.0)
+         fce.back_material = [255,182,193,64]  # light pink
          group.name = group.name + "_depth_#{stripzeros(dfactor.to_s,false)}"
       else
          newedges[0].material = Color_plunge_cut      if (ang == 0.0)
