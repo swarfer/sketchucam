@@ -127,6 +127,8 @@ module PhlatScript
          wd.setCaption('laser_id', PhlatScript.getString("Laser Control"))
       end
       wd.execute_script("setCheckbox('laser','"+PhlatScript.useLaser?.inspect()+"')")
+      #set the metric flag in the form
+      wd.setValue('metric_hidden',PhlatScript.isMetric.inspect())
 
       wd.setCaption('multipass_id', PhlatScript.getString("Generate Multipass"))
       wd.execute_script("setCheckbox('multipass','"+PhlatScript.useMultipass?.inspect()+"')")
