@@ -199,24 +199,43 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
         }
         function calcfz()
            {
-           var theform =  document.forms["param_form"];
-           var feed = theform.elements["feedrate"];
-           if (feed.value != "")
-              feed = parseFloat(feed.value);
-           else 
-              feed = 0;
-           var rpm = theform.elements["spindlespeed"];
-           if (rpm.value != "")
-              rpm = parseFloat(rpm.value);
-           else
-              rmp = 0;
-           
-           var rpm1 = feed / (rpm * 1);
-           var rpm2 = feed / (rpm * 2);
-           var rpm4 = feed / (rpm * 4);
-           
-           document.getElementById("fz").innerHTML = rpm1.toFixed(3) +' '+ rpm2.toFixed(3) +' '+rpm4.toFixed(3) +'<span>Feed Per Tooth for 1, 2 and 4 teeth</span>';
-           calcsfm();
+           try
+              {
+              var theform =  document.forms["param_form"];
+              var feed = theform.elements["feedrate"];
+              if (feed.value != "")
+                 feed = parseFloat(feed.value);
+              else 
+                 feed = 0.1;
+              var rpm = theform.elements["spindlespeed"];
+              if (rpm.value != "")
+                 rpm = parseFloat(rpm.value);
+              else
+                 rpm = 1;
+
+              if (feed < 0)
+                 {
+                 theform.elements["feedrate"].value = -feed; 
+                 feed = -feed;
+                 }
+                 
+              if (rpm < 0)
+                 {
+                 theform.elements["spindlespeed"].value = -rpm; 
+                 rpm = -rpm;
+                 }
+              
+              var rpm1 = feed / (rpm * 1);
+              var rpm2 = feed / (rpm * 2);
+              var rpm4 = feed / (rpm * 4);
+              
+              document.getElementById("fz").innerHTML = rpm1.toFixed(3) +' '+ rpm2.toFixed(3) +' '+rpm4.toFixed(3) +'<span>Feed Per Tooth for 1, 2 and 4 teeth</span>';
+              calcsfm();
+              }
+           catch(err)
+            {
+            document.getElementById("fz").innerHTML = 'ERROR' +'<span>Feed Per Tooth for 1, 2 and 4 teeth</span>';
+            }
            }
         function calcsfm()
            {
@@ -231,7 +250,18 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
               dia = parseFloat(dia.value);
            else
               dia = 0; 
-           
+
+           if (rpm < 0)
+              {
+              theform.elements["spindlespeed"].value = -rpm; 
+              rpm = -rpm;
+              }
+           if (dia < 0)
+              {
+              theform.elements["bitdiameter"].value = -dia; 
+              dia = -dia;
+              }
+              
            var metric = theform.elements["metric_hidden"];
            if (metric.value == 'true')
               {

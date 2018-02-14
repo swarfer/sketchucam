@@ -155,9 +155,10 @@ module PhlatScript
     end
 
     def saveValues(wd)  # put values from webdialog into phlatscript variables
-      PhlatScript.spindleSpeed = wd.get_element_value("spindlespeed") # don't use parse_length for rpm
-      PhlatScript.feedRate = Sketchup.parse_length(wd.get_element_value("feedrate"))
-      PhlatScript.plungeRate = Sketchup.parse_length(wd.get_element_value("plungerate"))
+      PhlatScript.spindleSpeed = wd.get_element_value("spindlespeed").to_f.abs # don't use parse_length for rpm
+      PhlatScript.feedRate = Sketchup.parse_length(wd.get_element_value("feedrate")).abs
+      PhlatScript.plungeRate = Sketchup.parse_length(wd.get_element_value("plungerate")).abs
+      
       PhlatScript.materialThickness = Sketchup.parse_length(wd.get_element_value("materialthickness"))
       PhlatScript.cutFactor = wd.get_element_value("cutfactor") # don't use parse_length for percentages
       CheckDecimals(wd.get_element_value("bitdiameter"))
