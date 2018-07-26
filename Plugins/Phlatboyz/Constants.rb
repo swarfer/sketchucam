@@ -141,7 +141,7 @@ Dict_rampangle = "ramp_angle"
 Dict_mustramp = "must_ramp"
 Dict_zerooffsetx = "offset_x"
 Dict_zerooffsety = "offset_y"
-
+Dict_abs_depth = "abs_depth"
 # - - - - - - - - - - - - - - - - - 
 # do not edit this
 #           Cut Keys

@@ -46,7 +46,7 @@ module PhlatScript
    def initialize
       super()
       @limit = 0
-      @flood = false #must we use flood file for zigzags?
+      @flood = false #must we use flood fill for zigzags?
       @active_face = nil
       @bit_diameter = PhlatScript.bitDiameter
       #puts "bit diameter #{@bit_diameter.to_mm}mm"
@@ -91,10 +91,14 @@ module PhlatScript
       @ip.pick view, x, y
       @active_face = activeFaceFromInputPoint(@ip)
       if (@active_face)
+         #@debug = true
          self.create_geometry(@active_face, view)
       end
+      #debugfile("resetting view") if (@debug)
       self.reset(view)
-      view.lock_inference
+      #debugfile("resetting view done") if (@debug)
+      view.lock_inference    #turns lock off
+      debugfile("lock_inference done") if (@debug)
    end
 
    #SWARFER, want to detect the shift key down, which will prevent drawing an offset line
@@ -139,7 +143,7 @@ module PhlatScript
    end
 
    def onMouseMove(flags, x, y, view)
-      @ip.pick view, x, y
+      @ip.pick( view, x, y)
       @active_face = activeFaceFromInputPoint(@ip)
       if (@active_face)
          view.tooltip = @ip.tooltip
@@ -305,12 +309,12 @@ module PhlatScript
    
    
    def debugfile(line)
-      File.open("d:/temp/sketchupdebug.txt", "a+") { |fp| fp.puts(line)  }
+      File.open("c:/temp/sketchupdebug.txt", "a+") { |fp| fp.puts(line)  }
    end
    
    # create a raster of 'cells' over the face, cells are spaced at stepOverinuse intervals
    # initialize @cells before calling this
-   # make sure there is  a border of false cells around the face
+   # make sure there is a border of false cells around the face
    # use half stepover on X to get the ends of the zigs closer to the borders - suites horizontal zigzags
    def createcells(xstart,xend, ystart,yend, stepOverinuse, aface)
       countx = 0
@@ -934,18 +938,15 @@ module PhlatScript
 
       #use the flood zigzag if @flood is true  
       if (!@flood)   #normal zigzag, works well for simple faces, and works with contour
+         zigzag_points = nil      
+         contour_points = nil
          if (@keyflag == 1) || (@keyflag == 0)
             zigzag_points = get_zigzag_points(@active_face.outer_loop) if (!@active_face.deleted?)
-         else
-            zigzag_points = nil
          end
-
          if (@keyflag == 2) || (@keyflag == 0)
             contour_points = get_contour_points(@active_face.outer_loop) if (!@active_face.deleted?)
-         else
-            contour_points = nil
          end
-         
+
          if (zigzag_points != nil)
             if (zigzag_points.length >= 2)
                view.draw(GL_LINE_STRIP, zigzag_points)
@@ -958,6 +959,7 @@ module PhlatScript
          end
       else  # do floodfill only, contour must pre-exist because we need the face
          if (@keyflag == 2) # do advanced contours
+            contour_points = nil
             contour_points = get_contour_points_adv()       if (!@active_face.deleted?)
             if (contour_points != nil)
                if (contour_points.length >= 1)  # at least 1 array of points
@@ -995,6 +997,7 @@ module PhlatScript
       #puts "create geometry"
       model = view.model
       model.start_operation("Create Pocket",true,true)
+      debugfile("create_geometry start")      if (@debug)
       
       if (@flood)
          if (@keyflag == 2)  # CTRL held down in flood mode
@@ -1026,7 +1029,7 @@ module PhlatScript
             end
          end
       else
-         if @keyflag == 1 || @keyflag == 0
+         if (@keyflag == 1) || (@keyflag == 0)
             zigzag_points = get_zigzag_points(@active_face.outer_loop)
          else
             zigzag_points = nil
@@ -1037,7 +1040,8 @@ module PhlatScript
          else
             contour_points = nil
          end
-
+         debugfile("zigzag #{zigzag_points}")         if (@debug)
+         debugfile("contour #{contour_points}")      if (@debug)
          if zigzag_points != nil
             if (zigzag_points.length >= 2)
                zedges = model.entities.add_curve(zigzag_points)
@@ -1061,6 +1065,7 @@ module PhlatScript
       end
 
       model.commit_operation
+      debugfile("create geometry end")      if (@debug)
    end
 
 #----------------------------------------------------------------------
@@ -1128,7 +1133,16 @@ module PhlatScript
 def get_contour_points(loop)
 #               puts "get contour points"
 #   return get_offset_points(loop, -(@bit_diameter * 0.5))
-   return Offset.vertices(@active_face.outer_loop.vertices, -(@bit_diameter * 0.5)).offsetPoints
+   bb = loop.face.bounds
+   ht = bb.max.y - bb.min.y - @bit_diameter - 0.001
+   wd = bb.max.x - bb.min.x - @bit_diameter - 0.001
+         # do not even try if the face is not bigger than the bitdiameter
+   bd = @bit_diameter / 2
+   if ((wd > bd) || (ht > bd)) 
+      return Offset.vertices(@active_face.outer_loop.vertices, -(@bit_diameter * 0.5)).offsetPoints
+   else
+      return nil
+   end
 end
 
 # advanced contour points, attempt to do both 'inside the outer loop' and 'outside the inner loops'
@@ -1227,10 +1241,10 @@ end
       return pts.sort{|a,b| a.y <=> b.y}
    end
    
-   #get the offset from the main loop for the zigzag lines
+   # get the offset from the main loop for the zigzag lines
+   #  as stepover gets bigger, so the chance of missing bits around the edge inscreases, 
+   #  so make the offset smaller for large stepovers
    def getOffset
-      #as stepover get bigger, so the chance of missing bits around the edge inscreases, 
-      #so make the offset smaller for large stepovers
       div = (@stepOver >= 0.75) ? 3 : 2
       if (@stepOver >= 0.85)
          div = 4
@@ -1249,21 +1263,21 @@ end
    end
 
    def get_zigzag_points_y(loop)
-#      puts "get zigzag Y points #{@stepOver}"
+#      puts "GET ZIGZAG Y points stepOver #{@stepOver}"
       dir = 1
       zigzag_points = []
       offset = getOffset()
-      #puts "   offset #{offset}"
+#      puts "   offset #{offset.to_mm}"
 
 #      offset_points = get_offset_points(loop, -(offset))
 #      puts "old offset_points #{offset_points}"
-
-      offset_points = Offset.vertices(@active_face.outer_loop.vertices, -(offset)).offsetPoints
+      offset_points = Offset.vertices(loop.vertices, -(offset)).offsetPoints
 
 #      puts "new offset_points #{offset_points}"
 
       bb = loop.face.bounds
       y = bb.min.y + offset + 0.0005
+#      puts "Y start  #{y.to_mm}"
       
       stepOverinuse = @bit_diameter * @stepOver
       if ($phoptions.use_fuzzy_pockets?)
@@ -1272,7 +1286,9 @@ end
             stepOverinuse = getfuzzystepover(ylen)
          end
       end
+#      puts "stepoverinuse #{stepOverinuse.to_mm}"
       yend = bb.max.y + 0.0005
+#      puts "y end #{y}"
       while (y < yend) do
          pts = get_hatch_points_y(offset_points, y)
          if (pts.length >= 2)
@@ -1292,6 +1308,7 @@ end
             print "stepOver <= 0, #{@stepOver} #{@bit_diameter}"
             break;
          end
+#         puts "new Y #{y}"
       end #while
       return zigzag_points
    end
@@ -1352,6 +1369,14 @@ end
    
    # select between the options
    def get_zigzag_points(loop)
+      bb = loop.face.bounds
+      ht = bb.max.y - bb.min.y - @bit_diameter - 0.001
+      wd = bb.max.x - bb.min.x - @bit_diameter - 0.001
+#      puts "ht #{ht.to_mm}  wd #{wd.to_mm}"
+      if ((wd < @bit_diameter) || (ht < @bit_diameter)) 
+#         puts "exiting nil"
+         return nil
+      end
       if PhlatScript.pocketDirection?
          return get_zigzag_points_x(loop)  # zigs along Y - suites phlatprinter
       else

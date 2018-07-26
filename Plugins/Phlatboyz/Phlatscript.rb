@@ -28,6 +28,7 @@ module PhlatScript
         m.alpha = 0.5
         m.color = "white"
       end
+      PhlatScript.use_abs_depth = PhlatScript.use_abs_depth?
     rescue
       model.abort_operation
     end
@@ -466,6 +467,16 @@ module PhlatScript
    def PhlatScript.zerooffsety=(offset)
       Sketchup.active_model.set_attribute(Dict_name, Dict_zerooffsety, offset.to_f)
    end
+
+#===== abs depth
+   def PhlatScript.use_abs_depth?
+      Sketchup.active_model.get_attribute(Dict_name, Dict_abs_depth, $phoptions.use_abs_depth?)
+   end
+
+   def PhlatScript.use_abs_depth=(value)
+      Sketchup.active_model.set_attribute(Dict_name, Dict_abs_depth, value)
+   end
+   
   
   #vtabs
   def PhlatScript.vtabs?

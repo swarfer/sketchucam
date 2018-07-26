@@ -25,10 +25,11 @@ module PhlatScript
          #misc
          @default_comment_remark = phoptions.default_comment_remark.to_s
 
-         @default_gen3d =        (phoptions.default_gen3d? ? '1' : '0')
-         @default_show_gplot =   (phoptions.default_show_gplot? ? '1' : '0')
-         @default_tabletop =     (phoptions.default_tabletop? ? '1' : '0')
+         @default_gen3d          = (phoptions.default_gen3d? ? '1' : '0')
+         @default_show_gplot     = (phoptions.default_show_gplot? ? '1' : '0')
+         @default_tabletop       = (phoptions.default_tabletop? ? '1' : '0')
          @use_compatible_dialogs = (phoptions.use_compatible_dialogs? ? '1' : '0')
+         @use_abs_depth          = (phoptions.use_abs_depth? ? '1' : '0')
          #tools
          @default_spindle_speed = phoptions.default_spindle_speed.to_i.to_s
          @default_feed_rate =     PhlatScript.conformat(phoptions.default_feed_rate)
@@ -100,6 +101,7 @@ module PhlatScript
          @default_show_gplot = Default_show_gplot
          @default_tabletop = Default_tabletop
          @use_compatible_dialogs = Use_compatible_dialogs
+         @use_abs_depth = 0
          #tools
          @default_spindle_speed = Default_spindle_speed
          @default_feed_rate = Default_feed_rate
@@ -198,6 +200,9 @@ module PhlatScript
             value = -1
             value = getvalue(optin['use_compatible_dialogs'])                if (optin.has_key?('use_compatible_dialogs'))
             @use_compatible_dialogs = value > 0 ? true :  false              if (value != -1)
+            value = -1
+            value = getvalue(optin['use_abs_depth'])                if (optin.has_key?('use_abs_depth'))
+            @use_abs_depth = value > 0 ? true :  false             
 
          #tools
             @default_spindle_speed = getvalue(optin['default_spindle_speed'])    if (optin.has_key?('default_spindle_speed'))
@@ -466,6 +471,13 @@ module PhlatScript
       end
       def use_compatible_dialogs=(newval)
          @use_compatible_dialogs = newval
+      end
+
+      def use_abs_depth?
+         @use_abs_depth
+      end
+      def use_abs_depth=(newval)
+         @use_abs_depth = newval == true
       end
 #tools
       def default_spindle_speed
@@ -971,18 +983,20 @@ end # class
             'Default_gen3d',
             'Default_show_gplot after output ',
             'Default_tabletop is Z-Zero ',
-            'Use_compatible_dialogs set TRUE if you cannot see the parameters dialog' ]
-
-
+            'Use_compatible_dialogs set TRUE if you cannot see the parameters dialog',
+            'Use Absolute Depth measurements']
+                
          defaults=[
             @options.default_comment_remark,
             @options.default_gen3d?.inspect(),
             @options.default_show_gplot?.inspect(),
             @options.default_tabletop?.inspect(),
-            @options.use_compatible_dialogs?.inspect()
+            @options.use_compatible_dialogs?.inspect(),
+            @options.use_abs_depth?.inspect()
             ]
          # dropdown options can be added here
          list=["",
+            "true|false",
             "true|false",
             "true|false",
             "true|false",
@@ -998,7 +1012,7 @@ end # class
             @options.default_show_gplot      = (input[2] == 'true')
             @options.default_tabletop        = (input[3] == 'true')
             @options.use_compatible_dialogs  = (input[4] == 'true')
-
+            @options.use_abs_depth           = (input[5] == 'true')
 
             @options.save
          end # if input
