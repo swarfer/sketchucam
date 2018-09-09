@@ -295,6 +295,9 @@ module PhlatScript
                         aMill.retract($phoptions.default_home_height)
                      end
                   end
+                  if (!$phoptions.use_home_height?) && (!PhlatScript.UseEndPosition?) && (!PhlatScript.UseOutfeed?)
+                     aMill.cncPrint("G53 G0 Z0\n")
+                  end
 
                   # puts("finishing up")
                   Sketchup.set_status_text('Job finish')
@@ -422,7 +425,7 @@ module PhlatScript
                         aMill.retract($phoptions.default_home_height)
                      end
                   #              end
-               end
+                  end
 
                   # puts("finishing up")
                   aMill.job_finish # output housekeeping code

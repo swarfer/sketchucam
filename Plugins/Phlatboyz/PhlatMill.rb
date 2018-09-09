@@ -2,6 +2,8 @@ require 'sketchup.rb'
 # require 'Phlatboyz/Constants.rb'
 # see note at end of file
 module PhlatScript
+   RAMPMULT = 5    # rampdist = bitdiam * RAMPMULT
+         
    class PhlatMill
       # Open an output file and set up initial state
       def initialize(output_file_name = nil, min_max_array = nil)
@@ -53,7 +55,8 @@ module PhlatScript
          @material_thickness = PhlatScript.materialThickness
          @multidepth = PhlatScript.multipassDepth
          @bit_diameter = 0 # swarfer: need it often enough to be global
-
+         @rampdist = 0 # distance over which to ramp, set when bitdiameter is set
+         
          @comment = PhlatScript.commentText
          @extr = '-'
          @cmd_linear = 'G01'  # Linear interpolation
@@ -80,6 +83,7 @@ module PhlatScript
          # @curr_bit.diam = diameter
          @bit_diameter = diameter
          @tooshorttoramp = diameter / 2 # do not ramp edges that are less than a bit radius long - also affect optimizer
+         @rampdist = diameter * RAMPMULT
       end
 
       # get too short to ramp value
@@ -187,6 +191,7 @@ module PhlatScript
          #      @bit_diameter = Sketchup.active_model.get_attribute Dict_name, Dict_bit_diameter, Default_bit_diameter
          @bit_diameter = PhlatScript.bitDiameter
          @tooshorttoramp = @bit_diameter / 2
+         @rampdist = @bit_diameter * RAMPMULT
 
          cncPrint("%\n")
          # do a little jig to prevent the code highlighter getting confused by the bracket constructs
@@ -323,6 +328,8 @@ module PhlatScript
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
          cncPrint('G00 C', $phoptions.posC.to_s, "\n") if $phoptions.useC?
+         cncPrint("G53 G0 Z0\n") #Sep2018 safe raise before initial move to start point
+         cncPrint("G0 X0 Y0\n")
          if @laser == false
             cncPrint('M3 S', @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
          end
@@ -656,17 +663,29 @@ module PhlatScript
                @cc = @cmd_linear
                return
             end
-
+            #find a point to ramp to 
             bz = ((@cz - zo) / 2).abs # half distance from @cz to zo, not height to cut to
+            if @rampdist < distance
+               #find new point
+               prop = @rampdist / distance # proportion of distance
+               rpoint =  Geom::Point3d.linear_combination(1-prop, point1, prop, point2)
+               #puts "rpoint #{rpoint} rampdist #{@rampdist} distance #{distance}"
+               anglerad = Math.atan(bz / @rampdist)
+               rdist = @rampdist
+            else
+               #use opposite point
+               rpoint = point2
+               anglerad = Math.atan(bz / distance)
+               rdist = distance
+            end
 
-            anglerad = Math.atan(bz / distance)
             angledeg = PhlatScript.todeg(anglerad)
-
+            #puts "angledeg #{angledeg}"
             if angledeg > limitangle # then need to calculate a new bz value
                puts "limit exceeded  #{angledeg} > #{limitangle}  old bz=#{bz}" if @debugramp
-               bz = distance * Math.tan(PhlatScript.torad(limitangle))
+               bz = rdist * Math.tan(PhlatScript.torad(limitangle))
                if bz == 0
-                  puts "distance=#{distance} bz=#{bz}" if @debugramp
+                  puts "rdist=#{rdist} bz=#{bz}" if @debugramp
                   passes = 4
                else
                   passes = ((zo - @cz) / bz).abs
@@ -708,8 +727,8 @@ module PhlatScript
                # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
                command_out += cmd if (cmd != @cc) || @gforce
                @cc = cmd
-               command_out += format_measure('x', op.x)
-               command_out += format_measure('y', op.y)
+               command_out += format_measure('x', rpoint.x)
+               command_out += format_measure('y', rpoint.y)
                # for the last pass, make sure we do equal legs - this is mostly circumvented by the passes adjustment
                if (zo - curdepth).abs < (bz * 2)
                   puts 'last pass smaller bz' if @debugramp
@@ -744,6 +763,7 @@ module PhlatScript
 
       # This ramps down to half the depth at otherpoint (op), and back to cut_depth at start point.
       # * This may end up being quite a steep ramp if the distance is short.
+      # * 9/9/2018 limit length of ramp to @rampdist
       def rampnolimit(op, zo, so = @speed_plung, cmd = @cmd_linear)
          cncPrintC('(ramp ' + sprintf('%10.6f', zo) + ', so=' + so.to_mm.to_s + ' cmd=' + cmd + '  op=' + op.to_s.delete('()') + ")\n") if @debugramp
          if !notequal(zo, @cz)
@@ -784,12 +804,22 @@ module PhlatScript
                cncPrintC("rampnolimit end, plunged\n")
                return
             end
+            #find a point to ramp to
+            if @rampdist < distance
+               #find new point
+               prop = @rampdist / distance # proportion of distance
+               rpoint =  Geom::Point3d.linear_combination(1-prop, point1, prop, point2)
+               #puts "rpoint #{rpoint} rampdist #{@rampdist} distance #{distance}"
+            else
+               #use opposite point
+               rpoint = point2
+            end
 
             # cut to Xop.x Yop.y Z (zo-@cz)/2 + @cz
             command_out += cmd if (cmd != @cc) || @gforce
             @cc = cmd
-            command_out += format_measure('x', op.x)
-            command_out += format_measure('y', op.y)
+            command_out += format_measure('x', rpoint.x)   # go to ramp point
+            command_out += format_measure('y', rpoint.y)
             bz = (zo - @cz) / 2 + @cz
             command_out += format_measure('z', bz)
             command_out += format_feed(so) if notequal(so, @cs)
