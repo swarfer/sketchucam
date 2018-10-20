@@ -50,6 +50,8 @@ module PhlatScript
             @msg = msg
          end
          self.update(1)
+         #puts "set ppct"
+         @ppct = 0.to_i # previous percent done
       end
       
       def symbols(back,fore)
@@ -66,10 +68,16 @@ module PhlatScript
             now = @total
          end
          pct = (now*100)/@total
-         pct = 2 if (pct < 2) 
-         pct_p = pct / 2 
-         block = @@foreground[0,pct_p-1] + @@background[0,50-pct_p]
-         Sketchup.set_status_text(@msg + " " + block)
+         pct = 2 if (pct < 2)
+         pct = pct.to_f
+         @ppct = @ppct.to_f
+         diff = (pct - @ppct).abs.to_i
+         if diff > 0  # avoid updating screen unless there is real change         
+            pct_p = pct / 2 
+            block = @@foreground[0,pct_p-1] + @@background[0,50-pct_p]
+            Sketchup.set_status_text(@msg + " " + block)
+         end
+         @ppct = pct
       end
    end  
 

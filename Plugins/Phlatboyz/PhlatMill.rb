@@ -609,11 +609,11 @@ module PhlatScript
       end
 
       # Do a ramped move, calls ramplimit() or rampnolimit() as needed
-      def ramp(limitangle, op, zo, so = @speed_plung, cmd = @cmd_linear)
+      def ramp(limitangle, op, zo, so = @speed_plung, nodist=false, cmd = @cmd_linear)
          if limitangle > 0
-            ramplimit(limitangle, op, zo, so, cmd)
+            ramplimit(limitangle, op, zo, so, nodist, cmd)
          else
-            rampnolimit(op, zo, so, cmd)
+            rampnolimit(op, zo, so, nodist, cmd)
          end
       end
 
@@ -622,7 +622,8 @@ module PhlatScript
       # * +limitangle+ - angle limit in degrees
       # * +op+ - the Opposite Point, the other end of the line segment
       # * +zo+ - destination depth
-      def ramplimit(limitangle, op, zo, so = @speed_plung, cmd = @cmd_linear)
+      # * nodist = true if yu want to ignore rampdist, as must be done for single line fold cuts
+      def ramplimit(limitangle, op, zo, so = @speed_plung, nodist=false, cmd = @cmd_linear)
          cncPrintC("(ramp limit #{limitangle}deg zo=" + sprintf('%10.6f', zo) + ', so=' + so.to_s + ' cmd=' + cmd + '  op=' + op.to_s.delete('()') + ")\n") if @debugramp
          if !notequal(zo, @cz)
             @no_move_count += 1
@@ -665,15 +666,17 @@ module PhlatScript
             end
             #find a point to ramp to 
             bz = ((@cz - zo) / 2).abs # half distance from @cz to zo, not height to cut to
-            if @rampdist < distance
+            if (@rampdist < distance) && !nodist
                #find new point
+               cncPrintC("ramplimit find new ramp point #{@rampdist.to_mm} #{distance}  #{nodist} ") if @debugramp
                prop = @rampdist / distance # proportion of distance
                rpoint =  Geom::Point3d.linear_combination(1-prop, point1, prop, point2)
                #puts "rpoint #{rpoint} rampdist #{@rampdist} distance #{distance}"
                anglerad = Math.atan(bz / @rampdist)
                rdist = @rampdist
             else
-               #use opposite point
+               #use opposite point, always if nodist is true
+               cncPrintC("ramplimit use point2 #{@rampdist.to_mm} #{distance} #{nodist} ")  if @debugramp
                rpoint = point2
                anglerad = Math.atan(bz / distance)
                rdist = distance
@@ -764,7 +767,8 @@ module PhlatScript
       # This ramps down to half the depth at otherpoint (op), and back to cut_depth at start point.
       # * This may end up being quite a steep ramp if the distance is short.
       # * 9/9/2018 limit length of ramp to @rampdist
-      def rampnolimit(op, zo, so = @speed_plung, cmd = @cmd_linear)
+      # param nodist = true if you want to ignore the @rampdist value
+      def rampnolimit(op, zo, so = @speed_plung, nodist=false, cmd = @cmd_linear)
          cncPrintC('(ramp ' + sprintf('%10.6f', zo) + ', so=' + so.to_mm.to_s + ' cmd=' + cmd + '  op=' + op.to_s.delete('()') + ")\n") if @debugramp
          if !notequal(zo, @cz)
             @no_move_count += 1
@@ -805,7 +809,7 @@ module PhlatScript
                return
             end
             #find a point to ramp to
-            if @rampdist < distance
+            if (@rampdist < distance) && !nodist
                #find new point
                prop = @rampdist / distance # proportion of distance
                rpoint =  Geom::Point3d.linear_combination(1-prop, point1, prop, point2)

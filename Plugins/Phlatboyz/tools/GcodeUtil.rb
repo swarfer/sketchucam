@@ -1297,7 +1297,7 @@ module PhlatScript
                                              # do simple ramp to depth
                                              aMill.move(point.x, point.y) if pass == 1
                                              aMill.cncPrintC('RAMP to depth') if @debug
-                                             aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate)
+                                             aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate,true) #set nodist true
                                           else
                                              aMill.cncPrintC(' normal move and ramp to cut_depth') if @debug
                                              aMill.move(point.x, point.y)
