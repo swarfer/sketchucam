@@ -1,10 +1,10 @@
-#phlat joiner
-#select a bunch of gcode files and join them together in the order selected
+# phlat joiner
+# select a bunch of gcode files and join them together in the order selected
 #
-#select files
-#join them
-#output new file to new name
-#will obey phoptions.usecomments? and not output new comments if false.
+# select files
+# join them
+# output new file to new name
+# will obey phoptions.usecomments? and not output new comments if false.
 # will not remove existing comments from input files!
 
 require 'Phlatboyz/PhlatTool.rb'
@@ -23,24 +23,25 @@ module PhlatScript
          @largeIcon = "images/#{toolname.downcase}_large.png"
          @smallIcon = "images/#{toolname.downcase}_small.png"
          @cmmd = nil
+         @debug = false
       end
-      
+
       def cmmd=(val)
          @cmmd = val
       end
 
       def select
-      
+
    # get multiple file names
          directory_name = PhlatScript.cncFileDir
          filename = PhlatScript.cncFileName
          status = false
          filenames = Array.new
-		 
+
        #credit this change! 13 Apr 2015
-       #Lance Lefebure <lance@lefebure.com> 
-       #It now handles file extensions better and keeps the user in the same directory when selecting subsequent files. 
-             
+       #Lance Lefebure <lance@lefebure.com>
+       #It now handles file extensions better and keeps the user in the same directory when selecting subsequent files.
+
          file_ext_2 = ""							# This will be the extension of the last file the user picked
          file_ext_1 = $phoptions.default_file_ext	# Local variable so we can format it
          file_ext_1 = file_ext_1.upcase				# Convert string to upper case
@@ -57,7 +58,7 @@ module PhlatScript
             wildcard = "*.#{file_ext_1}"
             result = UI.openpanel("Select first G-code file.", wildcard)
          end
-         
+
          while (result != nil)
             filenames += [result]
 
@@ -93,7 +94,7 @@ module PhlatScript
             UI.messagebox("Not enough files selected, exiting.")
             return
          end
-         
+
          #get output file name
 		 message = "Files to be joined:\n"
 		 filenames.each {|x| message += "#{x}\n"}
@@ -106,7 +107,7 @@ module PhlatScript
          end
          outputfile += $phoptions.default_file_ext if (File.extname(outputfile).empty?)  #add default extension
          outf = File.new(outputfile, "w+")
-         
+
          outf.puts("%")
          idx = 0
          outf.puts(PhlatScript.gcomment("joined files"))     if ($phoptions.usecomments?)
@@ -126,8 +127,8 @@ module PhlatScript
             puts "output file #{idx}"                          if @debug
             inf = File.new(filenames[idx],"r")
             ff = filenames[idx]
-            
-            #output first file till 'G0 X0 Y0 (home)'
+
+            #output first file till 'G0[0] X0 Y0 (home)'
             #output file 2 to N-1 from 'G90 G21 G49 G61' till 'G0 X0 Y0 (home)'
             #output file N from 'G90 G21 G49 G61' till end
             if (idx > 0)  # then skip header
@@ -149,26 +150,33 @@ module PhlatScript
                end
             #output till footer
             line = inf.readline
-            while !inf.eof and (line.match('G0 X0 Y0|G00 X0 Y0|M30|Outfeed|EndPosition') == nil)
-               outf.puts(line)   if !line.match('Outfeed|EndPosition|M30|%')  #do not output leading % etc
+            stored = ''
+            while !inf.eof and (line.match('M30|Outfeed|EndPosition') == nil)
+               if (!line.match('M5|M05|Outfeed|EndPosition|M30|%'))  #do not output leading % etc
+                  outf.puts(line)   
+               else
+                  puts "storing #{line}" if @debug
+                  stored =  stored + line
+                  end
                line = inf.readline
             end
             puts "output till footer done #{idx}  #{line}"     if @debug
-            
+
             if (idx == lastfile)
                #output footer
-               puts "writing footer #{idx}"                    if @debug
+               puts "writing footer #{idx} #{line}"                    if @debug
+               outf.puts(stored)   if stored != ''
                outf.puts(line)
                while !inf.eof
                   line = inf.readline
                   outf.puts(line)
                end #while
             end
-            
+
             inf.close
             puts "closed #{idx}"                               if @debug
             idx += 1
-         end # while   
+         end # while
          outf.close
          puts "finished writing joined files"                  if @debug
          if PhlatScript.usecommentbracket?
