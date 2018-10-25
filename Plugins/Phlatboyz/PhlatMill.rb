@@ -618,11 +618,12 @@ module PhlatScript
       end
 
       # This ramp is limited to limitangle, so it will do multiple ramps to satisfy this angle
-      # * We are ramping instad of plunging, ramping along this entire segment
+      # * We are ramping instead of plunging, ramping along this segment
       # * +limitangle+ - angle limit in degrees
       # * +op+ - the Opposite Point, the other end of the line segment
       # * +zo+ - destination depth
-      # * nodist = true if yu want to ignore rampdist, as must be done for single line fold cuts
+      # * +so+ - feed speed
+      # * +nodist+ = true if you want to ignore rampdist, as must be done for single line fold cuts
       def ramplimit(limitangle, op, zo, so = @speed_plung, nodist=false, cmd = @cmd_linear)
          cncPrintC("(ramp limit #{limitangle}deg zo=" + sprintf('%10.6f', zo) + ', so=' + so.to_s + ' cmd=' + cmd + '  op=' + op.to_s.delete('()') + ")\n") if @debugramp
          if !notequal(zo, @cz)
@@ -767,7 +768,7 @@ module PhlatScript
       # This ramps down to half the depth at otherpoint (op), and back to cut_depth at start point.
       # * This may end up being quite a steep ramp if the distance is short.
       # * 9/9/2018 limit length of ramp to @rampdist
-      # param nodist = true if you want to ignore the @rampdist value
+      # * +nodist+ = true if you want to ignore the @rampdist value
       def rampnolimit(op, zo, so = @speed_plung, nodist=false, cmd = @cmd_linear)
          cncPrintC('(ramp ' + sprintf('%10.6f', zo) + ', so=' + so.to_mm.to_s + ' cmd=' + cmd + '  op=' + op.to_s.delete('()') + ")\n") if @debugramp
          if !notequal(zo, @cz)
@@ -1015,6 +1016,11 @@ module PhlatScript
       # Generate code for a spiral bore and return the command string
       # * if ramping is on, lead angle will be limited to rampangle
       # * sh = safeheight, where @cz is now, usually
+      # * +xo+ - x position
+      # * +yo+ - y position
+      # * +zstart+ - z start depth, will rapid to 0.5mm above this before cut
+      # * +zend+ - Z end depth
+      # * +yoff+ - radius of spiral
       def SpiralAt(xo, yo, zstart, zend, yoff)
          @precision += 1
          cwstr = @cw ? 'CW' : 'CCW'
@@ -1134,7 +1140,7 @@ module PhlatScript
 
       # Generate code for a spiral bore and return the command string, using quadrants.
       # * if ramping is on, lead angle will be limited to rampangle
-      # * Gplot does not display arcs nicely, by using quadrants we can at least see where the circles are.
+      # * Gplot does not display arcs nicely, by using quadrants we can at least see where the circles are. (since fixed)
       def SpiralAtQ(xo, yo, zstart, zend, yoff)
          #   @debugramp = true
          @precision += 1
@@ -1876,6 +1882,7 @@ module PhlatScript
       # swarfer: instead of a plunged hole, spiral bore to depth, depth first (the old way)
       # handles multipass by itself, also handles ramping
       # @cboreinner: set this to the previously bored inner hole of a cbore, then we can start there for the cbore
+      # * +diam+ - final diameter
       def plungeboredepth(xo, yo, zStart, zo, diam, needretract = true)
          # @debug = true
          cz = @retract_depth
@@ -1926,16 +1933,20 @@ module PhlatScript
                      else
                         command_out += SpiralAt(xo, yo, zStart, zo, yoff)
                      end
+                     command_out += 'G0' + format_measure('Y', yo - yoff / 2) + "\n"
                   end
                else
                   if PhlatScript.stepover < 50 # act for a hard material
-                     yoff = (diam / 2 - @bit_diameter / 2) * 0.7
-                     flag = true
-                     command_out += "(pbd hard material)\n" if @debug
-                     if @quarters
-                        command_out += SpiralAtQ(xo, yo, zStart, zo, yoff)
-                     else
-                        command_out += SpiralAt(xo, yo, zStart, zo, yoff)
+                     if diam > (@bit_diameter * 1.5)
+                        yoff = (diam / 2 - @bit_diameter / 2) * 0.7
+                        flag = true
+                        command_out += "(pbd hard material)\n" if @debug
+                        if @quarters
+                           command_out += SpiralAtQ(xo, yo, zStart, zo, yoff)
+                        else
+                           command_out += SpiralAt(xo, yo, zStart, zo, yoff)
+                        end
+                        command_out += 'G00' + format_measure('Y', yo) + "\n"
                      end
                   end
                end
@@ -1943,7 +1954,7 @@ module PhlatScript
                   command_out += 'G00' + format_measure('Y', yo - yoff / 2) + format_measure('Z', sh) + "\n"
                   cz = sh
                end
-            else # diam = biadiam OR not ramping
+            else # diam = bitdiam OR not ramping
                zonow = PhlatScript.tabletop? ? @material_thickness : 0
                if @canneddrill
                   command_out += diam > @bit_diameter ? 'G99' : 'G98'
@@ -2004,7 +2015,7 @@ module PhlatScript
                      end
                   end
                else
-                  if PhlatScript.stepover < 50 # act for a hard material, do initial spiral
+                  if PhlatScript.stepover < 50 && ( diam < (@bit_diameter * 1.5)) # act for a hard material, do initial spiral
                      yoff = (diam / 2 - @bit_diameter / 2) * 0.7
                      flag = true
                      command_out += "(!multi && ramp 0.7 Yoff #{yoff.to_mm})\n" if @debug
@@ -2015,6 +2026,7 @@ module PhlatScript
                      end
                   end
                end
+               command_out += 'G00' + format_measure('Y', yo - yoff / 2) + "\n"     if flag
                command_out += 'G00' + format_measure('Y', yo - yoff / 2) + format_measure('Z', sh) + "\n" if flag
                cz = sh
             else
@@ -2057,6 +2069,7 @@ module PhlatScript
 
          # if DIA is > 2*BITDIA then we need multiple cuts
          yoff = (diam / 2 - @bit_diameter / 2) # offset to start point for final cut
+         ystep = yoff / 4
          if diam > (@bit_diameter * 2)
             command_out += "  (MULTI spirals #{yoff.to_l})\n" if @debug
             # if regular step
@@ -2095,6 +2108,7 @@ module PhlatScript
 
                #            if (nowyoffset != yoff) # then retract to reduced safe
                next unless (nowyoffset - yoff).abs > 0.0001 # then retract to reduced safe
+               command_out += 'G00' + format_measure('Y', yo - nowyoffset + ystep / 2) + "\n"
                command_out += 'G00' + format_measure('Y', yo - nowyoffset + ystep / 2) + format_measure('Z', sh)
                cy = yo - nowyoffset + ystep / 2
                cz = sh
@@ -2104,20 +2118,26 @@ module PhlatScript
             if diam > @bit_diameter # only need a spiral bore if desired hole is bigger than the drill bit
                command_out += " (SINGLE spiral)\n" if @debug
                command_out += @quarters ? SpiralAtQ(xo, yo, zStart, zo, yoff) : SpiralAt(xo, yo, zStart, zo, yoff)
-               # command_out += "g00" + format_measure("y" , yo) + format_measure("z" , sh) + "\n"
+               if diam < (@bit_diameter * 1.5)
+                  command_out += 'G00' + format_measure('Y', yo) + "\n"
+                  cy = yo
+               else
+                  cy = yoff
+               end               
                cz = sh
-               cy = yoff
             end
             if diam < @bit_diameter
                cncPrintC("NOTE: requested dia #{diam} is smaller than bit diameter #{@bit_diameter}")
             end
-         end # if diam >
+         end # if diam > 2bit
 
          # return to center at safe height
          #      command_out += format_measure(" G1 Y",yo)
          #      command_out += "\n";
          if notequal(yo, cy) || notequal(cz, sh)
             command_out += "(plungeboredepth - return to center retract)\n" if @debug
+            command_out += 'G00' + format_measure('Y', yo - yoff + ystep / 2) + "\n"
+            cy = yo - yoff + ystep / 2
             command_out += 'G00'
             command_out += format_measure('Y', yo)   if notequal(yo, cy) # back to circle center
             command_out += format_measure('Z', sh) + "\n"
@@ -2143,11 +2163,11 @@ module PhlatScript
          # @debug = false
       end
 
-         # Instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral
-      # handles multipass by itself, also handles ramping
-      # this is different enough from the old plunge bore that making it conditional within 'plungebore'
+      # Instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral.
+      # * handles multipass by itself, also handles ramping.
+      # * this is different enough from the old plunge bore that making it conditional within 'plungebore'
       # would make it too complicated
-      # must also obey @cboreinner
+      # * must also obey @cboreinner
       def plungeborediam(xo, yo, zStart, zo, diam, needretract = true)
          # @debug = true
          zos = format_measure('depth=', (zStart - zo))
@@ -2264,19 +2284,22 @@ module PhlatScript
 
             command_out += SpiralOut(xo, yo, zStart, zonow, yoff, ystep)
             if PhlatScript.useMultipass? && ((zonow - zo).abs > 0.0001)
-               command_out += 'G00' + format_measure('Y', yo - yoff + 0.02) + format_measure('Z', zonow + 0.02) + "\n" # raise
-               cz = zonow + 0.02
+               command_out += 'G00' + format_measure('Y', yo - yoff + ystep/3) + format_measure('Z', zonow + 0.2.mm) + "\n" # raise
+               cz = zonow + 0.2.mm  
                command_out += 'G00' + format_measure('Y', yo) + "\n" # back to hole center
             end
             cnt += 1
             if cnt > 1000
-               cncPrint('error high count break in plungeborediam')
+               msg = 'error high count break in plungeborediam'
+               cncPrint(msg)
+               puts msg
                break
             end
          end # while
 
          # return to center at safe height
          command_out += "(plungeborediam return to safe center)\n" if @debug
+         command_out += 'G00' + format_measure('Y', yo - yoff + ystep/3) + format_measure('Z', zo + 0.2.mm) + "\n" # raise
          command_out += 'G00' + format_measure('Y', yo) # back to circle center
          command_out += format_measure('Z', sh) + "\n" # back to safe height
          cz = sh
