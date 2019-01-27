@@ -1,0 +1,16 @@
+GPlot
+
+What is it for?
+   This program is for previewing Gcode programs so you can see where the tool will move.
+   Previewing allows you to make sure that you are getting what you expected before you
+   send the file to the machine.
+
+How do I manipulate the drawing?
+   Hold left mouse and drag = move the drawing around
+   Scroll wheel roll = zoom
+   Middle/right mouse hold and drag = rotate drawing.
+   
+You can change the line colours by accessing the Plotter|Colours menu.
+
+Reset to the default view using the Plotter|Refresh from Code menu.
+
