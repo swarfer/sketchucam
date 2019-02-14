@@ -296,7 +296,7 @@ module PhlatScript
                      end
                   end
                   if (!$phoptions.use_home_height?) && (!PhlatScript.UseEndPosition?) && (!PhlatScript.UseOutfeed?)
-                     aMill.cncPrint("G53 G0 Z0\n")
+                     aMill.cncPrint("G53 G0 Z0\n") if !PhlatScript.useLaser?
                   end
 
                   # puts("finishing up")

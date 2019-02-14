@@ -326,10 +326,10 @@ module PhlatScript
          end
 
          # output A or B axis rotation if selected
+         cncPrint("G53 G0 Z0\n") if !@laser #Sep2018 safe raise before initial move to start point
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
          cncPrint('G00 C', $phoptions.posC.to_s, "\n") if $phoptions.useC?
-         cncPrint("G53 G0 Z0\n") #Sep2018 safe raise before initial move to start point
          cncPrint("G0 X0 Y0\n")
          if @laser == false
             cncPrint('M3 S', @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
