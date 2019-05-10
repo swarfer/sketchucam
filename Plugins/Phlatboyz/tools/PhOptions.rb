@@ -64,7 +64,7 @@ module PhlatScript
          @use_incremental_ij     =   (phoptions.use_incremental_ij? ? '1' : '0')
          @always_show_safearea   =   (phoptions.always_show_safearea? ? '1' : '0')
          @use_pocket_cw          =   (phoptions.use_pocket_cw? ? '1' : '0')
-         @use_plunge_cw          =   (phoptions.use_plunge_cw? ? '1' : '0')
+         #@use_plunge_cw          =   (phoptions.use_plunge_cw? ? '1' : '0')
          @use_outfeed            =   (phoptions.use_outfeed? ? '1' : '0')
          @profile_save_material_thickness =   (phoptions.profile_save_material_thickness? ? '1' : '0')
          @use_home_height        =   (phoptions.use_home_height? ? '1' : '0')
@@ -137,7 +137,7 @@ module PhlatScript
          @always_show_safearea = Always_show_safearea
          @use_reduced_safe_height = Use_reduced_safe_height
          @use_pocket_cw = Use_pocket_CW
-         @use_plunge_cw = Use_plunge_CW
+         #@use_plunge_cw = Use_plunge_CW
          @use_outfeed = Use_outfeed
          @profile_save_material_thickness = Profile_save_material_thickness
          @use_home_height = Use_Home_Height
@@ -289,9 +289,9 @@ module PhlatScript
             @use_pocket_cw = value > 0 ? true :  false              if (value != -1)
 
          # Use_plunge_CW = false
-            value = -1
-            value = getvalue(optin['use_plunge_cw'])                if (optin.has_key?('use_plunge_cw'))
-            @use_plunge_cw = value > 0 ? true :  false              if (value != -1)
+         #   value = -1
+         #   value = getvalue(optin['use_plunge_cw'])                if (optin.has_key?('use_plunge_cw'))
+         #   @use_plunge_cw = value > 0 ? true :  false              if (value != -1)
 
          # Use_outfeed = false
             value = -1
@@ -710,12 +710,12 @@ module PhlatScript
          @use_pocket_cw = newval
       end
 
-      def use_plunge_cw?
-         @use_plunge_cw
-      end
-      def use_plunge_cw=(newval)
-         @use_plunge_cw = newval
-      end
+      #def use_plunge_cw?
+      #   @use_plunge_cw
+      #end
+      #def use_plunge_cw=(newval)
+      #   @use_plunge_cw = newval
+      #end
 
       def use_outfeed?
          @use_outfeed
@@ -1214,7 +1214,7 @@ end # class
             'Use_Incremental_IJ (G91.1)',
             'Always_show_safearea ',
             'Use_pocket_CW ',
-            'Use_plunge_CW ',
+            #'Use_plunge_CW ',
             'Use_outfeed ',
             'Use_vtab_speed_limit ',
             'Profile_save_material_thickness ',
@@ -1233,7 +1233,7 @@ end # class
             @options.use_incremental_ij?.inspect(),
             @options.always_show_safearea?.inspect(),
             @options.use_pocket_cw?.inspect(),
-            @options.use_plunge_cw?.inspect(),
+            #@options.use_plunge_cw?.inspect(),
             @options.use_outfeed?.inspect(),
             @options.use_vtab_speed_limit?.inspect(),
             @options.profile_save_material_thickness?.inspect(),
@@ -1252,7 +1252,7 @@ end # class
             'true|false',
             'true|false',
             'true|false',
-            'true|false',
+            #'true|false',
             'true|false',
             'true|false',
             'true|false',
@@ -1277,25 +1277,25 @@ end # class
             @options.use_incremental_ij      = (input[1] == 'true')
             @options.always_show_safearea    = (input[2] == 'true')
             @options.use_pocket_cw           = (input[3] == 'true')
-            @options.use_plunge_cw           = (input[4] == 'true')
-            @options.use_outfeed             = (input[5] == 'true')
-            @options.use_vtab_speed_limit    = (input[6] == 'true')
-            @options.profile_save_material_thickness         = (input[7] == 'true')
-            @options.use_home_height         = (input[8] == 'true')
-            @options.default_home_height     = input[9] # length
+            #@options.use_plunge_cw           = (input[4] == 'true')
+            @options.use_outfeed             = (input[4] == 'true')
+            @options.use_vtab_speed_limit    = (input[5] == 'true')
+            @options.profile_save_material_thickness         = (input[6] == 'true')
+            @options.use_home_height         = (input[7] == 'true')
+            @options.default_home_height     = input[8] # length
 
-            @options.use_end_position        = (input[10] == 'true')
+            @options.use_end_position        = (input[9] == 'true')
             if (@options.use_outfeed?)     # only one of them
                @options.use_end_position = false
             end
-            @options.end_x                   = input[11] #length
-            @options.end_y                   = input[12] #length
+            @options.end_x                   = input[10] #length
+            @options.end_y                   = input[11] #length
 
-            @options.use_fuzzy_pockets       = (input[13] == 'true')
+            @options.use_fuzzy_pockets       = (input[12] == 'true')
 
-            @options.ramp_angle              = input[14]  #float
-            @options.must_ramp               = (input[15] == 'true')
-            @options.gforce                  = (input[16] == 'true')
+            @options.ramp_angle              = input[13]  #float
+            @options.must_ramp               = (input[14] == 'true')
+            @options.gforce                  = (input[15] == 'true')
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save

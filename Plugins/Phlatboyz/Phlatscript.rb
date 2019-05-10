@@ -356,9 +356,9 @@ module PhlatScript
   end
 
   # used in phlatmill
-   def PhlatScript.usePlungeCW?
-      $phoptions.use_plunge_cw?
-   end
+   #def PhlatScript.usePlungeCW?
+   #   $phoptions.use_plunge_cw?
+   #end
 
    def PhlatScript.UseOutfeed?
       $phoptions.use_outfeed?

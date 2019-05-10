@@ -68,9 +68,10 @@ module PhlatScript
          @mill_out_file = nil
 
          @Limit_up_feed = false           # swarfer: set this to true to use @speed_plung for Z up moves
-         @cw = PhlatScript.usePlungeCW?   # swarfer: spiral cut direction
+         #@cw = PhlatScript.usePlungeCW?   # swarfer: spiral cut direction
+         @cw = PhlatScript.useOverheadGantry? # if set then do CW conventional inside cut, else CCW
 
-         @tooshorttoramp = 0.02           # length of an edge that is too short to bother ramping
+         @tooshorttoramp = 0.02           # length of an edge that is too short to bother ramping, will be calculated
        end
 
       # feed the retract depth and tabel zero into this object
@@ -213,7 +214,8 @@ module PhlatScript
          end
          cncPrintC("Material Thickness: #{Sketchup.format_length(@material_thickness)}")
          cncPrintC("Material length: #{Sketchup.format_length(@material_h)} X width: #{Sketchup.format_length(@material_w)}")
-         cncPrintC("Overhead Gantry: #{PhlatScript.useOverheadGantry?}")
+         cutstr = (PhlatScript.useOverheadGantry?) ? "Conventional Cut" : "   Climb Cut"
+         cncPrintC("Overhead Gantry: #{PhlatScript.useOverheadGantry?} = #{cutstr}")
          cncPrintC('Retract feed LIMITED to plunge feed rate') if @Limit_up_feed
          if PhlatScript.useMultipass?
             cncPrintC("Multipass enabled, Depth = #{Sketchup.format_length(@multidepth)}")
@@ -1413,13 +1415,14 @@ module PhlatScript
          command_out
        end # SpiralAtQ
 
-         # Generate code for a spiral bore and return the command string, using quadrants.
-         # This one does center out to diameter, an outward spiral at zo depth.
-         # Must give it the final yoff, call it after doing the initial 2D bore.
-         # If cboreinner > 0 then use that for starting diam.
-         # Will set feed to speed_curr
-         # * +xo+ - X center
-         # * +yo+ - Y center
+      # Generate code for a spiral bore and return the command string, using quadrants.
+      # This one does center out to diameter, an outward spiral at zo depth.
+      # Must give it the final yoff, call it after doing the initial 2D bore.
+      # If cboreinner > 0 then use that for starting diam.
+      # mod 10 may 2019 to obey CW/CCW direction settings from overheadgantry?
+      # Will set feed to speed_curr
+      # * +xo+ - X center
+      # * +yo+ - Y center
       # * +zstart+ - starting Z level
       # * +zend+ - ending Z level
       # * +yoff+ - offset to final Y destination value (effective radius)
@@ -1427,10 +1430,8 @@ module PhlatScript
       def SpiralOut(xo, yo, zstart, zend, yoff, ystep)
          # @debugramp = true
          @precision += 1
-         #      cwstr = @cw ? 'CW' : 'CCW';
-         #      cmd =   @cw ? 'G02': 'G03';
-         cwstr = 'CCW'
-         cmd = 'G03' # spiral out can only do this
+         cwstr = @cw ? 'CW' : 'CCW';
+         cmd =   @cw ? 'G02': 'G03';
          command_out = ''
          command_out += "   (SPIRALOUT #{sprintf('%0.2f',xo.to_mm)},#{sprintf('%0.2f',yo.to_mm)},#{sprintf('%0.2f',(zstart - zend).to_mm)},#{sprintf('%0.2f',yoff.to_mm)},#{cwstr})\n" if @debugramp
 
@@ -1470,13 +1471,13 @@ module PhlatScript
             #         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
             #         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
             # IJ format - displays correctly in OpenSCAM, not Gplot
-            command_out += 'G03' + format_measure('Y', yother) + ' I0' + format_measure('J', (yother - ynow) / 2)
+            command_out += cmd + format_measure('Y', yother) + ' I0' + format_measure('J', (yother - ynow) / 2)
             if @cs != @speed_curr
                command_out += format_feed(@speed_curr)
                @cs = @speed_curr
             end
             command_out += "\n"
-            command_out += 'G03' + format_measure('Y', ynew) + ' I0' + format_measure('J', -(yother - ynew) / 2) + "\n"
+            command_out += cmd + format_measure('Y', ynew) + ' I0' + format_measure('J', -(yother - ynew) / 2) + "\n"
 
             ynow -= ystep
             if ynow < (yo - yoff)
@@ -1492,22 +1493,43 @@ module PhlatScript
          command_out += "   (SO final ynow #{sprintf('%0.2f',ynow.to_mm)})\n" if @debug
 
          # now make it full diameter
-         # x+of Y  I0 Jof
-         command_out += cmd.to_s
-         command_out += format_measure('X', xo + yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', yoff)
-         command_out += "\n"
-         # x Yof   I-of  J0
-         command_out += cmd.to_s
-         command_out += format_measure('X', xo) + format_measure('Y', yo + yoff) + format_measure('I', -yoff) + format_measure('J', 0)
-         command_out += "\n"
-         # X-of  Y  I0    J-of
-         command_out += cmd.to_s
-         command_out += format_measure('X', xo - yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -yoff)
-         command_out += "\n"
-         # X  Y-of  Iof   J0
-         command_out += cmd.to_s
-         command_out += format_measure('X', xo) + format_measure('Y', yo - yoff) + format_measure('I', yoff) + format_measure('J', 0)
-         command_out += "\n"
+         if @cw
+            command_out += "(CW)\n"
+            # X-of  Y  I0    J+of
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo - yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', +yoff)
+            command_out += "\n"
+            # x Yof   I+of  J0
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo) + format_measure('Y', yo + yoff) + format_measure('I', yoff) + format_measure('J', 0)
+            command_out += "\n"
+            # x+of Y  I0 -Jof
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo + yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -yoff)
+            command_out += "\n"
+            # X  Y-of  I-of   J0
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo) + format_measure('Y', yo - yoff) + format_measure('I', -yoff) + format_measure('J', 0)
+            command_out += "\n"
+         else
+            # x+of Y  I0 Jof
+            command_out += "(CCW)\n"
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo + yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', yoff)
+            command_out += "\n"
+            # x Yof   I-of  J0
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo) + format_measure('Y', yo + yoff) + format_measure('I', -yoff) + format_measure('J', 0)
+            command_out += "\n"
+            # X-of  Y  I0    J-of
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo - yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -yoff)
+            command_out += "\n"
+            # X  Y-of  Iof   J0
+            command_out += cmd.to_s
+            command_out += format_measure('X', xo) + format_measure('Y', yo - yoff) + format_measure('I', yoff) + format_measure('J', 0)
+            command_out += "\n"
+         end
          @cc = cmd
          command_out += "   (SPIRALOUT END)\n" if @debug
          @precision -= 1
@@ -1685,13 +1707,15 @@ module PhlatScript
       end
 
       # circles for plingecsink - use for <= 2*bitdiam
+      # mod 10 May 2019 to obey overheadgantry for direction of cuts
       def circle(xo, yo, znow, rnow, complete = true)
          out = '' # 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
          rad = rnow - @bit_diameter / 2.0
          return '' if rad <= 0.1.mm
          # arc into the cut
+         cmd = @cw ? 'G02' : 'G03'
          if complete
-            out += 'G03' + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('Z', znow) + format_measure('I', 0) + format_measure('J', -rad / 2.0)
+            out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('Z', znow) + format_measure('I', 0) + format_measure('J', -rad / 2.0)
             if @cs != @speed_plung
                out += format_feed(@speed_plung)
                @cs = @speed_plung
@@ -1702,15 +1726,27 @@ module PhlatScript
          end
          #      out += 'G03' + format_measure('X', xo-rad) + format_measure('Y',yo) + format_measure('R',rad) + "\n"
          # cut a full circle in quadrants
-         out += 'G03' + format_measure('X', xo + rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', rad)
-         if @cs != @speed_curr
-            out += format_feed(@speed_curr)
-            @cs = @speed_curr
-         end
-         out += "\n"
-         out += 'G03' + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
-         out += 'G03' + format_measure('X', xo - rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -rad) + "\n"
-         out += 'G03' + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('I', rad) + format_measure('J', 0) + "\n"
+         if @cw
+            out += cmd + format_measure('X', xo - rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', rad)
+            if @cs != @speed_curr
+               out += format_feed(@speed_curr)
+               @cs = @speed_curr
+            end
+            out += "\n"
+            out += cmd + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', rad) + format_measure('J', 0) + "\n"
+            out += cmd + format_measure('X', xo + rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -rad) + "\n"
+            out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
+         else
+            out += cmd + format_measure('X', xo + rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', rad)
+            if @cs != @speed_curr
+               out += format_feed(@speed_curr)
+               @cs = @speed_curr
+            end
+            out += "\n"
+            out += cmd + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
+            out += cmd + format_measure('X', xo - rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -rad) + "\n"
+            out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('I', rad) + format_measure('J', 0) + "\n"
+         end      
          out
       end
 
@@ -1719,7 +1755,7 @@ module PhlatScript
       # diam   : diameter of hole
       # cdiam  : outside diameter of countersink
       def plungecsink(xo, yo, zStart, zo, diam, ang, cdiam)
-         # @debug = true
+         #@debug = true
          cncPrintC("plungeCSINK #{sprintf('X%0.2f', xo.to_mm)},#{sprintf('Y%0.2f', yo.to_mm)},zs #{sprintf('%0.2f', zStart.to_mm)},zo #{sprintf('%0.3f', zo.to_mm)}")
          cncPrintC("diam #{sprintf('%0.2f', diam.to_mm)}, #{sprintf('%0.2fdeg', ang)}, #{sprintf('cdiam %0.2f', cdiam.to_f.to_mm)}")
 
@@ -1795,7 +1831,11 @@ module PhlatScript
                   output += "(ARC TO EXISTING HoLE)\n"
                   output += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n"
                   output += 'G00' + format_measure('X', xo) + format_measure('Y', yo) + "\n"
-                  output += 'G03' + format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr)
+                  if @cw
+                     output += 'G02' + format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr)
+                  else
+                     output += 'G03' + format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr)
+                  end
                   output += format_feed(@speed_curr) if @cs != @speed_curr
                   output += "\n"
                   @cs = @speed_curr
@@ -2278,7 +2318,8 @@ module PhlatScript
                yy = yo - @bit_diameter / 2
                rr = -@bit_diameter / 4
             end
-            command_out += 'G03' + format_measure('Y', yy) + format_measure('I0.0 J', rr)
+            acmd =   @cw ? 'G02' : 'G03'
+            command_out += acmd + format_measure('Y', yy) + format_measure('I0.0 J', rr)
             @precision -= 1
             if notequal(so, @cs)
                command_out += "(so #{so}  @cs #{@cs})" if @debug
