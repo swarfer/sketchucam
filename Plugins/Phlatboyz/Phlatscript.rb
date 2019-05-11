@@ -351,9 +351,9 @@ module PhlatScript
   end
 
   # pockettool needs to know, normally false
-  def PhlatScript.usePocketcw?
-    $phoptions.use_pocket_cw?
-  end
+  #def PhlatScript.usePocketcw?
+  #  $phoptions.use_pocket_cw?
+  #end
 
   # used in phlatmill
    #def PhlatScript.usePlungeCW?

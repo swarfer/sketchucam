@@ -1006,11 +1006,11 @@ module PhlatScript
                contour_points.each { |cp|
                   cp.push(cp[0])  #close the loop for add_curve
                   #use add_curve instead of add_face so that the entire outline can be selected easily for delete
-                  if PhlatScript.usePocketcw?
-                     cedges = model.entities.add_curve(cp)
-                  else
-                     cedges = model.entities.add_curve(cp.reverse!)             # reverse points for counter clockwize loop
-                  end
+#                  if PhlatScript.usePocketcw?
+                  cedges = model.entities.add_curve(cp)
+#                  else
+#                     cedges = model.entities.add_curve(cp.reverse!)             # reverse points for counter clockwize loop
+#                  end
                   cuts = PocketCut.cut(cedges)
                   cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
                   }
@@ -1053,11 +1053,11 @@ module PhlatScript
             if (contour_points.length >= 3)
                contour_points.push(contour_points[0])  #close the loop for add_curve
    #use add_curve instead of add_face so that the entire outline can be selected easily for delete
-               if PhlatScript.usePocketcw?
-                  cedges = model.entities.add_curve(contour_points)
-               else
-                  cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
-               end
+#               if PhlatScript.usePocketcw?
+               cedges = model.entities.add_curve(contour_points)
+#               else
+#                  cedges = model.entities.add_curve(contour_points.reverse!)             # reverse points for counter clockwize loop
+#               end
                cuts = PocketCut.cut(cedges)
                cuts.each { |cut| cut.cut_factor = compute_fold_depth_factor }
             end

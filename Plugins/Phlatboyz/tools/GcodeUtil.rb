@@ -741,7 +741,7 @@ module PhlatScript
                next unless pe && !pe.processed
                #           if (!Sketchup.active_model.get_attribute(Dict_name, Dict_overhead_gantry, $phoptions.default_overhead_gantry?))
                if !PhlatScript.useOverheadGantry?
-                  reverse = reverse || pe.is_a?(PhlatScript::InsideCut) || eu.reversed?
+                  reverse = reverse || pe.is_a?(PhlatScript::InsideCut) || pe.is_a?(PhlatScript::PocketCut) || eu.reversed?
                else
                   reverse = reverse || pe.is_a?(PhlatScript::OutsideCut) || eu.reversed?
                end
@@ -1528,7 +1528,7 @@ module PhlatScript
       def self.millEdgesPlain(aMill, edges, material_thickness, reverse = false)
          if edges && !edges.empty?
             begin
-               # puts "millEdgesPlain reverse=#{reverse}"
+               puts "millEdgesPlain reverse=#{reverse}" if @debug
 
                mirror = P.get_safe_reflection_translation
                trans = P.get_safe_origin_translation

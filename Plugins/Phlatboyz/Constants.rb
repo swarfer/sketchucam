@@ -244,14 +244,15 @@ Use_old_multipass = false
 # Set this to true to use 1/3 of the usual safe travel height during plunge boring moves
 Use_reduced_safe_height = true
 
+# BOTH OF THE OPTIONS BELOW HAVE BEEN REMOVED IN v1.5, POCKETS WILL CUT IN THE DIRECTION SET BY OVERHEADGANTRY
 # Set this true to generate pocket outlines that cut in CW instead of usual CCW direction
 # Please research 'climb milling' before changing this.
 # Note this is a draw time option, if you change it in the Gcode you have to redraw all pocket cuts.
-Use_pocket_CW = false
+# Use_pocket_CW = false
 
 # Set this true to generate plunge hole cuts in CW instead of usual CCW cut direction
 # Please research 'climb milling' before changing this.
-Use_plunge_CW = false
+# Use_plunge_CW = false
 
 # Outfeed: phlatprinters only!
 # Set this to true to enable outfeed.  At the end of the job it will feed the material out the front of the
