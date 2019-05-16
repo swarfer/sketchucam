@@ -13,14 +13,11 @@ the project free of charge! Give a shout out to them.
 SketchUcam can not be used for commercial gain or sold in any form. We are keeping this truly open source.
 
 Thank You, Mark and Trish Carew <br>
-http://www.Phlatforum.com <br>
 http://www.OpenBuilds.com 
 
 # Installing
 Please get the latest release from<br>
 http://openbuilds.com/projectresources/sketchucam.1/<br>
-or<br>
-http://www.phlatforum.com/xenforo/threads/sketchucam-download.3128/ <br>
 or<br>
 https://github.com/swarfer/sketchucam/releases <br>
 and **follow the install instructions**.
