@@ -13,6 +13,7 @@ module PhlatScript
          super()
          toolname = 'Send to OpenBuildsCONTROL'
          @tooltype=(PB_MENU_TOOLBAR)
+         @tooltip="Send Gcode"
          @statusText= "Send latest file to OpenbuildsCONTROL"
          @largeIcon = "images/OBicon_large.png"
          @smallIcon = "images/OBicon_small.png"

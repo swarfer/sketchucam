@@ -1831,8 +1831,9 @@ module PhlatScript
          end
          fits
       end
-   end
-end
+
+   end # class GcodeUtil
+end #module
 # $Id$
 
 # return true if the 2 edges given share an end point
