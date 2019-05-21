@@ -84,8 +84,8 @@ module PhlatScript
      end
 
      def load
-       require 'Phlatboyz/Phlatscript.rb'
-       PhlatScript.load
+          require 'Phlatboyz/Phlatscript.rb'
+          PhlatScript.load
      end 
 
    end

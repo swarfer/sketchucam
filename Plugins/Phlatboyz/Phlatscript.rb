@@ -4,6 +4,7 @@ require('extensions.rb')
 require('Phlatboyz/Constants.rb')
 require('Phlatboyz/Observers.rb')
 
+
 module PhlatScript
 
   @@AppChangeObserver = AppChangeObserver.new
@@ -55,9 +56,9 @@ module PhlatScript
          return ','
       end
    end
-    
+
    def PhlatScript.load
-  
+
       # try to warn the user about not having a . as decimal separator
       if (decimal_separator() == ',')
          UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
@@ -69,12 +70,12 @@ module PhlatScript
     loadTools
     puts "add context menu"
       UI.add_context_menu_handler do | menu | contextMenuHandler(menu) end
-    puts "setmodeloptions"  
+    puts "setmodeloptions"
     setModelOptions(Sketchup.active_model)
     @@Loaded = true
     puts "loaded"
-   
-   
+
+
 #   length = (4.0/3.0).to_l.to_s     # generate a string with a decimal seperator
 #   UI.messagebox(length)
 #   if (length.count('/') > 0)  # then using fractional and we don't know anything new
@@ -87,10 +88,10 @@ module PhlatScript
 #            UI.messagebox('WARNING: you have a character other than the "." defined as decimal seperator, but this confuses Sketchup and SketchUcam, please set it to . (point) in Windows Regional Settings')
 #         end
 #      end
-#   end   
+#   end
    #https://github.com/thomthom/SketchUp-Units-and-Locale-Helper
    #http://sketchucation.com/forums/viewtopic.php?f=180&t=28346
-    
+
   end
 
   def PhlatScript.contextMenuHandler(menu)
@@ -119,7 +120,7 @@ module PhlatScript
   end
 
   def PhlatScript.set_fold_depth_factor(in_factor, model=Sketchup.active_model)
-    f = in_factor.to_f 
+    f = in_factor.to_f
     f = (f % 1000).to_f   if (in_factor > 1000)
     (f = Max_fold_depth_factor) if (f > Max_fold_depth_factor)
     model.set_attribute(Dict_name, Dict_fold_depth_factor, f.to_f)
@@ -301,14 +302,14 @@ module PhlatScript
   end
 
    def PhlatScript.safeHeight=(sheight)
-      if sheight != PhlatScript.safeHeight then 
-         changed = true 
+      if sheight != PhlatScript.safeHeight then
+         changed = true
       end
       Sketchup.active_model.set_attribute(Dict_name, Dict_safe_height, sheight)
-      if $phoptions.always_show_safearea? then 
+      if $phoptions.always_show_safearea? then
          draw_safe_area(Sketchup.active_model)
-      elsif changed == true then 
-         draw_safe_area(Sketchup.active_model) 
+      elsif changed == true then
+         draw_safe_area(Sketchup.active_model)
       end
    end
 
@@ -332,7 +333,7 @@ module PhlatScript
    def PhlatScript.tryUpgrade?
       return false
    end
-  
+
   def PhlatScript.pocketDirection?
     Sketchup.active_model.get_attribute(Dict_name, Dict_pocket_direction, $phoptions.default_pocket_direction?)
   end
@@ -372,7 +373,7 @@ module PhlatScript
    def PhlatScript.end_y
       $phoptions.end_y.to_f
    end
-#ramping   
+#ramping
    def PhlatScript.rampangle
       Sketchup.active_model.get_attribute(Dict_name, Dict_rampangle, $phoptions.ramp_angle).to_f
       end
@@ -387,10 +388,10 @@ module PhlatScript
       end
 
 #gcode comment style - just a default option, not a dict item
-   def PhlatScript.usecommentbracket?      
+   def PhlatScript.usecommentbracket?
       $phoptions.bracket?
    end
-   
+
   #swarfer - if true gplot will be called after gcode generation
   def PhlatScript.showGplot?
     Sketchup.active_model.get_attribute(Dict_name, Dict_show_gplot, $phoptions.default_show_gplot?)
@@ -401,7 +402,7 @@ module PhlatScript
   end
 
   def PhlatScript.useMultipass?
-    Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, $phoptions.default_multipass?) 
+    Sketchup.active_model.get_attribute(Dict_name, Dict_multipass, $phoptions.default_multipass?)
   end
 
   def PhlatScript.useMultipass=(mp)
@@ -459,7 +460,7 @@ module PhlatScript
    def PhlatScript.zerooffsetx=(offset)
       Sketchup.active_model.set_attribute(Dict_name, Dict_zerooffsetx, offset.to_f)
    end
-   
+
    def PhlatScript.zerooffsety
       Sketchup.active_model.get_attribute(Dict_name, Dict_zerooffsety, 0).to_f
    end
@@ -476,8 +477,8 @@ module PhlatScript
    def PhlatScript.use_abs_depth=(value)
       Sketchup.active_model.set_attribute(Dict_name, Dict_abs_depth, value)
    end
-   
-  
+
+
   #vtabs
   def PhlatScript.vtabs?
     return model.get_attribute(Dict_name, Dict_vtabs, $phoptions.default_vtabs?)
@@ -506,7 +507,7 @@ module PhlatScript
   def PhlatScript.loadTools
     @@commandToolbar = UI::Toolbar.new(getString("Phlatboyz") + ' SketchUcam')
     @@qToolbar = UI::Toolbar.new('SketchUcam Quick Tools')
-    
+
     add_separator_to_menu("Tools")
     @@phlatboyz_tools_submenu = UI.menu("Tools").add_submenu(getString("Phlatboyz"))
 
@@ -522,11 +523,11 @@ module PhlatScript
     jcmd = addToolItem(jtool = JoinerTool.new())  # need to add it to toolbar out of order
 
     require 'Phlatboyz/tools/RampTabTool.rb'
-    addToolItem(RampTabTool.new())    
-    
+    addToolItem(RampTabTool.new())
+
     require 'Phlatboyz/tools/ChamferWizard.rb'
-    addToolItem(ChamferTool.new())    
-	
+    addToolItem(ChamferTool.new())
+
     @@phlatboyz_tools_submenu.add_separator
        require 'PhlatBoyz/tools/PhOptions.rb'
        $phoptions = Options.new()
@@ -580,7 +581,7 @@ module PhlatScript
       $PhlatScript_PlugName.add_item(label) { Sketchup.active_model.select_tool Ky_Reorder_Groups.new }
     end
 
-   @@commandToolbar.add_separator 
+   @@commandToolbar.add_separator
 
    require 'Phlatboyz/tools/ZeroTool.rb'
    addToolItem(ZeroTool.new())
@@ -589,12 +590,16 @@ module PhlatScript
    jcmd.small_icon = jtool.smallIcon
    @@commandToolbar.add_item(jcmd)
 
-   
-    require 'Phlatboyz/tools/GcodeUtil.rb'
-    addToolItem(GcodeUtil.new())
-    @@commandToolbar.add_separator 
 
-        @@phlatboyz_tools_submenu.add_separator
+   require 'Phlatboyz/tools/GcodeUtil.rb'
+   addToolItem(GcodeUtil.new())
+   if (Sketchup.version.split('.')[0].to_i > 13)
+      require('Phlatboyz/tools/OBCtool.rb')
+      addToolItem(OBCsquirt.new())
+   end
+
+    @@commandToolbar.add_separator
+    @@phlatboyz_tools_submenu.add_separator
     require 'Phlatboyz/tools/HomepageTool.rb'
     addToolItem(HomepageTool.new())
 

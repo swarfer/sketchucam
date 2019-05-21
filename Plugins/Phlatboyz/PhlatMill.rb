@@ -3,7 +3,7 @@ require 'sketchup.rb'
 # see note at end of file
 module PhlatScript
    RAMPMULT = 5    # rampdist = bitdiam * RAMPMULT
-         
+
    class PhlatMill
       # Open an output file and set up initial state
       def initialize(output_file_name = nil, min_max_array = nil)
@@ -57,7 +57,7 @@ module PhlatScript
          @multidepth = PhlatScript.multipassDepth
          @bit_diameter = 0 # swarfer: need it often enough to be global
          @rampdist = 0 # distance over which to ramp, set when bitdiameter is set
-         
+
          @comment = PhlatScript.commentText
          @extr = '-'
          @cmd_linear = 'G01'  # Linear interpolation
@@ -668,7 +668,7 @@ module PhlatScript
                @cc = @cmd_linear
                return
             end
-            #find a point to ramp to 
+            #find a point to ramp to
             bz = ((@cz - zo) / 2).abs # half distance from @cz to zo, not height to cut to
             if (@rampdist < distance) && !nodist
                #find new point
@@ -1746,7 +1746,7 @@ module PhlatScript
             out += cmd + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
             out += cmd + format_measure('X', xo - rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', -rad) + "\n"
             out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('I', rad) + format_measure('J', 0) + "\n"
-         end      
+         end
          out
       end
 
@@ -1780,7 +1780,7 @@ module PhlatScript
          rNow = outR # starting radius
          rEnd = [diam / 2.0, @bit_diameter / 2.0].max # stop when less than this
          cncPrintC("rEnd #{rEnd.to_l}") if @debug
-         
+
          zNow = zStart
          cncPrintC("CSINK @cz #{@cz.to_mm}") if @debug
          if notequal(@cz, zStart + 0.5.mm)
@@ -2169,7 +2169,7 @@ module PhlatScript
                   cy = yo
                else
                   cy = yoff
-               end               
+               end
                cz = sh
             end
             if diam < @bit_diameter
@@ -2332,7 +2332,7 @@ module PhlatScript
             command_out += SpiralOut(xo, yo, zStart, zonow, yoff, ystep)
             if PhlatScript.useMultipass? && ((zonow - zo).abs > 0.0001)
                command_out += 'G00' + format_measure('Y', yo - yoff + ystep/3) + format_measure('Z', zonow + 0.2.mm) + "\n" # raise
-               cz = zonow + 0.2.mm  
+               cz = zonow + 0.2.mm
                command_out += 'G00' + format_measure('Y', yo) + "\n" # back to hole center
             end
             cnt += 1
