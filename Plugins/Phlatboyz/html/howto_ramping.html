@@ -25,17 +25,21 @@
 <span style="float: right;"><a href="help.html">Back to help index</a></span>
 <h2>HOWTO use Ramping</h2>
 
-
-
 <table border=0>
 <tr>
 <td valign=top>
    From this<br>
-   <img src="images/ramp03.png" >
+   <img width=357 src="images/ramp03.png" >
 </td>
 <td>
    To this!<br>
-   <img src="images/ramp01.png" >
+   <img width=357 src="images/ramp01.png" >
+</td>
+</tr>
+<tr>
+<td>
+   and now in V1.5: To This!<br>
+   <img width=357 src="images/ramp01a.png" >
 </td>
 </tr>
 </table>   
@@ -60,6 +64,7 @@ the work is still available.
 <li>Plunge feed rate is used for ramps.
 <li>Plunge bores use the ramp angle for the helix.
 <li>Segments less than BitRadius long will not be ramped.
+<li>On lines longer than 5 x bitdiameter the ramp length will be limited to 5 x bitdiameter. <span style="color: red;">(new in V1.5)</span>
 </ul>
 
 <h3>Basics</h3>
@@ -130,7 +135,10 @@ Note that small angle limits may significantly increase your cut time.
 
 <h3>Shortening long ramps:</h3>
 <img src="images/ramp05.png" style="float: right;">
-<p>
+<p>The old technique below is no longer needed since all ramps are now limited to 
+5 x bitdiameter in length if the segment is longer than that figure.
+</p>
+<p style="color: gray;">
 If the first segment of a cut is a very long straight line 
 the ramp will be very long.
 You can shorten it by placing a <b>tab</b> 
@@ -156,18 +164,9 @@ then passdepth/2 is used as the hold off height.
 <img src="images/ramp06.png">
 <p>
 In the image at above you can see that the first pass is deeper than the tab so it ramps from the top of the tab down to the
-pass depth (-5.3mm in this case).
+pass depth.</p>
 
-On the second pass it rapids (the vertical blue line) down to -5.05 (= 5.3 less 0.25) before starting the ramp 
-down to final depth, here is the G-code</p>
-<pre>
-G0 Z-5.050 F1000                 ; rapid down to 0.25mm short of previous pass
-G1 x111.500 y8.500 z-7.775       ; ramp first part
- X64.482 y8.500 z-10.500         ; ramp back to start
- X111.500 F2000                  ; proceed with cut
-</pre>
-
-
+<p>On the second pass it rapids (the vertical blue line) down to pass height less 0.25 before starting the ramp down to final depth.</p>
 
 <h3>V-tabs:</h3>
 <p>If you use a 'normal' V-tab the angles may be much higher than the limit angle for your toolbit.  To make it easy to 
@@ -222,7 +221,7 @@ or<br>
    </dl>
 <br clear=all>
    
-<div style="float: right; width: 205px; border: 2px solid gray;">
+<div style="float: right; width: 340px; border: 2px solid gray;">
 <img src="images/ramp09.png">
 <div>Ramp limit 5 degrees.<br>Bit diameter 5mm.<br>Hole size 19mm.<br>Stepover 25%</div>
 </div>
@@ -282,8 +281,8 @@ or<br>
                </tr>   
                </table>
             </dl>
-           <p>
-           If you are making holes equal to the bit diameter in hard materials then you should use a <u>real drill bit</u> and 
+           <p style="color: darkgreen;">
+           If you are making holes <u>equal to the bit diameter</u> in hard materials then you should use a <u>real drill bit</u> and 
            do a seperate drilling cycle with either full retract or quickpeck (partial retract) selected.
            </p>
            </dd>

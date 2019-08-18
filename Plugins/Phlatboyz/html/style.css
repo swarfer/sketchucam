@@ -63,6 +63,7 @@
            border-right: thin solid #cccccc;
            border-bottom: thin solid #cccccc;
            font-size: 0.90em;
+		   vertical-align: top;
    }
 
    .command-title {

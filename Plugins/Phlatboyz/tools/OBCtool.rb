@@ -18,6 +18,7 @@ module PhlatScript
          @largeIcon = "images/OBicon_large.png"
          @smallIcon = "images/OBicon_small.png"
          @cmmd = nil
+         @server = 'mymachine.openbuilds.com'
       end
 
       def statusText
@@ -41,8 +42,7 @@ module PhlatScript
       
       # detect an instance of OBCONTROL
       def haveOBC?
-         server = 'mymachine.openbuilds.com'
-         url = URI("http://#{server}:3000/api/version")
+         url = URI("http://#{@server}:3000/api/version")
          #check if the driver is loaded
          begin
             res = Net::HTTP.get_response(url)
@@ -67,8 +67,7 @@ module PhlatScript
       # only call this if OBC actually exists
       def sendToOBC
          puts "sendToOBC"
-         server = 'mymachine.openbuilds.com'
-         url = URI("http://#{server}:3000/upload")
+         url = URI("http://#{@server}:3000/upload")
          
          filename = PhlatScript.cncFileDir + PhlatScript.cncFileName
          puts "   #{filename}"
