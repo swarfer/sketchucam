@@ -1,4 +1,6 @@
 *.skp
+*.cnc
+*.nc
 DD*.*
 Components
 Materials
@@ -92,3 +94,5 @@ doc/created.rid
 SyncToy_80174e01-d9bf-4e36-805c-d4d62b03631a.dat
 Plugins/cpoints.rb
 Plugins/fretboard.rb
+Plugins/thesender.bat
+Plugins/thesender.rb

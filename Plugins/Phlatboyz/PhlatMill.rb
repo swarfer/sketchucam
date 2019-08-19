@@ -1494,7 +1494,7 @@ module PhlatScript
 
          # now make it full diameter
          if @cw
-            command_out += "(CW)\n"
+            #command_out += "(CW)\n"
             # X-of  Y  I0    J+of
             command_out += cmd.to_s
             command_out += format_measure('X', xo - yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', +yoff)
@@ -1513,7 +1513,7 @@ module PhlatScript
             command_out += "\n"
          else
             # x+of Y  I0 Jof
-            command_out += "(CCW)\n"
+            #command_out += "(CCW)\n"
             command_out += cmd.to_s
             command_out += format_measure('X', xo + yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', yoff)
             command_out += "\n"
