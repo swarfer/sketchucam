@@ -29,7 +29,7 @@ module PhlatScript
          @default_show_gplot     = (phoptions.default_show_gplot? ? '1' : '0')
          @default_tabletop       = (phoptions.default_tabletop? ? '1' : '0')
          @use_compatible_dialogs = (phoptions.use_compatible_dialogs? ? '1' : '0')
-         @use_abs_depth          = (phoptions.use_abs_depth? ? '1' : '0')
+         #@use_abs_depth          = (phoptions.use_abs_depth? ? '1' : '0')
          #tools
          @default_spindle_speed = phoptions.default_spindle_speed.to_i.to_s
          @default_feed_rate =     PhlatScript.conformat(phoptions.default_feed_rate)
@@ -72,6 +72,7 @@ module PhlatScript
          @use_end_position       =   (phoptions.use_end_position? ? '1' : '0')
          @end_x                  =   PhlatScript.conformat(phoptions.end_x)   
          @end_y                  =   PhlatScript.conformat(phoptions.end_y)
+         @end_z                  =   PhlatScript.conformat(phoptions.end_z)
          @use_fuzzy_pockets      =   (phoptions.use_fuzzy_pockets? ? '1' : '0')
          @ramp_angle             =   phoptions.ramp_angle.to_f.to_s
          @must_ramp              =   (phoptions.must_ramp? ? '1' : '0')
@@ -145,6 +146,7 @@ module PhlatScript
          @use_end_position       =  false
          @end_x                  =  0.to_l   
          @end_y                  =  0.to_l
+         @end_z                  =  0.to_l
          @use_fuzzy_holes        = true
          @use_fuzzy_pockets      = true
          @ramp_angle             =  0
@@ -201,8 +203,8 @@ module PhlatScript
             value = getvalue(optin['use_compatible_dialogs'])                if (optin.has_key?('use_compatible_dialogs'))
             @use_compatible_dialogs = value > 0 ? true :  false              if (value != -1)
             value = -1
-            value = getvalue(optin['use_abs_depth'])                if (optin.has_key?('use_abs_depth'))
-            @use_abs_depth = value > 0 ? true :  false             
+            #value = getvalue(optin['use_abs_depth'])                if (optin.has_key?('use_abs_depth'))
+            #@use_abs_depth = value > 0 ? true :  false             
 
          #tools
             @default_spindle_speed = getvalue(optin['default_spindle_speed'])    if (optin.has_key?('default_spindle_speed'))
@@ -317,6 +319,7 @@ module PhlatScript
 
             @end_x            =   getvalue(optin['end_x'])    if (optin.has_key?('end_x'))   
             @end_y            =   getvalue(optin['end_y'])    if (optin.has_key?('end_y'))
+            @end_z            =   getvalue(optin['end_z'])    if (optin.has_key?('end_z'))
          #use_fuzzy_holes
             value = -1
             value = getvalue(optin['use_fuzzy_holes'])                if (optin.has_key?('use_fuzzy_holes'))
@@ -757,11 +760,17 @@ module PhlatScript
       def end_y
          @end_y
       end
+      def end_z
+         @end_z
+      end
       def end_x=(newval)
          @end_x = newval
       end
       def end_y=(newval)
          @end_y = newval
+      end
+      def end_z=(newval)
+         @end_z = newval
       end
       
       def use_fuzzy_holes?
@@ -983,25 +992,27 @@ end # class
             'Default_gen3d',
             'Default_show_gplot after output ',
             'Default_tabletop is Z-Zero ',
-            'Use_compatible_dialogs set TRUE if you cannot see the parameters dialog',
-            'Use Absolute Depth measurements']
+            'Use_compatible_dialogs set TRUE if you cannot see the parameters dialog']
+            #'Use Absolute Depth measurements']
                 
          defaults=[
             @options.default_comment_remark,
             @options.default_gen3d?.inspect(),
             @options.default_show_gplot?.inspect(),
             @options.default_tabletop?.inspect(),
-            @options.use_compatible_dialogs?.inspect(),
-            @options.use_abs_depth?.inspect()
-            ]
+            @options.use_compatible_dialogs?.inspect()
+				]
+            #@options.use_abs_depth?.inspect()
+            #]
          # dropdown options can be added here
          list=["",
             "true|false",
             "true|false",
             "true|false",
-            "true|false",
             "true|false"
-            ]
+				]
+            #"true|false"
+            #]
 
 
          input=UI.inputbox(prompts, defaults, list, 'Miscallaneous Options (read the help!)')
@@ -1012,7 +1023,7 @@ end # class
             @options.default_show_gplot      = (input[2] == 'true')
             @options.default_tabletop        = (input[3] == 'true')
             @options.use_compatible_dialogs  = (input[4] == 'true')
-            @options.use_abs_depth           = (input[5] == 'true')
+            #@options.use_abs_depth           = (input[5] == 'true')
 
             @options.save
          end # if input
@@ -1227,6 +1238,7 @@ end # class
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
             'Force all Gcodes on for Marlin ',
+				'End position Z for G53',
             ];
          defaults=[
             @options.use_exact_path?.inspect(),
@@ -1246,6 +1258,7 @@ end # class
              @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
             @options.gforce?.inspect(),
+             @options.end_z.to_l,
             ];
          list=[
             'true|false',
@@ -1264,7 +1277,8 @@ end # class
             'true|false',
             '',
             'true|false',
-            'true|false'
+            'true|false',
+            '',
             ];
          begin
             input=UI.inputbox(prompts, defaults, list, 'Feature Options (read the help!)')
@@ -1296,6 +1310,10 @@ end # class
             @options.ramp_angle              = input[12]  #float
             @options.must_ramp               = (input[13] == 'true')
             @options.gforce                  = (input[14] == 'true')
+            @options.end_z                   = input[15] #length
+				if @options.end_z > 0
+				   @options.end_z = -@options.end_z
+				end
             #puts "saving must_ramp = #{@options.must_ramp?}"
             
             @options.save

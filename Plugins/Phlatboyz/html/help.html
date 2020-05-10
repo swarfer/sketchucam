@@ -9,11 +9,11 @@
 
 <div class="shell">
 <br>
-<a href="http://www.phlatboyz.com/">PHLATBOYZ.COM</a>
+<a target="_blank" href="http://www.openbuilds.com/">OpenBuilds.COM</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.5</b><br>Aug 2019</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.5</b><br>May 2020</div></div>
 
-<br> <a href="https://github.com/swarfer/sketchucam/releases">Check for Latest Version of SketchUcam</a>
+<br> <a target="_blank" href="https://github.com/swarfer/sketchucam/releases">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
 
 <table summary="help 1" cellpadding="1" cellspacing="0">
@@ -27,8 +27,8 @@
       <div class="intro">
       <img alt="" src="../images/andy.png" title="Andy the Aviator" border="0" style="float: right;">
       
-         SketchUcam is a set of tools in the form of a plugin for Google
-         SketchUp. It allows for assigning of CNC cut/fold/drill/mill, etc.
+         SketchUcam is a set of tools in the form of a plugin for Google/Trimble
+         SketchUp (up to V2017). It allows for assigning of CNC cut/fold/drill/mill, etc.
          functions to SketchUp designs as a full featured CAM solution. It was
          designed for use with the Phlatboyz easy to assemble and learn CNC
          machine kits and has since been extended to work with harder materials in the newer
@@ -60,11 +60,11 @@ and as of V1.5 it has <a href="https://software.openbuilds.com/">OpenBuildsCONTR
          capable of outputting 3D tool paths and possibly in the future will be
          the ability to not only output the g-code but control the Phlatprinter
          as well :) Have fun and please let us know how you are using 
-         SketchUcam at <a href="http://www.Phlatforum.com">www.Phlatforum.com</a> 
+         SketchUcam at <a target="_blank" href="http://openbuilds.com">OpenBuilds.com</a> 
          </div>
          <div class="intro"> SketchUcam or any form of this
             code can not be used for commercial gain or sold in any form. This code
-            is a volunteer collaboration project that consist of the efforts of
+            is a volunteer collaboration project that consists of the efforts of
             many people. We are keeping this truly open source. <br>
             <b>Please send questions or comments to </b><a href="mailto:kram2422@comcast.net">Phlatboyz,LLC</a>
             <br>
@@ -141,16 +141,16 @@ and as of V1.5 it has <a href="https://software.openbuilds.com/">OpenBuildsCONTR
 <tr>
    <td width="90%">
    <div class="intro">
-      <h4>New in V1.5 (Aug 2019)</h4>
+      <h4>New in V1.5 (May 2020)</h4>
       <dl>
          <dd>
          <dl>
-			<dt>Display SFM and feed per tooth on the parameters dialog.
+			<dt><a href="sketchucamtoolbar.html#toolparameters">Display SFM and feed per tooth on the parameters dialog.</a>
             <dd><img src="images/sfm.png" style="float: right;">
             SFM and then the feed per tooth for 1, 2 and 4 teeth.</dd>
             <dd>This helps with setting feedrates to good values.</dd>
             <br clear=all>
-         <dt>Send Gcode to OpenBuildsCONTROL
+         <dt><a href="sketchucamtoolbar.html#toolobc">Send Gcode to OpenBuildsCONTROL</a>
             <dd>This button appears only on Sketchup Make 2014 and later
             <dd>If you have OpenBuildSCONTROL active then this button will send the most recently generated Gcode to it.
 			<dt>Limit length of ramps to multiple of tool diameter.
@@ -168,18 +168,20 @@ and as of V1.5 it has <a href="https://software.openbuilds.com/">OpenBuildsCONTR
             <dd>Continual screen updates take processing power away from the process, by only updating when the actual display will change
             we get noticeably faster Gcode generation for complex operations.
 			<dt>Fix Gcode Joiner to handle new start and end formats (which use G53) as well as old files.
-            <dd>The old start and end safe Z moves coudl result in a crash on machines with limited Z height.  
+            <dd>The old start and end safe Z moves could result in a crash on machines with limited Z height.  
             By using 'G53 G0 Z0' style moves Z is always safely raised at the beginning and end of the job.
 			<dt>Improved spiral bore retracts.
             <dd>Under some circumstances the retract from a bored hole could leave a mark on the internal surface which is now impossible.
+         <dt><A href="howto_options.html#a4">Offset for G53 Z raise codes.</a>
+				<dd>Raising to Z0 may hit a home switch, this offset allows for stopping short of the limit, like Z-5 (in mm).
 			<dt>Bug Fixes</dt>
 				<dd>Multipass in laser mode, always use set power, without scaling.
 				<dd>Add faces to plunge hole groups, this helps a lot with keeping existing lines from interfering with holes, but is not perfect. 
 				<dd>Toolchange tweak to prevent errors on multi %s strings.
-				<dd>Prevent gplot opening if gcode generation is cancelled.
+				<dd>Prevent Gplot opening if gcode generation is cancelled.
 				<dd>If user sets offset to the center of a hole, gcode was not generated correctly, fixed.
 				<dd>Prevent G53 Z moves in laser mode.
-				<dd>Remove 'use plunge/pocket CW' options and make those cuts follow the OverheadGantry setting.
+				<dd>Remove 'use plunge/pocket CW' options and make those cuts follow the OverheadGantry setting for direction.
       </dl>
    </div>      
    

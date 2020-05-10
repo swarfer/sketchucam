@@ -291,6 +291,11 @@ cuts = 3.3</pre>
    <dt>Force all G-codes on for Marlin         
       <dd>FALSE (default) = use optimized G-code output that does not repeat G commands if they are not needed
       <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
+	<dt>End position Z for G53 <span style="color: red;">(new in V1.5)</span>
+      <dd>When home switches are used raising Z to 0 may trigger the limit switch.  
+		Use this setting to set an offset for the G53 safety moves so that the limit will not be hit.
+		This offset it ALWAYS negative since machine Z=0 is at the top of travel.  
+		Thus a move to just short of Z0 is a negative figure.
    </dl>
 <hr>
 <h2><a id="a5">Hole Feature Options</a></h2>

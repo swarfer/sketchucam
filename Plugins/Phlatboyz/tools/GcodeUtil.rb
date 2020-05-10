@@ -296,7 +296,8 @@ module PhlatScript
                      end
                   end
                   if (!$phoptions.use_home_height?) && (!PhlatScript.UseEndPosition?) && (!PhlatScript.UseOutfeed?)
-                     aMill.cncPrint("G53 G0 Z0\n") if !PhlatScript.useLaser?
+						   zstr = aMill.format_measure('Z', $phoptions.end_z)
+                     aMill.cncPrint("G53 G0 #{zstr}\n") if !PhlatScript.useLaser?
                   end
 
                   # puts("finishing up")

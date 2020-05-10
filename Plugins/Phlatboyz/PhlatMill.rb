@@ -135,8 +135,11 @@ module PhlatScript
       # strip trailing zeros from the string
       def stripzeros(inp, ignore = false)
          out = inp
-         if (@precision > 3) || ignore
-            out = out.gsub(/00$/, '0') while out =~ /00$/
+         if (@precision > 2) || ignore
+            #out = out.gsub(/00$/, '0') while out =~ /00$/ # remove trailing 00
+				while ((out =~ /0$/) and (out =~ /\.0$/).nil?) # remove trailing 0 but not .0
+				   out = out.gsub(/0$/, '') 
+				end
             if !ignore # for normal trims
                if (out =~ /\.0/).nil?
                   # puts "1 " + out               if (@debug)
@@ -163,8 +166,13 @@ module PhlatScript
          axis.upcase!
          out = sprintf(" #{axis.lstrip}%-5.*f", @precision, m2)
          # strip trailing 0's to shorten line for GRBL
-         out = stripzeros(out)
-         out
+         sout = stripzeros(out)
+			# add .0 back on if it is missing
+			if (sout =~ /\./).nil?
+			   sout = sout + ".0"
+			end
+			puts "#{out} #{sout}"
+         sout
       end
 
       # format a feedrate for output
@@ -328,7 +336,8 @@ module PhlatScript
          end
 
          # output A or B axis rotation if selected
-         cncPrint("G53 G0 Z0\n") if !@laser #Sep2018 safe raise before initial move to start point
+			zstr = format_measure('Z', $phoptions.end_z);
+         cncPrint("G53 G0 #{zstr}\n") if !@laser #Sep2018 safe raise before initial move to start point
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
          cncPrint('G00 C', $phoptions.posC.to_s, "\n") if $phoptions.useC?

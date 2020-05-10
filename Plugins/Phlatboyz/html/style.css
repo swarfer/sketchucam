@@ -7,6 +7,8 @@
            max-width: 1024px;
            padding-left:0.5%;
            padding-right:0.5%;
+			  margin-left: auto;
+			  margin-right: auto;
    }
    div.shell {
            /*background-color: #eee;*/
@@ -33,7 +35,7 @@
            padding-top: 15px;
    }
    div.intro {
-           text-align:left;
+           text-align: justify;
            margin:5px;
            padding: 5px;
            font-size: 0.90em;
