@@ -54,7 +54,7 @@ module PhlatScript
       end # select
 
       # copied from loopnodefromentities so if that changes maybe this should too
-      def self.listgroups
+      def listgroups
          # copied from "loopnodefromentities" and trimmed to just return the list of groups
          model = Sketchup.active_model
          entities = model.active_entities
@@ -322,7 +322,7 @@ module PhlatScript
       ## generate gcode for a plasma cutter
       ## no Z movement
       ## allow for user specified codes prior to G0 and G1 moves, whenever it changes from G0 to G1 and back
-      def self.generate_gcode_plasma
+      def generate_gcode_plasma
          #      if PSUpgrader.upgrade
          #        UI.messagebox("GCode generation has been aborted due to the upgrade")
          #        return
@@ -440,6 +440,24 @@ module PhlatScript
       end
 
       private
+		
+		# set feed_adjust false if doing an outside cut and arc is on outside
+		# returns old value of feed_adjust
+		def self.dofeedadjust(cutkind, g3)
+			# v1.5 - only feedadjust on outside arcs if they are inside a shape
+			fawas = $phoptions.feed_adjust?
+			if ($phoptions.feed_adjust?) && (cutkind == PhlatScript::OutsideCut)
+				if PhlatScript.useOverheadGantry? == g3
+					$phoptions.feed_adjust = false
+				end
+			end
+			if ($phoptions.feed_adjust?) && (cutkind == PhlatScript::InsideCut)
+				if PhlatScript.useOverheadGantry? == g3
+					$phoptions.feed_adjust = false
+				end
+			end
+			fawas
+		end
 
       def self.LoopNodeFromEntities(entities, aMill, material_thickness)
          #      puts"loopnodefromentities #{entities.length}"
@@ -1049,7 +1067,7 @@ module PhlatScript
       end
 
       # modify the list of edges to make the dragknife turn corners properly
-      def self.dragknife(edges, reverse, _trans)
+      def dragknife(edges, reverse, _trans)
          anglelimit = 20 # ignore less than this
          drag = 2.mm # distance from axle to knife tip
          newedges = edges
@@ -1157,6 +1175,7 @@ module PhlatScript
                   ecnt = 0
                   edges.each do |phlatcut|
                      ecnt += 1
+							isoutside = phlatcut.is_a?(PhlatScript::OutsideCut)
                      prog.update(ecnt)
                      cut_started = false
                      point = nil
@@ -1320,7 +1339,11 @@ module PhlatScript
                                           g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
                                           puts "ramping multi g3=#{g3}" if @debug
                                           cmnd = g3 ? 'G03' : 'G02'
+														
+														# v1.5 - only feedadjust on outside arcs if they are inside a shape
+														fawas = dofeedadjust(phlatcut.class, g3)
                                           aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
+														$phoptions.feed_adjust = fawas
                                        else
                                           aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate)
                                        end
@@ -1357,12 +1380,12 @@ module PhlatScript
                                        tcenter = (trans ? center.transform(trans) : center) # transform if needed
                                        puts "arc ramping in tcenter #{tcenter}" if @debug
                                        g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                                       cmnd = if g3
-                                                 'G03'
-                                              else
-                                                 'G02'
-                                              end
+                                       cmnd = g3 ? 'G03' : 'G02'
+													
+													# v1.5 - only feedadjust on outside arcs if they are inside a shape
+													fawas = dofeedadjust(phlatcut.class, g3)													
                                        aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
+													$phoptions.feed_adjust =  fawas		
                                     else
                                        puts "straight ramp to #{cut_depth}" if @debug
                                        aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate)
@@ -1386,12 +1409,10 @@ module PhlatScript
                                     center = phlatcut.center
                                     tcenter = (trans ? center.transform(trans) : center) # transform if needed
                                     puts "arc ramping in tcenter #{tcenter}" if @debug
-                                    cmnd = if g3
-                                              'G03'
-                                           else
-                                              'G02'
-                                           end
+                                    cmnd = g3 ? 'G03' : 'G02'
+												fawas = dofeedadjust(phlatcut.class, g3)
                                     aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
+												$phoptions.feed_adjust = fawas
                                     @ramp_next = false
                                  end
 
@@ -1401,7 +1422,7 @@ module PhlatScript
                                  end
                                  tcenter = (trans ? center.transform(trans) : center) # transform if needed
                                  puts "tcenter #{tcenter}" if @debug
-
+											fawas = dofeedadjust(phlatcut.class, g3)
                                  if (phlatcut.is_a? PhlatScript::TabCut) && phlatcut.vtab? && $phoptions.use_vtab_speed_limit?
                                     # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
                                     aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
@@ -1411,6 +1432,7 @@ module PhlatScript
                                     # aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                                     aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y, phlatcut.radius, g3, cut_depth)
                                  end
+											$phoptions.feed_adjust = fawas
                               else  # not arc
                                  if @must_ramp
                                     #                           aMill.ramp(otherpoint, cut_depth, PhlatScript.plungeRate)
@@ -1767,7 +1789,7 @@ module PhlatScript
                               if (phlatcut.is_a? PhlatArc) && phlatcut.is_arc? && (save_point.nil? || (save_point.x != point.x) || (save_point.y != point.y))
                                  # something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
                                  g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
-                                 cutkind = phlatcut.class                                                         if @debug
+                                 cutkind = phlatcut.class                                                    
                                  puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if @debug
 
                                  center = phlatcut.center
@@ -1775,6 +1797,8 @@ module PhlatScript
                                     raise 'ARC HAS NO CENTER, PLEASE RECODE THIS FILE'
                                  end
                                  tcenter = (trans ? center.transform(trans) : center) # transform if needed
+											# v1.5 - only feedadjust on outside arcs if they are inside a shape
+											fawas = dofeedadjust(phlatcut.class, g3)
                                  if (phlatcut.is_a? PhlatScript::TabCut) && phlatcut.vtab? && $phoptions.use_vtab_speed_limit?
                                     # if speed limit is enabled for arc vtabs set the feed rate to the plunge rate here
                                     aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y, phlatcut.radius, g3, cut_depth, PhlatScript.plungeRate)
@@ -1783,6 +1807,7 @@ module PhlatScript
                                     # aMill.arcmove(point.x, point.y, phlatcut.radius, g3, cut_depth)
                                     aMill.arcmoveij(point.x, point.y, tcenter.x, tcenter.y, phlatcut.radius, g3, cut_depth)
                                  end
+											$phoptions.feed_adjust = fawas
                               else
                                  aMill.move(point.x, point.y, cut_depth)
                               end

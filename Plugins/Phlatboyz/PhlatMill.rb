@@ -95,6 +95,22 @@ module PhlatScript
       def notequal(a, b)
          (a - b).abs > 0.0001
       end
+      
+      # calculate a new feedrate from the hole and bit diameters, lower limit is 10% and 50mm/min
+      # if feed_adjust is true then scale feedrate, else just return the given rate
+      def feedScale(diam, feedrate)
+         feedratio = (diam - @bit_diameter) / diam
+			puts "diam #{diam.to_mm} feedratio #{feedratio}" if @debug
+         if (feedratio <= 0.8) && $phoptions.feed_adjust? # if true then reduce feedrate during arc moves in holes
+            result = feedratio > 0.1 ? feedratio * feedrate : 0.1 * feedrate
+            if result.to_mm < 50.mm # GRBL lower limit
+               result = 50.mm
+            end
+         else
+            result = feedrate
+         end 
+         result
+      end
 
       # print a cnc statement to the cnc file, multiple args will be separate lines
       def cncPrint(*args)
@@ -171,7 +187,7 @@ module PhlatScript
 			if (sout =~ /\./).nil?
 			   sout = sout + ".0"
 			end
-			puts "#{out} #{sout}"
+			#puts "#{out} #{sout}"
          sout
       end
 
@@ -1171,11 +1187,13 @@ module PhlatScript
             command_out += format_measure('Z', zstart + 0.5.mm) + "\n" # rapid to near surface
          end
          command_out += 'G01' + format_measure('Z', zstart + 0.02.mm) # feed to surface
-         feed = @speed_plung
-         command_out += format_feed(feed) # always feed at plunge rate
+         # from Haas tips 22 May 2020 - for small holes reduce feedrate
+         feed = feedScale(finaldiam, @speed_plung)
+         command_out += format_feed(feed) # always feed at set feed rate
          command_out += "\n"
          # if ramping with limit use plunge feed rate
-         @cs = PhlatScript.mustramp? && (PhlatScript.rampangle > 0) ? @speed_plung : @speed_curr
+         #@cs = PhlatScript.mustramp? && (PhlatScript.rampangle > 0) ? @speed_plung : @speed_curr
+         @cs = feed
 
          # // now output spiral cut
          # //G02 X10 Y18.5 Z-3 I0 J1.5 F100
@@ -1432,12 +1450,12 @@ module PhlatScript
       # Will set feed to speed_curr
       # * +xo+ - X center
       # * +yo+ - Y center
-      # * +zstart+ - starting Z level
-      # * +zend+ - ending Z level
+      
       # * +yoff+ - offset to final Y destination value (effective radius)
       # * +ystep+ - stepover for each full turn
       def SpiralOut(xo, yo, zstart, zend, yoff, ystep)
          # @debugramp = true
+         puts "spiralout start #{yoff.to_mm}" if @debug
          @precision += 1
          cwstr = @cw ? 'CW' : 'CCW';
          cmd =   @cw ? 'G02': 'G03';
@@ -1465,8 +1483,10 @@ module PhlatScript
          end
          command_out += "   (SpiralOut  yo #{sprintf('%0.2f',yo.to_mm)} yfinal #{sprintf('%0.2f',yfinal.to_mm)} ynow #{sprintf('%0.2f',ynow.to_mm)} ystep #{sprintf('%0.2f',ystep.to_mm)})\n" if @debug
          cnt = 0
-         while (ynow - yfinal).abs > 0.0001
 
+         diamfinal = (yo - yoff) * 2 + @bit_diameter
+
+         while (ynow - yfinal).abs > 0.0001
             # spiral from ynow to ynow-ystep
             yother = yo + (yo - ynow) + ystep / 2
             command_out += "   (SO ynow #{sprintf('%0.2f',ynow.to_mm)}    yother #{sprintf('%0.2f',yother.to_mm)})\n" if @debug
@@ -1476,18 +1496,33 @@ module PhlatScript
                # puts "ynew clamped"                 if @debug
                ynew = yo - yoff
             end
+            diam1 = yother - ynow + @bit_diameter
+            diam2 = yother - ynew + @bit_diameter
+            diam3 = (yo - ynew) * 2 + @bit_diameter
+            feed1 = feedScale(diam1, @speed_curr)
+            feed2 = feedScale(diam2, @speed_curr)
+            feed3 = feedScale(diam3, @speed_curr)
+            #puts "diam1 #{diam1.to_mm} diam2 #{diam2.to_mm} feed1 #{feed1.to_mm} feed2 #{feed2.to_mm} feed3 #{feed3.to_mm}"
+            
             # R format - cuts correctly but does not display correctly in OpenSCAM, nor Gplot
             #         command_out += 'G03' + format_measure('Y',yother) + format_measure('R', (yother-ynow)/2) +"\n"
             #         command_out += 'G03' + format_measure('Y',ynew) + format_measure('R', (yother-ynew)/2 ) +"\n"
             # IJ format - displays correctly in OpenSCAM, not Gplot
+            # first half
             command_out += cmd + format_measure('Y', yother) + ' I0' + format_measure('J', (yother - ynow) / 2)
-            if @cs != @speed_curr
-               command_out += format_feed(@speed_curr)
-               @cs = @speed_curr
+            if feed1 != @cs
+               command_out += format_feed(feed1)
+               @cs = feed1
             end
             command_out += "\n"
-            command_out += cmd + format_measure('Y', ynew) + ' I0' + format_measure('J', -(yother - ynew) / 2) + "\n"
-
+            # 2nd half
+            command_out += cmd + format_measure('Y', ynew) + ' I0' + format_measure('J', -(yother - ynew) / 2)
+            if feed2 != @cs
+               @cs = feed2
+               command_out += format_feed(feed2) 
+            end
+            command_out += "\n"
+            
             ynow -= ystep
             if ynow < (yo - yoff)
                command_out += "   (SO ynow clamped)\n" if @debug
@@ -1500,6 +1535,9 @@ module PhlatScript
             break
          end
          command_out += "   (SO final ynow #{sprintf('%0.2f',ynow.to_mm)})\n" if @debug
+         #puts "DIAM1 #{diam1.to_mm} diam2 #{diam2.to_mm} feed1 #{feed1.to_mm} feed2 #{feed2.to_mm} feed3 #{feed3.to_mm}"
+
+         @cs = feed3
 
          # now make it full diameter
          if @cw
@@ -1507,6 +1545,7 @@ module PhlatScript
             # X-of  Y  I0    J+of
             command_out += cmd.to_s
             command_out += format_measure('X', xo - yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', +yoff)
+            command_out += format_feed(feed3) 
             command_out += "\n"
             # x Yof   I+of  J0
             command_out += cmd.to_s
@@ -1525,6 +1564,7 @@ module PhlatScript
             #command_out += "(CCW)\n"
             command_out += cmd.to_s
             command_out += format_measure('X', xo + yoff) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', yoff)
+            command_out += format_feed(feed3) 
             command_out += "\n"
             # x Yof   I-of  J0
             command_out += cmd.to_s
@@ -1543,6 +1583,7 @@ module PhlatScript
          command_out += "   (SPIRALOUT END)\n" if @debug
          @precision -= 1
          # @debugramp = false
+         puts "spiralout end" if @debug
          command_out
       end # SpiralOut
 
@@ -1715,20 +1756,19 @@ module PhlatScript
          end
       end
 
-      # circles for plingecsink - use for <= 2*bitdiam
+      # circles for plungecsink - use for <= 2*bitdiam
       # mod 10 May 2019 to obey overheadgantry for direction of cuts
       def circle(xo, yo, znow, rnow, complete = true)
          out = '' # 'G00' + format_measure('X',xo) + format_measure('Y',yo) + "\n"
          rad = rnow - @bit_diameter / 2.0
          return '' if rad <= 0.1.mm
          # arc into the cut
+         feed = feedScale(rnow * 2, @speed_plung)
          cmd = @cw ? 'G02' : 'G03'
          if complete
             out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('Z', znow) + format_measure('I', 0) + format_measure('J', -rad / 2.0)
-            if @cs != @speed_plung
-               out += format_feed(@speed_plung)
-               @cs = @speed_plung
-            end
+            out += format_feed(feed)
+            @cs = feed
             out += "\n"
          else
             out += 'G01' + format_measure('Y', yo - rad) + "\n"
@@ -1737,9 +1777,9 @@ module PhlatScript
          # cut a full circle in quadrants
          if @cw
             out += cmd + format_measure('X', xo - rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', rad)
-            if @cs != @speed_curr
-               out += format_feed(@speed_curr)
-               @cs = @speed_curr
+            if @cs != feed
+               out += format_feed(feed)
+               @cs = feed
             end
             out += "\n"
             out += cmd + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', rad) + format_measure('J', 0) + "\n"
@@ -1747,9 +1787,9 @@ module PhlatScript
             out += cmd + format_measure('X', xo) + format_measure('Y', yo - rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
          else
             out += cmd + format_measure('X', xo + rad) + format_measure('Y', yo) + format_measure('I', 0) + format_measure('J', rad)
-            if @cs != @speed_curr
-               out += format_feed(@speed_curr)
-               @cs = @speed_curr
+            if @cs != feed
+               out += format_feed(feed)
+               @cs = feed
             end
             out += "\n"
             out += cmd + format_measure('X', xo) + format_measure('Y', yo + rad) + format_measure('I', -rad) + format_measure('J', 0) + "\n"
@@ -1777,7 +1817,7 @@ module PhlatScript
          cncPrint("(csink end of plunge)\n") if @debug
 
          outR = cdiam.to_f / 2.0    # radius to cut to
-         downS = 0.25.mm            # step down for each layer
+         downS = 0.25.mm            # step down for each layer - if this changes change the rEnd offset
          alpha = ang / 2.0          # side wall angle - in degrees
          xf = Math.tan(PhlatScript.torad(alpha)) * downS # x step to reduce radius by each step
          puts "outR #{outR.to_mm}"     if @debug
@@ -1787,7 +1827,7 @@ module PhlatScript
          xf = @bit_diameter / 2 if xf > @bit_diameter
          hbd = @bit_diameter / 2
          rNow = outR # starting radius
-         rEnd = [diam / 2.0, @bit_diameter / 2.0].max # stop when less than this
+         rEnd = [diam / 2.0, @bit_diameter / 2.0].max + 0.0125.mm # stop when less than this
          cncPrintC("rEnd #{rEnd.to_l}") if @debug
 
          zNow = zStart
@@ -1838,14 +1878,15 @@ module PhlatScript
                   yy = yo - dd
                   rr = -dd / 2
                   output += "(ARC TO EXISTING HoLE)\n"
-                  output += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n"
+                  output += "(dd #{dd.to_mm} yy #{yy.to_mm} rr #{rr.to_mm})\n" if @debug
                   output += 'G00' + format_measure('X', xo) + format_measure('Y', yo) + "\n"
                   if @cw
                      output += 'G02' + format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr)
                   else
                      output += 'G03' + format_measure('Y', yy) + format_measure('Z', zNow) + format_measure('I0.0 J', rr)
                   end
-                  output += format_feed(@speed_curr) if @cs != @speed_curr
+                  @cs = feedScale(diam, @speed_curr)
+                  output += format_feed(@cs) 
                   output += "\n"
                   @cs = @speed_curr
                else
@@ -2328,10 +2369,12 @@ module PhlatScript
                rr = -@bit_diameter / 4
             end
             acmd =   @cw ? 'G02' : 'G03'
+            so = feedScale( (yo - yy)*2 + @bit_diameter, @speed_curr)
+            command_out += "(  so #{so.to_mm})\n" if @debug
             command_out += acmd + format_measure('Y', yy) + format_measure('I0.0 J', rr)
             @precision -= 1
             if notequal(so, @cs)
-               command_out += "(so #{so}  @cs #{@cs})" if @debug
+               #command_out += "(so #{so}  @cs #{@cs})" if @debug
                command_out += format_feed(so)
                @cs = so
                command_out += "(   so #{so}  @cs #{@cs})" if @debug
@@ -2509,6 +2552,8 @@ module PhlatScript
             command_out += format_measure('X', xo) # if (xo != @cx) x and y must be specified in G2/3 codes
             command_out += format_measure('Y', yo) # if (yo != @cy)
 
+				#command_out += "(so #{so} @cs #{@cs})"
+
             if @laser
                if notequal(zo, @cz)
                   depth = laserbright(zo)
@@ -2518,6 +2563,9 @@ module PhlatScript
                end
             else
                command_out += format_measure('Z', zo) if zo != @cz # optional Z motion
+					# scale the feedrate for this arc diameter V1.5
+					so = feedScale( (radius * 2).abs, so)
+					#command_out += "(new so #{so.to_mm}  @cs #{@cs.to_mm})"
             end
 
             i = centerx - @cx
@@ -2525,7 +2573,9 @@ module PhlatScript
             command_out += format_measure('I', i)
             command_out += format_measure('J', j)
             @precision -= 1
-            command_out += format_feed(so) if notequal(so, @cs)
+				if notequal(so, @cs)
+               command_out += format_feed(so) 
+				end	
             command_out += "\n"
             cncPrint(command_out) if print
          else

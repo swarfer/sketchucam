@@ -86,6 +86,7 @@ module PhlatScript
          @laserdwell             =   phoptions.laser_dwell.to_i.to_s
          @lasermode              =   (phoptions.laser_GRBL_mode? ? '1' : '0')
          @laserpowermode         =   (phoptions.laser_power_mode? ? '1' : '0')
+         @feedadjust             =   (phoptions.feed_adjust? ? '1' : '0')
       end
    end
 
@@ -164,6 +165,7 @@ module PhlatScript
          @laserdwell             = 250  # just an int
          @lasermode              = true #default to grbl mode
          @laserpowermode         = true #default to grbl power mode
+         @feedadjust             = true # adjust feed in arcs by default
          
          @toolnum                = -1        # also not saved, awaiting extension of tool profile code
          @useg43                 = false
@@ -361,6 +363,10 @@ module PhlatScript
             value = -1
             value = getvalue(optin['laserpowermode'])             if (optin.has_key?('laserpowermode'))
             @laserpowermode = value > 0 ? true :  false           if (value != -1)
+         #feedrate adjust
+            value = -1
+            value = getvalue(optin['feedadjust'])             if (optin.has_key?('feedadjust'))
+            @feedadjust = value > 0 ? true :  false           if (value != -1)
          end
 
       end #initialize
@@ -880,7 +886,14 @@ module PhlatScript
       def laser_power_mode=(newval)
          @laserpowermode = newval == true
       end
-      
+
+      def feed_adjust?
+         @feedadjust
+      end
+      def feed_adjust=(newval)
+         @feedadjust = newval == true
+      end
+     
       def quick_peck?
          @quick_peck
       end
@@ -1345,7 +1358,8 @@ end # class
             'Use Depth first(true) or Diam first(false) ',
             'LASER - plunge hole dwell time (ms) ',
             'LASER - GRBL 1.1 mode ',
-            'LASER - GRBL M4 power control mode  '
+            'LASER - GRBL M4 power control mode  ',
+            'Reduce feedrate in arcs '
             ];
          defaults=[
             @options.use_reduced_safe_height?.inspect(),
@@ -1355,7 +1369,8 @@ end # class
             @options.depth_first?.inspect(),
             @options.laser_dwell.to_i,
             @options.laser_GRBL_mode?.inspect(),
-            @options.laser_power_mode?.inspect()
+            @options.laser_power_mode?.inspect(),
+            @options.feed_adjust?.inspect()
             ];
          list=[
             'true|false',
@@ -1364,6 +1379,7 @@ end # class
             'true|false',
             'true|false',
             '',
+            'true|false',
             'true|false',
             'true|false'
             ];
@@ -1384,6 +1400,7 @@ end # class
             @options.laser_dwell             = input[5]
             @options.laser_GRBL_mode         = (input[6] == 'true')
             @options.laser_power_mode        = (input[7] == 'true')
+            @options.feed_adjust             = (input[8] == 'true')
             
             @options.save
          end # if input

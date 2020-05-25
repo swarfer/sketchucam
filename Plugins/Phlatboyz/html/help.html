@@ -174,6 +174,9 @@ and as of V1.5 it has <a href="https://software.openbuilds.com/">OpenBuildsCONTR
             <dd>Under some circumstances the retract from a bored hole could leave a mark on the internal surface which is now impossible.
          <dt><A href="howto_options.html#a4">Offset for G53 Z raise codes.</a>
 				<dd>Raising to Z0 may hit a home switch, this offset allows for stopping short of the limit, like Z-5 (in mm).
+			<dt><a href="howto_options.html#a5b">Reduce feedrate in arcs</a>
+            <dd>This option reduces feedrate in arcs (for plungeholes) according to the ratio of the bitdiamter
+				to the hole diameter.
 			<dt>Bug Fixes</dt>
 				<dd>Multipass in laser mode, always use set power, without scaling.
 				<dd>Add faces to plunge hole groups, this helps a lot with keeping existing lines from interfering with holes, but is not perfect. 

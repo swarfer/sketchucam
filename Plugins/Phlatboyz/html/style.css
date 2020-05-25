@@ -39,7 +39,7 @@
            margin:5px;
            padding: 5px;
            font-size: 0.90em;
-   }
+  }
 
 
    .command-image {
@@ -102,3 +102,6 @@
    .index {
       line-height: 1.6em;
       }
+   img {
+		margin-left: 1em;
+	   }
