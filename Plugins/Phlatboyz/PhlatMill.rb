@@ -273,6 +273,9 @@ module PhlatScript
          else
             cncPrintC('Optimization is OFF')
          end
+         if $phoptions.feed_adjust?
+            cncPrintC('Arc Feedrate scale is ON')
+         end
          if @laser # swarfer - display laser mode status as part of header
             if @laser_grbl_mode
                cncPrintC('LASER for GRBL') unless @laser_power_mode

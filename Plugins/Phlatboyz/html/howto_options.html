@@ -1,4 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <title>SketchUcam: HOWTO set default options</title>
@@ -360,8 +361,9 @@ cuts = 3.3</pre>
       <dd>This option will scale the feedrate down in arcs to compensate for the circumferential speed difference.
 		<dd>Minimum scale is 10% of the feedrate. If the scale is less than 10% then 10% of the feedrate is used.
 		<dd>Maximum scale is 80% of the feedrate. If the scale is greater than 80% then the full feedrate is used.
-		<dd>This will affect 'inlets' on outside cuts, ie rounded outside corners will not be feedrate adjuste.
+		<dd>This will affect 'inlets' on outside cuts, ie rounded outside corners will not be feedrate adjusted.
 		<dd>On inside cuts rounded corners will be adjusted but an inlet will not be adjusted.
+      <dd>Plunge holes with diameter larger than the bit will use scaled feedrates for each diameter that is cut.
          
 </dl>   
    
