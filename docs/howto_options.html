@@ -1,4 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"    "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <title>SketchUcam: HOWTO set default options</title>
@@ -21,9 +22,7 @@
 <div class="shell">
 
 <br>
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)
-	<div><b>SketchUcam Version 1.4</b><br>Nov 2015</div>
-</div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)</div>
 <hr width="100%">
 <div class="intro">
 <span style="float: right;"><a href="index.html">Back to help index</a></span>
@@ -233,7 +232,7 @@ cuts = 3.3</pre>
       <dd>Set this to true, if you want the safe area to always show, when parameters are saved.<br>
          Otherwise the safe area will only show, if its size has been changed.
             
-   <dt>Use_pocket_CW
+<!--   <dt>Use_pocket_CW
       <dd>Set this true to generate pocket outlines that cut in CW instead of usual CCW direction<br>
          Please research 'climb milling' before changing this.<br>
          Note this is a draw time option, if you change it in the G-code you have to redraw all pocket cuts.
@@ -241,7 +240,7 @@ cuts = 3.3</pre>
    <dt>Use_plunge_CW
       <dd>Set this true to generate plunge hole cuts in CW instead of usual CCW cut direction<br>
          Please research 'climb milling' before changing this.
-            
+-->            
    <dt>Use_outfeed 
       <dd>Outfeed: phlatprinters only!<br>
          Set this to true to enable outfeed.  At the end of the job it will feed the material out the front of the
@@ -293,6 +292,11 @@ cuts = 3.3</pre>
    <dt>Force all G-codes on for Marlin         
       <dd>FALSE (default) = use optimized G-code output that does not repeat G commands if they are not needed
       <dd>TRUE = force output of G code on all lines, useful for Marlin firmware that requires this.
+	<dt>End position Z for G53 <span style="color: red;">(new in V1.5)</span>
+      <dd>When home switches are used raising Z to 0 may trigger the limit switch.  
+		Use this setting to set an offset for the G53 safety moves so that the limit will not be hit.
+		This offset it ALWAYS negative since machine Z=0 is at the top of travel.  
+		Thus a move to just short of Z0 is a negative figure.
    </dl>
 <hr>
 <h2><a id="a5">Hole Feature Options</a></h2>
@@ -332,7 +336,7 @@ cuts = 3.3</pre>
       <dd><i>NOTE: when the dwell time is less than 1 second, say 750 milliseconds, then the Gcode is output as<br>
          G4 P0.75<br>
          and GPLOT does not understand this format and will produce an error message, failing to display the file.<br>
-         To see your G-code, set the well time to <b>1000</b>, generate G-code, preview, once satisfied, set the dwell to 
+         To see your G-code, set the dwell time to <b>1000</b>, generate G-code, preview, once satisfied, set the dwell to 
          what you really need and generate G-code for cutting.   We are working on modifying GPLOT but this will take some time.</i>
    <dt>LASER - GRBL 1.1 mode (new in 1.4c)
       <dd>GRBL 1.1 features a dedicated laser mode.   In this mode the laser will not be turned on unless a G1/G2/G3 is in motion.
@@ -344,12 +348,22 @@ cuts = 3.3</pre>
       (note that Gplot will not display these holes as circles, but the G-code is correct, this is a Gplot bug)
    
    <dt>LASER- GRBL M4 power control mode
-      <dd>GRBL 1.1 has the option to scale laser power according to the acceleration rate.  This prevents
-      over-burning in corners.
+      <dd>GRBL 1.1 has the option to scale laser power according to the acceleration rate.  
+		   This prevents over-burning in corners.
       <dd>GRBL uses the M3 command to control the laser in simple on/off mode
-      <dd>GRBL uses the M4 command to contrll the laserin power scaled mode.
+      <dd>GRBL uses the M4 command to control the laser in power scaled mode.
       <dd>Set this option true (and the GRBL mode one above) to generate G-code that uses M4 commands.
-      
+   
+	<dt><a id="a5b">Reduce</a> feedrate in arcs <span style="color: red;">(V1.5)</span>
+      <dd>When an arc is similar in radius to the tool, the edge of the tool travels
+         much faster than the set feedrate.<br>
+       <iframe width="373" height="210" src="https://www.youtube.com/embed/6wLU97gVo5k" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>			
+      <dd>This option will scale the feedrate down in arcs to compensate for the circumferential speed difference.
+		<dd>Minimum scale is 10% of the feedrate. If the scale is less than 10% then 10% of the feedrate is used.
+		<dd>Maximum scale is 80% of the feedrate. If the scale is greater than 80% then the full feedrate is used.
+		<dd>This will affect 'inlets' on outside cuts, ie rounded outside corners will not be feedrate adjusted.
+		<dd>On inside cuts rounded corners will be adjusted but an inlet will not be adjusted.
+      <dd>Plunge holes with diameter larger than the bit will use scaled feedrates for each diameter that is cut.
          
 </dl>   
    

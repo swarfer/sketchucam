@@ -35,7 +35,7 @@ tr.profile {
 td.tooltip {outline:none; }
 td.tooltip strong {line-height:30px;}
 td.tooltip:hover {text-decoration: none;}
-td.tooltip span { z-index:10; display:none; padding:2px 2px; top:460px; left:255px; width:275px; font-size: smaller; }
+td.tooltip span { z-index:10; display:none; padding:2px 2px; top:480px; left:255px; width:275px; font-size: smaller; }
 td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px solid #DCA; background:#ffCE9F;}
 -->
   </style>
@@ -57,20 +57,23 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
          <input value="Load"     onclick="callPhlatboyz('pload')" class="button" type="button">
          <input value="Save"     onclick="callPhlatboyz('psave')" class="button"  type="button">
          <input value="Delete"   onclick="callPhlatboyz('pdelete')" class="button"  type="button">
+         <input name="metric_hidden" id="metric_hidden" value="" type="hidden">
          </span>
        </td>
     </tr>
 
       <tr>
         <td width="45%" id="spindlespeed_id" class="caption">&nbsp;</td>
-        <td width="10%" class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8"><span>Spindle speed for cutting</span></td>
-        <td width="40%">&nbsp;</td>
-        <td width="10%">&nbsp;</td>
+        <td width="10%" class="tooltip"><input name="spindlespeed" id="spindlespeed" value=""  type="text" size="8" onchange="calcfz()">
+         <span>Spindle speed for cutting</span></td>
+        <td width="40%" class="caption tooltip" id="SFM">&nbsp;<span>Cutting Speed</span></td>
+        <td width="10%" class="caption tooltip" id="fz">&nbsp;<span>Feed Per Tooth</span></td>
       </tr>
 
       <tr>
         <td id="feedrate_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8"><span>Cutting feedrate in units/min</span></td>
+        <td class="tooltip"><input name="feedrate" id="feedrate" value=""  type="text" size="8" onchange="calcfz()">
+         <span>Cutting feedrate in units/min</span></td>
         <td id="plungerate_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="plungerate" id="plungerate" value=""  type="text" size="8"><span>Vertical down Z moves will use this rate</span></td>
       </tr>
@@ -89,7 +92,8 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
       </tr>
       <tr>
         <td id="bitdiameter_id" class="caption">&nbsp;</td>
-        <td class="tooltip"><input name="bitdiameter" id="bitdiameter" value=""  type="text" size="8"><span>Cutting bit diameter, set before creating cut lines</span></td>
+        <td class="tooltip"><input name="bitdiameter" id="bitdiameter" value=""  type="text" size="8" onchange='calcsfm()'>
+         <span>Cutting bit diameter, set before creating cut lines</span></td>
         <td id="stepover_id" class="caption">&nbsp;</td>
         <td class="tooltip"><input name="stepover" id="stepover" value=""  type="text" size="8"><span>Percentage of bitdiameter to step over</span></td>
       </tr>
@@ -193,9 +197,87 @@ td.tooltip:hover span{ display:inline; position:absolute; color:#111; border:1px
         function hideMultipass() {
             document.getElementById("multipass_row1").style.display = 'none';
         }
+        function calcfz()
+           {
+           try
+              {
+              var theform =  document.forms["param_form"];
+              var feed = theform.elements["feedrate"];
+              if (feed.value != "")
+                 feed = parseFloat(feed.value);
+              else 
+                 feed = 0.1;
+              var rpm = theform.elements["spindlespeed"];
+              if (rpm.value != "")
+                 rpm = parseFloat(rpm.value);
+              else
+                 rpm = 1;
+
+              if (feed < 0)
+                 {
+                 theform.elements["feedrate"].value = -feed; 
+                 feed = -feed;
+                 }
+                 
+              if (rpm < 0)
+                 {
+                 theform.elements["spindlespeed"].value = -rpm; 
+                 rpm = -rpm;
+                 }
+              
+              var rpm1 = feed / (rpm * 1);
+              var rpm2 = feed / (rpm * 2);
+              var rpm4 = feed / (rpm * 4);
+              
+              document.getElementById("fz").innerHTML = rpm1.toFixed(3) +' '+ rpm2.toFixed(3) +' '+rpm4.toFixed(3) +'<span>Feed Per Tooth for 1, 2 and 4 teeth</span>';
+              calcsfm();
+              }
+           catch(err)
+            {
+            document.getElementById("fz").innerHTML = 'ERROR' +'<span>Feed Per Tooth for 1, 2 and 4 teeth</span>';
+            }
+           }
+        function calcsfm()
+           {
+           var theform =  document.forms["param_form"];
+           var rpm = theform.elements["spindlespeed"];
+           if (rpm.value != "")
+              rpm = parseFloat(rpm.value);
+           else
+              rpm = 0;
+           var dia = theform.elements["bitdiameter"];
+           if (dia.value != "")
+              dia = parseFloat(dia.value);
+           else
+              dia = 0; 
+
+           if (rpm < 0)
+              {
+              theform.elements["spindlespeed"].value = -rpm; 
+              rpm = -rpm;
+              }
+           if (dia < 0)
+              {
+              theform.elements["bitdiameter"].value = -dia; 
+              dia = -dia;
+              }
+              
+           var metric = theform.elements["metric_hidden"];
+           if (metric.value == 'true')
+              {
+              var sfm = (3.1415 * dia * rpm) / 1000;
+              document.getElementById("SFM").innerHTML = sfm.toFixed(2) + ' M/min' +' <span>Cut Speed (SFM or M/Min)</span>';
+              }
+           else
+              {
+              var sfm = (3.1415 * dia * rpm) / 12;
+              document.getElementById("SFM").innerHTML = sfm.toFixed(2) +' ft/min' +' <span>Cut Speed (SFM or M/Min)</span>';
+              }
+           }
     </script>
 	<script type="text/javascript">
 		callPhlatboyz('load_params');
+      calcfz();
 	</script>
 </body>
 </html>

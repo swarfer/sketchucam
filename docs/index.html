@@ -9,11 +9,11 @@
 
 <div class="shell">
 <br>
-<a href="http://www.phlatboyz.com/">PHLATBOYZ.COM</a>
+<a target="_blank" href="http://www.openbuilds.com/">OpenBuilds.COM</a>
 
-<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.4d</b><br>Jan 2016</div></div>
+<div class="intro-name">Phlatboyz SketchUcam(PhlatScripT)<div><b>SketchUcam Version 1.5</b><br>May 2020</div></div>
 
-<br> <a href="https://github.com/swarfer/sketchucam/releases">Check for Latest Version of SketchUcam</a>
+<br> <a target="_blank" href="https://github.com/swarfer/sketchucam/releases">Check for Latest Version of SketchUcam</a>
 <hr width="100%">
 
 <table summary="help 1" cellpadding="1" cellspacing="0">
@@ -27,20 +27,23 @@
       <div class="intro">
       <img alt="" src="icons/andy.png" title="Andy the Aviator" border="0" style="float: right;">
       
-         SketchUcam is a set of tools in the form of a plugin for Google
-         SketchUp. It allows for assigning of CNC cut/fold/drill/mill, etc.
+         SketchUcam is a set of tools in the form of a plugin for Google/Trimble
+         SketchUp (up to V2017). It allows for assigning of CNC cut/fold/drill/mill, etc.
          functions to SketchUp designs as a full featured CAM solution. It was
          designed for use with the Phlatboyz easy to assemble and learn CNC
          machine kits and has since been extended to work with harder materials in the newer
-         breed of CNC routers. 
-         For more information about these affordable Kits, please
-         visit <a href="http://www.openbuilds.com/" target="_blank">Phlatboyz Machines</a>
-         <br><br>
+         breed of CNC routers the Openbuilds 
+		 <A href="https://openbuildspartstore.com/machine-bundles/">LEAD Machine, Sphinx, WorkBee, MiniMill and C-Beam Machine</a> 
+and as of V1.5 it has <a href="https://software.openbuilds.com/">OpenBuildsCONTROL</a> integration .
+		 
+         <p>For more information about these affordable Kits, please
+         visit <a href="http://www.openbuilds.com/" target="_blank">Openbuilds parts store</a>
+         </p><br><br>
          The vision and direction of SketchUcam is Mark and Trish Carew's
          of Phlatboyz, LLC and is released under GLN licensing terms. Since this
          code and the ideas behind it is a collaborative effort among many
          people, it can not be sold in any form. For more information, please
-         contact Mark and Trish Carew through www.phlatboyz.com or
+         contact Mark and Trish Carew through www.openbuilds.com or
          <a href="mailto:kram2422@comcast.net">kram2422@comcast.net</a>. 
          It has come to fruition through the help of many
          volunteer programmers, testers, and users. We want to thank everyone
@@ -57,16 +60,15 @@
          capable of outputting 3D tool paths and possibly in the future will be
          the ability to not only output the g-code but control the Phlatprinter
          as well :) Have fun and please let us know how you are using 
-         SketchUcam at <a href="http://www.Phlatforum.com">www.Phlatforum.com</a> 
+         SketchUcam at <a target="_blank" href="http://openbuilds.com">OpenBuilds.com</a> 
          </div>
          <div class="intro"> SketchUcam or any form of this
             code can not be used for commercial gain or sold in any form. This code
-            is a volunteer collaboration project that consist of the efforts of
+            is a volunteer collaboration project that consists of the efforts of
             many people. We are keeping this truly open source. <br>
             <b>Please send questions or comments to </b><a href="mailto:kram2422@comcast.net">Phlatboyz,LLC</a>
             <br>
-            <a href="http://www.phlatboyz.com/">
-            Phlatboyz</a> or <a href="http://www.phlatforum.com/">Phlatforum</a>
+            <a href="http://www.openbuilds.com/">Openbuilds Forum</a>
          </div>
          
    </td>
@@ -74,7 +76,7 @@
          <div class="command-description" style="float: right; width: 325px; display: block; margin-left: 10px; font-size: 0.80em;">
             <b>Jump to:</b>
             <ul style="padding-left: 3px;">
-            <li><a href="afterinstall.html" style="color: red">After install - things to do</a>
+            <li><a href="afterinstall.html" style="color: red; font-size: larger;">After install - things to do</a>
             <li><a href="sketchucamtoolbar.html"><b>The Toolbar</b></a>  very important!
             <li><a href="machelp.html">Help for MAC users</a>
             </ul>
@@ -108,7 +110,8 @@
                   <li><a href="sketchucamtoolbar.html#toolzero"><img alt="" src="icons/zerotool_small.png" title="zero tool" width="16"> Zero Offset</a>
                   <li><a href="sketchucamtoolbar.html#tooljoiner"><img alt="" src="icons/joiner_small.png" title="G-Code Joiner" width="16"> G-code Joiner</a>         
                   <li><a href="sketchucamtoolbar.html#toolgcode"><img alt="" src="icons/gcode_small.png" title="Phlatboyz G-Code" width="16"> Generate G-code</a>
-                  <li><a href="sketchucamtoolbar.html#toolgoto"><img alt="" src="icons/Phlatboyz_homepage_small.png" title="Go To Phlatboyz Homepage" width="16"> Goto Phlatforum</a>
+                  <li><a href="sketchucamtoolbar.html#toolobc"><img alt="" src="icons/OBicon_small.png" title="Send to CONTROL" width="16"> Send&nbsp;to&nbsp;CONTROL</a></li>
+		          <li><a href="sketchucamtoolbar.html#toolgoto"><img alt="" src="icons/Phlatboyz_homepage_small.png" title="Go To Phlatboyz Homepage" width="16"> Goto Phlatforum</a>
                   <li><a href="sketchucamtoolbar.html#toolhelp"><img alt="" src="icons/helptool_small.png" title="Open Phlatboyz Help" width="16"> Help</a>
                </ul>
                <li><a class="index" href="howto-changegplot.html">Change G-code plotter</a>
@@ -136,6 +139,53 @@
 <tbody>
 <tr>
    <td width="90%">
+   <div class="intro">
+      <h4>New in V1.5 (May 2020)</h4>
+      <dl>
+         <dd>
+         <dl>
+			<dt><a href="sketchucamtoolbar.html#toolparameters">Display SFM and feed per tooth on the parameters dialog.</a>
+            <dd><img src="images/sfm.png" style="float: right;">
+            SFM and then the feed per tooth for 1, 2 and 4 teeth.</dd>
+            <dd>This helps with setting feedrates to good values.</dd>
+            <br clear=all>
+         <dt><a href="sketchucamtoolbar.html#toolobc">Send Gcode to OpenBuildsCONTROL</a>
+            <dd>This button appears only on Sketchup Make 2014 and later
+            <dd>If you have OpenBuildSCONTROL active then this button will send the most recently generated Gcode to it.
+			<dt>Limit length of ramps to multiple of tool diameter.
+			   <dd>Only for straight segments, arcs remain at arc length which is normally short anyway.
+            <dd>This is a time saver since plunge rate is normally lower than cut rate.  
+            The old way would ramp along the entire length of a segment, now the ramp is limited to 5 times the bit diameter.
+            <dd><img src="images/ramplimit.png">
+            <dt>Gplot.exe upgraded - 
+				<dd>Display scaling is improved.
+            <dd>Display of arcs is much improved.
+				<dd>Right mouse button will now rotate view, in addition to the middle button.
+				<dd>The display angle is saved between runs.
+				<dd>Some additional Gcode words are handled to prevent errors.
+			<dt>Optimize prograss bar so it updates the screen only when needed, this speeds up Gcode generation.
+            <dd>Continual screen updates take processing power away from the process, by only updating when the actual display will change
+            we get noticeably faster Gcode generation for complex operations.
+			<dt>Fix Gcode Joiner to handle new start and end formats (which use G53) as well as old files.
+            <dd>The old start and end safe Z moves could result in a crash on machines with limited Z height.  
+            By using 'G53 G0 Z0' style moves Z is always safely raised at the beginning and end of the job.
+			<dt>Improved spiral bore retracts.
+            <dd>Under some circumstances the retract from a bored hole could leave a mark on the internal surface which is now impossible.
+         <dt><A href="howto_options.html#a4">Offset for G53 Z raise codes.</a>
+				<dd>Raising to Z0 may hit a home switch, this offset allows for stopping short of the limit, like Z-5 (in mm).
+			<dt><a href="howto_options.html#a5b">Reduce feedrate in arcs</a>
+            <dd>This option reduces feedrate in arcs (eg. for plungeholes and inlets on outside cuts) 
+               according to the ratio of the bitdiameter to the arc diameter.
+			<dt>Bug Fixes</dt>
+				<dd>Multipass in laser mode, always use set power, without scaling.
+				<dd>Add faces to plunge hole groups, this helps a lot with keeping existing lines from interfering with holes, but is not perfect. 
+				<dd>Toolchange tweak to prevent errors on multi %s strings.
+				<dd>Prevent Gplot opening if gcode generation is cancelled.
+				<dd>If user sets offset to the center of a hole, gcode was not generated correctly, fixed.
+				<dd>Prevent G53 Z moves in laser mode.
+				<dd>Remove 'use plunge/pocket CW' options and make those cuts follow the OverheadGantry setting for direction.
+      </dl>
+   </div>      
    
    <div class="intro">
       <h4>New in V1.4d (Jan 2017)</h4>
