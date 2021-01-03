@@ -1539,6 +1539,13 @@ module PhlatScript
          end
          command_out += "   (SO final ynow #{sprintf('%0.2f',ynow.to_mm)})\n" if @debug
          #puts "DIAM1 #{diam1.to_mm} diam2 #{diam2.to_mm} feed1 #{feed1.to_mm} feed2 #{feed2.to_mm} feed3 #{feed3.to_mm}"
+         # in the case where the loop does nothing we need to calculate feed3
+         if cnt == 0
+            puts "calc feed3" if @debug
+            diam3 = (yo - yoff) * 2 + @bit_diameter
+            feed3 = feedScale(diam3, @speed_curr)
+            #puts "feed3 #{feed3}"
+         end
 
          @cs = feed3
 
