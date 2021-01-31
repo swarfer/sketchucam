@@ -4,9 +4,9 @@
 # Menu Item   :   
 # Context Menu:   
 # Usage       :   install in plugins folder
-# Date        :   Feb 2014, 2017
+# Date        :   Feb 2014, 2021
 # Type        :   
-# Version     :   SketchUcam 1.5 
+# Version     :   SketchUcam 1.5a 
 # $Id$
 #-----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ module PhlatScript
      def initialize
        super 'Phlatboyz Tools', 'Phlatboyz/Phlatscript.rb' 
        self.description = 'A set of tools for marking up Phlatland Sketchup drawings and generating CNC g-code.' 
-       self.version = '1.5'   #after 80c0152c599a717cf5aedd9580e9de0dae2b580c
+       self.version = '1.5a'   #after 80c0152c599a717cf5aedd9580e9de0dae2b580c
        
        #try to find the phrev.dat file, if it exists add the version to the .version
        #this is purely internal, an ordinary user never sees this
