@@ -219,7 +219,7 @@ module PhlatScript
          @tooshorttoramp = @bit_diameter / 2
          @rampdist = @bit_diameter * RAMPMULT
 
-         cncPrint("%\n")
+         #cncPrint("%\n")
          # do a little jig to prevent the code highlighter getting confused by the bracket constructs
          vs1 = PhlatScript.getString('PhlatboyzGcodeTrailer')
          vs2 = $PhlatScriptExtension.version
@@ -380,7 +380,7 @@ module PhlatScript
          end
 
          cncPrint("M30\n") # M30 - End of program/rewind tape
-         cncPrint("%\n")
+         #cncPrint("%\n")
          if @mill_out_file
             begin
                @mill_out_file.close

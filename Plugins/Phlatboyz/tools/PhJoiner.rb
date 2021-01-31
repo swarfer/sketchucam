@@ -108,7 +108,7 @@ module PhlatScript
          outputfile += $phoptions.default_file_ext if (File.extname(outputfile).empty?)  #add default extension
          outf = File.new(outputfile, "w+")
 
-         outf.puts("%")
+         #outf.puts("%")
          idx = 0
          outf.puts(PhlatScript.gcomment("joined files"))     if ($phoptions.usecomments?)
          if ($phoptions.usecomments?)
