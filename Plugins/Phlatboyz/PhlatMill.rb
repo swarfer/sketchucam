@@ -14,7 +14,7 @@ module PhlatScript
          @cy = 1e10
          @cs = 0.0
          @cc = ''
-         @debug = false # if true then a LOT of stuff will appear in the ruby console
+         @debug = true # if true then a LOT of stuff will appear in the ruby console
          @debugc = ''  # a place to put debugging comments in subfunctions like getfuzzyystep
          @debugramp = false
          puts "debug true in PhlatMill.rb\n" if @debug || @debugramp
@@ -27,6 +27,11 @@ module PhlatScript
          @laser = PhlatScript.useLaser? # frikken lasers!
          @laser_grbl_mode = $phoptions.laser_GRBL_mode? # affects how holes are coded
          @laser_power_mode = $phoptions.laser_power_mode? # M4 if true, M3 is false
+         @servo = PhlatScript.useServo?
+         @servo_up = $phoptions.servo_up
+         @servo_down = $phoptions.servo_down
+         @servo_time = $phoptions.servo_time
+         @penPos = @servo_up
          @cboreinner = 0 # diameter of inner hole for counterbores
          #
          @max_x = 48.0
@@ -73,7 +78,16 @@ module PhlatScript
 
          @tooshorttoramp = 0.02           # length of an edge that is too short to bother ramping, will be calculated
        end
-
+ 
+      # Sketchup8s version of ruby does not round to more than 0 places
+      def round(input,places)
+         mult = 10.0 ** places
+         input *= mult
+         input = input.round
+         input = input / mult
+         input
+      end
+      
       # feed the retract depth and tabel zero into this object
       def set_retract_depth(newdepth, tableflag)
          @retract_depth = newdepth
@@ -285,6 +299,9 @@ module PhlatScript
                cncPrintC('LASER is ON')
             end
          end
+         if @servo # servo mode in header
+            cncPrintC('Servo pen control mode')
+         end
 
          if extra != '-'
             # puts extra
@@ -356,12 +373,16 @@ module PhlatScript
 
          # output A or B axis rotation if selected
 			zstr = format_measure('Z', $phoptions.end_z);
-         cncPrint("G53 G0 #{zstr}\n") if !@laser #Sep2018 safe raise before initial move to start point
+         cncPrint("G53 G0 #{zstr}\n") if !(@laser || @servo)  #Sep2018 safe raise before initial move to start point
+         if @servo
+            cncPrint('M3 S' , @servo_up , "\n")
+            @penPos = @servo_up # keep track of actual pen position
+         end
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
          cncPrint('G00 C', $phoptions.posC.to_s, "\n") if $phoptions.useC?
          cncPrint("G0 X0 Y0\n")
-         if @laser == false
+         if !(@laser || @servo)
             cncPrint('M3 S', @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
          end
       end
@@ -414,6 +435,82 @@ module PhlatScript
          end
          return depth
       end
+      
+      # put the pen down in servo_time seconds, assume it is up as servo_up
+      # note that the servo will go to (0) when M5 is issued, so this must be a safe penUP position
+      # ergo servo_up  < servoDown
+      def penDown()
+         cncPrintC('penDown')
+         if (@penPos == @servo_down)
+            return
+         end
+         if (@servo_time == 0)
+            # output 1 move
+            cncPrint('M3 S' , @servo_down.to_i, "\n")
+            cncPrint('G4 P', sprintf("%0.3f",0.1) , "\n")
+            @penPos = @servo_down
+            return
+         end
+         diff = @servo_down - @servo_up
+         steps = diff / 5
+         if steps < 1
+            steps = 1
+         end
+         step = (diff / steps).to_i
+         timestep = @servo_time / steps
+         now = @servo_up
+         while now < @servo_down
+            now += step
+            if now > @servo_down
+               now = @servo_down
+               timestep = 0
+            end      
+            cncPrint('M3 S' , now.to_i, "\n")
+            if timestep > 0
+               cncPrint('G4 P', sprintf("%0.3f",timestep) , "\n")
+            end
+         end
+         @penPos = @servo_down   
+      end
+
+      # put the pen Up in servo_time seconds, assume it is DOWN as servo_down
+      # note that the servo will go to (0) when M5 is issued, so this must be a safe penUP position
+      # ergo servo_up  < servoDown
+      def penUp()
+         cncPrintC('penUp')
+         if (@penPos == @servo_up)
+            return
+         end
+         if (@servo_time == 0)
+            # output 1 move
+            cncPrint('M3 S' , @servo_up.to_i, "\n")
+            cncPrint('G4 P', sprintf("%0.3f",0.1) , "\n")
+            @penPos = @servo_up
+            return
+         end
+         
+         diff = @servo_down - @servo_up
+         steps = diff / 5  #steps of 5, servo scaled 0..255, 10 is better for long servo movements, 5 for short
+         if steps < 1
+            steps = 1
+         end
+         step = (diff / steps).to_i
+         timestep = round(@servo_time / steps, 3)
+         puts "timestep " +  timestep.to_s
+         now = @servo_down
+         while now > @servo_up
+            now -= step
+            if now < @servo_up
+               now = @servo_up
+               timestep = 0
+            end
+            cncPrint('M3 S' , now.to_i, "\n")
+            if timestep > 0
+               cncPrint('G4 P', sprintf('%0.3f',timestep) , "\n")
+            end
+         end
+         @penPos = @servo_up   
+      end
 
       # Move to xo,yo,zo
       # * only outputs axes that have changed
@@ -421,7 +518,7 @@ module PhlatScript
       # * if multipass is on, AND @laser, then every pass will be at 100% power
       def move(xo, yo = @cy, zo = @cz, so = @speed_curr, cmd = @cmd_linear)
          # cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n")
-         # puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n"
+         #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n" if @debug
          if cmd != @cmd_rapid
             if !notequal(@retract_depth, zo)
                cmd = @cmd_rapid
@@ -494,8 +591,18 @@ module PhlatScript
                end
             else
                if notequal(zo, @cz)
-                  hasz = true
-                  command_out += format_measure('Z', zo)
+                  if (@servo)
+                     if zo < @cz  # going down
+                        penDown()
+                        command_out += format_measure('Z',-0.1)
+                     else  # going up
+                        penUp()
+                        command_out += format_measure('Z',0.1)
+                     end
+                  else
+                     hasz = true
+                     command_out += format_measure('Z', zo)
+                  end
                end
             end
 
@@ -524,6 +631,7 @@ module PhlatScript
       # * Obeys @laser
       def retract(zo = @retract_depth, cmd = @cmd_rapid)
          #      cncPrintC("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
+         puts "retract" if @debug
          #      if (zo == nil)
          #        zo = @retract_depth
          #      end
@@ -546,18 +654,24 @@ module PhlatScript
                command_out += 'M05'
                cmd = 'M05' # force output of motion command at next move
             else
-               if @Limit_up_feed && (cmd == 'G0') && (zo > 0) && (@cz < 0)
-                  cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
-                  command_out += 'G01' + format_measure('Z', 0)
-                  command_out += format_feed(@speed_plung)
-                  command_out += "\n"
-                  @cs = @speed_plung
-                  #          G00 to zo
-                  command_out += 'G00' + format_measure('Z', zo)
+               if @servo
+                  penUp()
+                  command_out += 'G0 Z0.1'
+                  cmd = @cmd_rapid
                else
-                  #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
-                  command_out += cmd if (cmd != @cc) || @gforce
-                  command_out += format_measure('Z', zo)
+                  if @Limit_up_feed && (cmd == 'G0') && (zo > 0) && (@cz < 0)
+                     cncPrintC("(RETRACT G1 to material thickness at plunge rate)\n")
+                     command_out += 'G01' + format_measure('Z', 0)
+                     command_out += format_feed(@speed_plung)
+                     command_out += "\n"
+                     @cs = @speed_plung
+                     #          G00 to zo
+                     command_out += 'G00' + format_measure('Z', zo)
+                  else
+                     #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
+                     command_out += cmd if (cmd != @cc) || @gforce
+                     command_out += format_measure('Z', zo)
+                  end
                end
             end
             command_out += "\n"
@@ -571,10 +685,11 @@ module PhlatScript
       # * +zo+ is Z level to go to
       # * +so+ is feed speed to use
       # * +cmd+ = default cmd, normally G01
-      # * +fast+ = use fastappraoch , set to false to force it off
-      # * Obeys @laser
+      # * +fast+ = use fastapproach , set to false to force it off
+      # * Obeys @laser and @servo
       def plung(zo, so = @speed_plung, cmd = @cmd_linear, fast = true)
          #      cncPrintC("plung "+ sprintf("%10.6f",zo.to_mm)+ ", @cs="+ @cs.to_mm.to_s+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"\n")
+         puts "plunge" if @debug
          if !notequal(zo, @cz)
             @no_move_count += 1
             false
@@ -599,40 +714,47 @@ module PhlatScript
                so = 3.14 # make sure feed rate gets output on next move
                cmd = 'm3' # force output of motion commands at next move
             else
-               # if above material, G00 to near surface, fastapproach
-               if fast && @fastapproach
-                  if !notequal(@cz, @retract_depth) && (zo < @cz)
-                     offset = @is_metric ? 0.5.mm : 0.02.inch
-                     flag = false
-                     if @table_flag
-                        if (@material_thickness + offset) < @retract_depth
-                           @cz = @material_thickness + offset
-                           flag = true
+               if @servo
+                  penDown()
+                  command_out += 'G1 Z-0.1'
+               else
+                  # if above material, G00 to near surface, fastapproach
+                  if fast && @fastapproach
+                     if !notequal(@cz, @retract_depth) && (zo < @cz)
+                        offset = @is_metric ? 0.5.mm : 0.02.inch
+                        flag = false
+                        if @table_flag
+                           if (@material_thickness + offset) < @retract_depth
+                              @cz = @material_thickness + offset
+                              flag = true
+                           end
+                        else
+                           if offset < @retract_depth
+                              @cz = 0.0 + offset
+                              flag = true
+                           end
                         end
-                     else
-                        if offset < @retract_depth
-                           @cz = 0.0 + offset
-                           flag = true
+                        if flag
+                           command_out += 'G00' + format_measure('Z', @cz) + "\n"
+                           @cc = @cmd_rapid
                         end
-                     end
-                     if flag
-                        command_out += 'G00' + format_measure('Z', @cz) + "\n"
-                        @cc = @cmd_rapid
                      end
                   end
-               end
-               command_out += cmd if (cmd != @cc) || @gforce
-               command_out += format_measure('Z', zo)
-               so = @speed_plung # force using plunge rate for vertical moves
-               #        sox = @is_metric ? so.to_mm : so.to_inch
-               #        cncPrintC("(plunge rate #{sox})\n")
-               if notequal(so, @cs)
-                  command_out += format_feed(so)
-                  @cs = so
+                  command_out += cmd if (cmd != @cc) || @gforce
+                  command_out += format_measure('Z', zo)
+                  so = @speed_plung # force using plunge rate for vertical moves
+                  #        sox = @is_metric ? so.to_mm : so.to_inch
+                  #        cncPrintC("(plunge rate #{sox})\n")
+                  if notequal(so, @cs)
+                     command_out += format_feed(so)
+                     @cs = so
+                  end
                end
             end
-            command_out += "\n"
-            cncPrint(command_out)
+            if (command_out != '')
+               command_out += "\n"
+               cncPrint(command_out)
+            end
             @cz = zo
             @cc = cmd
             true

@@ -1,4 +1,5 @@
 # $Id$
+# $Id$
 require('sketchup.rb')
 require('extensions.rb')
 require('Phlatboyz/Constants.rb')
@@ -320,7 +321,7 @@ module PhlatScript
   def PhlatScript.useOverheadGantry=(og)
     Sketchup.active_model.set_attribute(Dict_name, Dict_overhead_gantry, og)
   end
-
+#laser mode
   def PhlatScript.useLaser?
     Sketchup.active_model.get_attribute(Dict_name, Dict_laser, $phoptions.default_laser?)
   end
@@ -328,6 +329,15 @@ module PhlatScript
   def PhlatScript.useLaser=(og)
     Sketchup.active_model.set_attribute(Dict_name, Dict_laser, og)
   end
+#servo pen
+  def PhlatScript.useServo?
+    Sketchup.active_model.get_attribute(Dict_name, Dict_servo, $phoptions.default_servo?)
+  end
+
+  def PhlatScript.useServo=(og)
+    Sketchup.active_model.set_attribute(Dict_name, Dict_servo, og)
+  end
+
 
   # vastly increases large file load time if this is true, default for 1.4a
    def PhlatScript.tryUpgrade?
@@ -538,6 +548,7 @@ module PhlatScript
        addToolItem( OptionsFeatTool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsFeat2Tool.new($phoptions) , optionssubmenu)
        addToolItem( OptionsFilesTool.new($phoptions) , optionssubmenu)
+       addToolItem( OptionsServoTool.new($phoptions) , optionssubmenu)
     @@phlatboyz_tools_submenu.add_separator
 
     require 'Phlatboyz/tools/CutTool.rb'

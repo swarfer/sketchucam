@@ -1,4 +1,5 @@
 require 'sketchup.rb'
+require 'sketchup.rb'
 # require 'Phlatboyz/Constants.rb'
 
 require 'Phlatboyz/PhlatboyzMethods.rb'
@@ -117,7 +118,7 @@ module PhlatScript
       @tabletop = false
       @must_ramp = false # make this an option!
       @limitangle = 0 # if > 0 will limit to this ramp angle
-      @debug = false
+      @debug = true
       @level = 0
       def initialize
          super

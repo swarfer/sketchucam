@@ -14,9 +14,16 @@ REM stole this from git-cmd.bat, should set git path for us so we don't have to 
    @setlocal
 
 REM find the actual Portablegit folder and use it, this means we don't have to keep up with git upgrades in this file   
+   set PGIT=none
+   if not exist C:\Users\david\AppData\Local\GitHub goto newpc
    for /F %%a in ('dir /b C:\Users\david\AppData\Local\GitHub\Port*') do set PGIT=%%a
-REM   echo %PGIT%
    @set git_install_root=C:\Users\david\AppData\Local\GitHub\%PGIT%
+   goto spath
+   
+:newpc
+   set PGIT=C:\Program Files\Git
+   echo %PGIT%
+   
    goto spath
    
    @rem Get the absolute path to the current directory, which is assumed to be the
@@ -40,6 +47,7 @@ REM   goto spath
    :spath
    REM refresh the doc for the code
    cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins\Phlatboyz"
+   echo calling rdoc
    call rdoc *.rb *.rb tools\*.rb utils\*.rb
    cd "C:\Program Files (x86)\Google\Google SketchUp 8\"
    
@@ -48,6 +56,7 @@ REM   goto spath
    @set PLINK_PROTOCOL=ssh
    @if not defined TERM set TERM=msys
    git describe --abbrev=4 --dirty --always --tags --contains > plugins\phrev.dat
+   dir plugins\phrev.dat
    
    if exist "C:\Program Files (x86)\Google\Google SketchUp 8" cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins"
    if exist "C:\Program Files\Google\Google SketchUp 8\Plugins" cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
@@ -56,13 +65,16 @@ REM   goto spath
       goto fail
    
 :zipit
+   echo Zipit
+   cd
+   del tp.zip
    "c:\program files\7-zip\7z" a  tp.zip *.* -x@..\make.ex -r
 
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   
-   php move.php plugins\tp.zip SketchUcam-1_5.rbz
+   if exist plugins\tp.zip php move.php plugins\tp.zip SketchUcam-1_5b.rbz
+   if not exist plugins\tp.zip echo ERROR tp.zip not found
 
 goto end
 
