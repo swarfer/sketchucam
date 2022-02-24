@@ -452,7 +452,7 @@ module PhlatScript
             return
          end
          diff = @servo_down - @servo_up
-         steps = diff / 5
+         steps = diff / 8
          if steps < 1
             steps = 1
          end
@@ -490,7 +490,7 @@ module PhlatScript
          end
          
          diff = @servo_down - @servo_up
-         steps = diff / 5  #steps of 5, servo scaled 0..255, 10 is better for long servo movements, 5 for short
+         steps = diff / 8  #steps of 8, servo scaled 0..255
          if steps < 1
             steps = 1
          end
@@ -2606,7 +2606,7 @@ module PhlatScript
          @cc = cmd
       end
 
-         # http://mathforum.org/library/drmath/view/53027.html
+      # http://mathforum.org/library/drmath/view/53027.html
       # two points x1y1 x2y2
       # centerpoint cp
       # radius r
@@ -2616,12 +2616,12 @@ module PhlatScript
          # mid point between points (x3, y3).
          x3 = (x1 + x2) / 2
          y3 = (y1 + y2) / 2
-         # one answer
-         xa = x3 + Math.sqrt(r**2 - (q / 2)**2) * (y1 - y2) / q
-         ya = y3 + Math.sqrt(r**2 - (q / 2)**2) * (x2 - x1) / q
+         # one answer =- .abs to prevent any negative parameters to sqrt
+         xa = x3 + Math.sqrt( (r**2 - (q / 2)**2).abs ) * (y1 - y2) / q
+         ya = y3 + Math.sqrt( (r**2 - (q / 2)**2).abs ) * (x2 - x1) / q
          # other answer
-         xb = x3 - Math.sqrt(r**2 - (q / 2)**2) * (y1 - y2) / q
-         yb = y3 - Math.sqrt(r**2 - (q / 2)**2) * (x2 - x1) / q
+         xb = x3 - Math.sqrt( (r**2 - (q / 2)**2).abs ) * (y1 - y2) / q
+         yb = y3 - Math.sqrt( (r**2 - (q / 2)**2).abs ) * (x2 - x1) / q
 
          # which one is closer to cp?
          pa = Geom::Point3d.new(xa, ya, 0.0)
@@ -2636,18 +2636,20 @@ module PhlatScript
       # Use IJ format arc movement, more accurate, definitive direction (2016v1.4c - finds centers)
       # * if print is false then return the string rather than cncprint it, for ramplimitarc
       # * If @laser is enabled then the correct M3/M4 will be output before the move
+      # for very small arc segments force a linear move instead
       def arcmoveij(xo, yo, centerx, centery, radius, g3 = false, zo = @cz, so = @speed_curr, cmd = @cmd_arc, print = true)
          cmd = g3 ? @cmd_arc_rev : @cmd_arc
          # puts "g3: #{g3} cmd #{cmd}"
          # G17 G2 x 10 y 16 i 3 j 4 z 9
          # G17 G2 x 10 y 15 r 20 z 5
          command_out = ''
-         if radius > 0.01.inch # is radius big enough?
+         p1 = Geom::Point3d.new(@cx, @cy, 0.0)
+         p2 = Geom::Point3d.new(xo, yo, 0.0)         
+         if (p1.distance(p2).abs > 0.02.inch) && (radius > 0.01.inch) # is radius big enough?
             cp = Geom::Point3d.new(centerx, centery, 0.0)
             #   arcmove(xo,yo,radius,g3,zo)
             # always calculate real center, and optionally adjust radius
-            p1 = Geom::Point3d.new(@cx, @cy, 0.0)
-            p2 = Geom::Point3d.new(xo, yo, 0.0)
+            
             r1 = cp.distance(p1)
             r2 = cp.distance(p2)
             nradius = (r1 + r2) / 2.0 # new radius as average of the two calculated radii
@@ -2711,7 +2713,7 @@ module PhlatScript
             command_out += "\n"
             cncPrint(command_out) if print
          else
-            arcmove(xo, yo, radius, g3, zo) # will do a line segment
+            arcmove(xo, yo, 0.005.inch, g3, zo) # will always do a line segment because we lied about the radius
          end
          if print
             @cx = xo
