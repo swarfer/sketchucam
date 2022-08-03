@@ -18,6 +18,7 @@ module PhlatScript
          @debugc = ''  # a place to put debugging comments in subfunctions like getfuzzyystep
          @debugramp = false
          puts "debug true in PhlatMill.rb\n" if @debug || @debugramp
+         @pcomment = '' #see setComment
          @quarters = $phoptions.quarter_arcs? # use quarter circles in plunge bores?  defaults to true
          # manual user options - if they find this they can use it (-:
          @quickpeck = $phoptions.quick_peck?   # if true will not retract to surface when peck drilling, withdraw only 0.5mm
@@ -114,7 +115,7 @@ module PhlatScript
       # if feed_adjust is true then scale feedrate, else just return the given rate
       def feedScale(diam, feedrate)
          feedratio = (diam - @bit_diameter) / diam
-			puts "diam #{diam.to_mm} feedratio #{feedratio}" if @debug
+			puts "   diam #{sprintf("%0.3f",diam.to_mm)} feedratio #{sprintf("%0.3f",feedratio)}" if @debug
          if (feedratio <= 0.8) && $phoptions.feed_adjust? # if true then reduce feedrate during arc moves in holes
             result = feedratio > 0.1 ? feedratio * feedrate : 0.1 * feedrate
             if result.to_mm < 50.mm # GRBL lower limit
@@ -214,7 +215,7 @@ module PhlatScript
 
       # Start the job and output the header info to the cnc file
       # * outputs A B C axis commands if needed
-      def job_start(optim, extra = @extr)
+      def job_start(optim, gcodedebug, extra = @extr)
          if @output_file_name
             done = false
             until done
@@ -312,6 +313,9 @@ module PhlatScript
          PhlatScript.checkParens(@comment, 'Comment')
          # puts @comment
          @comment.split(/\$\//).each { |line| cncPrintC(line) } unless @comment.empty?
+         
+         cncPrintC("PhlatMill debug is ON") if @debug   
+         cncPrintC("GcodeUtil debug is ON") if gcodedebug   
 
          # adapted from swarfer's metric code
          # metric by SWARFER - this does the basic setting up from the drawing units
@@ -372,8 +376,12 @@ module PhlatScript
          end
 
          # output A or B axis rotation if selected
-			zstr = format_measure('Z', $phoptions.end_z);
-         cncPrint("G53 G0 #{zstr}\n") if !(@laser || @servo)  #Sep2018 safe raise before initial move to start point
+         if !(@laser || @servo)
+			   zstr = format_measure('Z', $phoptions.end_z);
+            retract($phoptions.end_z,"G53 G0")   #Sep2018 safe raise before initial move to start point
+            setZ(@retract_depth * 2)
+            @cc = 'G00'
+         end
          if @servo
             cncPrint('M3 S' , @servo_up , "\n")
             @penPos = @servo_up # keep track of actual pen position
@@ -381,7 +389,7 @@ module PhlatScript
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
          cncPrint('G00 C', $phoptions.posC.to_s, "\n") if $phoptions.useC?
-         cncPrint("G0 X0 Y0\n")
+         #cncPrint("G0 X0 Y0\n")
          if !(@laser || @servo)
             cncPrint('M3 S', @spindle_speed, "\n") # M3 - Spindle on (CW rotation)   S spindle speed
          end
@@ -519,6 +527,7 @@ module PhlatScript
       def move(xo, yo = @cy, zo = @cz, so = @speed_curr, cmd = @cmd_linear)
          # cncPrint("(move " +sprintf("%6.3f",xo.to_mm)+ ", "+ sprintf("%6.3f",yo.to_mm)+ ", "+ sprintf("%6.3f",zo.to_mm)+", "+ sprintf("feed %6.2f",so)+ ", cmd="+ cmd+")\n")
          #puts "(move ", sprintf("%10.6f",xo), ", ", sprintf("%10.6f",yo), ", ", sprintf("%10.6f",zo),", ", sprintf("feed %10.6f",so), ", cmd=", cmd,")\n" if @debug
+         ringonce("move #{zo.to_mm}",caller)         
          if cmd != @cmd_rapid
             if !notequal(@retract_depth, zo)
                cmd = @cmd_rapid
@@ -617,6 +626,10 @@ module PhlatScript
                command_out += format_feed(so)
                @cs = so
             end
+            if @pcomment != ''
+               command_out += ' ' + PhlatScript.gcomment(@pcomment) if $phoptions.usecomments?
+               @pcomment = ''
+            end            
             command_out += "\n"
             cncPrint(command_out)
             @cx = xo
@@ -631,7 +644,7 @@ module PhlatScript
       # * Obeys @laser
       def retract(zo = @retract_depth, cmd = @cmd_rapid)
          #      cncPrintC("(retract ", sprintf("%10.6f",zo), ", cmd=", cmd,")\n")
-         puts "retract" if @debug
+         ringonce("retract #{zo.to_mm}",caller)
          #      if (zo == nil)
          #        zo = @retract_depth
          #      end
@@ -669,10 +682,16 @@ module PhlatScript
                      command_out += 'G00' + format_measure('Z', zo)
                   else
                      #          cncPrintC("(RETRACT normal #{@cz} to #{zo} )\n")
-                     command_out += cmd if (cmd != @cc) || @gforce
-                     command_out += format_measure('Z', zo)
+                     if notequal(zo,@cz)
+                        command_out += cmd if (cmd != @cc) || @gforce
+                        command_out += format_measure('Z', zo)
+                     end
                   end
                end
+            end
+            if @pcomment != ''
+               command_out += ' ' + PhlatScript.gcomment(@pcomment) if $phoptions.usecomments?
+               @pcomment = ''
             end
             command_out += "\n"
             cncPrint(command_out)
@@ -689,7 +708,7 @@ module PhlatScript
       # * Obeys @laser and @servo
       def plung(zo, so = @speed_plung, cmd = @cmd_linear, fast = true)
          #      cncPrintC("plung "+ sprintf("%10.6f",zo.to_mm)+ ", @cs="+ @cs.to_mm.to_s+ ", so="+ so.to_mm.to_s+ " cmd="+ cmd+"\n")
-         puts "plunge" if @debug
+         ringonce("plung #{zo.to_mm}", caller)
          if !notequal(zo, @cz)
             @no_move_count += 1
             false
@@ -725,20 +744,22 @@ module PhlatScript
                         flag = false
                         if @table_flag
                            if (@material_thickness + offset) < @retract_depth
-                              @cz = @material_thickness + offset
+                              nz = @material_thickness + offset
                               flag = true
                            end
                         else
                            if offset < @retract_depth
-                              @cz = 0.0 + offset
+                              nz = 0.0 + offset
                               flag = true
                            end
                         end
-                        if flag
-                           command_out += 'G00' + format_measure('Z', @cz) + "\n"
+                        if flag && nz != @cz
+                           retract(nz)
                            @cc = @cmd_rapid
                         end
                      end
+                  else
+                     retract(@retract_depth)  # may do nothing
                   end
                   command_out += cmd if (cmd != @cc) || @gforce
                   command_out += format_measure('Z', zo)
@@ -1346,9 +1367,9 @@ module PhlatScript
          else
             if PhlatScript.useMultipass?
                step = -PhlatScript.multipassDepth
-               command_out += "(step from mpass was #{step}" if @debug
+               command_out += "(step from mpass was #{step.to_mm}" if @debug
                step = StepFromMpass(zstart, zend, step) # possibly recalculate step to have equal sized steps
-               command_out += "   became #{step})\n" if @debug
+               command_out += "   became #{step.to_mm})\n" if @debug
             else
                command_out += '(step from bit' if @debug
                step = StepFromBit(zstart, zend) # each spiral Z feed will be bit diameter/2 or slightly less
@@ -2394,7 +2415,7 @@ module PhlatScript
       # Instead of a plunged hole, spiral bore to depth, doing diameter first with an outward spiral.
       # * handles multipass by itself, also handles ramping.
       # * this is different enough from the old plunge bore that making it conditional within 'plungebore'
-      # would make it too complicated
+      # * would make it too complicated
       # * must also obey @cboreinner
       def plungeborediam(xo, yo, zStart, zo, diam, needretract = true)
          # @debug = true
@@ -2435,7 +2456,7 @@ module PhlatScript
 
          bd2 = 2 * @bit_diameter
          if (diam < bd2) || ((bd2 - diam).abs < 0.0005) # just do the ordinary plunge, no need to handle it here
-            cncPrintC('diam < 2bit - reverting to depth') if @debug
+            cncPrintC('   diam < 2bit - reverting to depth') if @debug
             return plungeboredepth(xo, yo, zStart, zo, diam, needretract)
          end
          # SO IF WE ARE HERE WE KNOW DIAM > 2*BIT_DIAMETER
@@ -2462,7 +2483,7 @@ module PhlatScript
          # for outward spirals we are ALWAYS using fuzzy step so each spiral is the same size
          ystep = GetFuzzyYstep(diam, ystep, true, true) # force mustramp true to get correct result
 
-         command_out += "(Ystep fuzzy #{ystep.to_mm})\n" if @debug
+         command_out += "(Ystep fuzzy #{sprintf("%0.2f",ystep.to_mm)})\n" if @debug
          #      if (@cboreinner > 0)
          #         nowyoffset = (@cboreinner / 2) + (@bit_diameter/2)
          #      else
@@ -2506,10 +2527,10 @@ module PhlatScript
             command_out += acmd + format_measure('Y', yy) + format_measure('I0.0 J', rr)
             @precision -= 1
             if notequal(so, @cs)
-               #command_out += "(so #{so}  @cs #{@cs})" if @debug
+               #command_out += "(so #{so.to_mm}  @cs #{@cs.to_mm})" if @debug
                command_out += format_feed(so)
                @cs = so
-               command_out += "(   so #{so}  @cs #{@cs})" if @debug
+               command_out += "(   so #{so.to_mm}  @cs #{@cs.to_mm})" if @debug
             end
             command_out += "\n"
 
@@ -2731,16 +2752,64 @@ module PhlatScript
          if !notequal(@cz, @retract_depth) && !notequal(@cy, 0) && !notequal(@cx, 0)
             @no_move_count += 1
          else
-            retract(@retract_depth)
-            cncPrint('G00 X0 Y0 ')
-            cncPrint(PhlatScript.gcomment('home')) if $phoptions.usecomments?
-            cncPrint("\n")
-            @cx = 0
-            @cy = 0
-            @cz = @retract_depth
+            #retract(@retract_depth)
+            #zstr = format_measure('Z', $phoptions.end_z);
+            #cncPrint("G53 G0 #{zstr}\n")   
+            cncPrint(PhlatScript.gcomment('home at end of job') + "\n") if $phoptions.usecomments?
+            if !$phoptions.use_home_height?
+               retract($phoptions.end_z,'G53 G0')
+               setZ(@retract_depth * 2)
+               move(0,0, @retract_depth * 2, 1, 'G0')
+            else
+               move(0,0, @cz, 1, 'G0')
+            end
+            
+            #cncPrint("\n")
             @cs = 0
             @cc = ''
          end
+      end
+      
+      # return the current Z level
+      def getZ
+         @cz
+      end
+      
+      #set Z height
+      def setZ(nz)
+         caller_line = caller.first.split(":")[2]
+         puts "setZ : #{caller_line} : #{nz.to_mm}mm"         
+         @cz = nz
+      end         
+      
+      #display caller information
+      def ringonce(funcname, called)
+         cname = called.first
+         cname = cname.gsub('C:/Program Files (x86)/Google/Google SketchUp 8/Plugins/Phlatboyz/','...')
+         puts "#{funcname} #{cname}" if @debug
+      end
+      
+      # set a comment string that can be added to retract or move commands
+      def setComment(comment)
+         @pcomment = comment
+      end
+      
+      #set cmd to a new value
+      def setCmd(cmd)
+         @cc = cmd
+      end
+
+      #do a safe move, detecting if a retract before or after is needed
+      # @cz is 2*@retract_depth after a G53 Z move
+      def safemove(x,y)
+         ringonce('safemove',caller) if @debug
+         if notequal(getZ, 2 * @retract_depth)
+            retract(@retract_depth) if getZ < @retract_depth
+            move(x, y)
+         else
+            move(x, y, 2*@retract_depth, 1, 'G0')
+            retract(@retract_depth) 
+         end         
       end
    end # class PhlatMill
 end # module PhlatScript

@@ -119,6 +119,7 @@ module PhlatScript
       @must_ramp = false # make this an option!
       @limitangle = 0 # if > 0 will limit to this ramp angle
       @debug = true
+      @debugarc = false
       @level = 0
       def initialize
          super
@@ -252,7 +253,7 @@ module PhlatScript
                         ext += "\n" + fo
                      end
                   end
-                  aMill.job_start(@optimize, ext)
+                  aMill.job_start(@optimize, @debug, ext)
 
                   #   puts "amill jobstart done"
                   Sketchup.set_status_text('Processing loop nodes')
@@ -266,26 +267,32 @@ module PhlatScript
 
                   # puts("done milling")
                   if PhlatScript.UseOutfeed?
-                     Sketchup.set_status_text('outfeed')
-                     aMill.retract(@safeHeight)
-                     aMill.cncPrintC('Outfeed')
-                     aMill.move(PhlatScript.safeWidth * 0.75, 0)
+                     puts "use outfeed\n" if @debug
+                     aMill.retract($phoptions.end_z,"G53 G0")
+                     aMill.setZ(2*@safeHeight)
+                     aMill.setComment('Outfeed')
+                     aMill.move(PhlatScript.safeWidth * 0.75, 0, 2*@safeHeight,1,'G0')
                   else
                      if PhlatScript.UseEndPosition?
+                        puts "use end position\n"  if @debug
                         height = if $phoptions.use_home_height?
                                     $phoptions.default_home_height
                                  else
                                     @safeHeight
                                  end
                         aMill.retract(@safeHeight) # forces cmd_rapid
-                        aMill.cncPrintC('EndPosition')
-                        # puts PhlatScript.end_x
-                        # puts PhlatScript.end_y
-                        # puts height
-                        # puts PhlatScript.feedRate
+                        aMill.setComment('EndPosition')
                         aMill.move(PhlatScript.end_x, PhlatScript.end_y, height, PhlatScript.feedRate, 'G0')
                      else
                         # retracts the milling head and and then moves it home.
+                        if $phoptions.use_home_height?
+                           aMill.setComment("home height")
+                           aMill.retract($phoptions.default_home_height)
+                        else
+                           aMill.retract(@safeHeight) 
+                           aMill.setZ(@safeHeight * 2) #tell home to use G53
+                        end
+                     
                         # This prevents accidental milling
                         # through your work piece when moving home.
                         aMill.home
@@ -297,8 +304,13 @@ module PhlatScript
                      end
                   end
                   if (!$phoptions.use_home_height?) && (!PhlatScript.UseEndPosition?) && (!PhlatScript.UseOutfeed?)
-						   zstr = aMill.format_measure('Z', $phoptions.end_z)
-                     aMill.cncPrint("G53 G0 #{zstr}\n") if !PhlatScript.useLaser?
+                     if aMill.notequal(aMill.getZ, 2* @safeHeight)
+                        if !PhlatScript.useLaser?
+                           aMill.retract($phoptions.end_z,"G53 G0")
+                           aMill.setZ(2*@safeHeight)
+                           aMill.setCmd('G0')
+                        end   
+                     end
                   end
 
                   # puts("finishing up")
@@ -393,7 +405,7 @@ module PhlatScript
                         else
                            '-'
                         end
-                  aMill.job_start(@optimize, ext)
+                  aMill.job_start(@optimize, @debug, ext)
                   #   puts "amill jobstart done"
                   loop_root = LoopNodeFromEntities(Sketchup.active_model.active_entities, aMill, material_thickness)
                   loop_root.sort
@@ -678,7 +690,9 @@ module PhlatScript
       def self.millLoopNode(aMill, loopNode, material_thickness)
          debugmln = false
          @level += 1
-         puts "millLoopNode #{@level}" if debugmln
+         caller_line = caller.first.split('/')[7]
+         puts "millLoopNode #{@level} #{caller_line}" if debugmln
+
          # always mill the child loops first
          loopNode.children.each do |childloop|
             puts "mln#{@level}: mill child loop" if debugmln
@@ -1111,6 +1125,8 @@ module PhlatScript
       end
 
       def self.millEdges(aMill, edges, material_thickness, reverse = false)
+         caller_line = caller.first
+         #puts "millEdges : #{caller_line}"         if @debug
          if @must_ramp
             millEdgesRamp(aMill, edges, material_thickness, reverse)
          else
@@ -1147,7 +1163,9 @@ module PhlatScript
                   vc *= mirror if Reflection_output
                   trans *= vc # apply both translations
                end
-               aMill.retract(@safeHeight)
+               if aMill.getZ < @safeHeight
+                  aMill.retract(@safeHeight)
+               end
 
                save_point = nil
                cut_depth = 0
@@ -1173,6 +1191,7 @@ module PhlatScript
                begin # multipass
                   pass += 1
                   aMill.cncPrintC("Pass: #{pass}") if PhlatScript.useMultipass? && printPass
+                  puts "Pass: #{pass}" if PhlatScript.useMultipass? && printPass
                   ecnt = 0
                   edges.each do |phlatcut|
                      ecnt += 1
@@ -1271,8 +1290,14 @@ module PhlatScript
                                  if phlatcut.is_a? PlungeCut
                                     if pass == 1
                                        # puts "plunge multi #{phlatcut}"
-                                       aMill.retract(@safeHeight)
-                                       aMill.move(point.x, point.y)
+                                       aMill.safemove(point.x, point.y)
+                                       #if aMill.notequal(aMill.getZ, 2*@safeHeight)
+                                       #   aMill.move(point.x, point.y)
+                                       #else
+                                       #   aMill.move(point.x, point.y, 2*@safeHeight,1,'G0')
+                                       #   aMill.retract(@safeHeight)
+                                       #end
+                                       
                                        diam = phlatcut.diameter > 0 ? phlatcut.diameter : @current_bit_diameter
                                        if phlatcut.angle > 0
                                           ang = phlatcut.angle
@@ -1303,8 +1328,15 @@ module PhlatScript
                                           if !save_point.nil? && ((save_point.x == point.x) && (save_point.y == point.y))
                                              aMill.cncPrintC('retract prevented in ramp') if @debug
                                           else
-                                             aMill.retract(@safeHeight)
-                                             aMill.move(point.x, point.y)
+                                             aMill.safemove(point.x, point.y)
+                                             #if aMill.notequal(aMill.getZ, 2*@safeHeight)
+                                             #   aMill.retract(@safeHeight) if aMill.getZ < @safeHeight
+                                             #   aMill.move(point.x, point.y)                                             
+                                             #else
+                                             #   aMill.move(point.x, point.y, 2*@safeHeight,1, 'G0')
+                                             #   aMill.retract(@safeHeight) 
+                                             #end
+                                                
                                              if (prev_pass_depth < @zL) && (cut_depth < prev_pass_depth)
                                                 if aMill.plung(prev_pass_depth + hzoffset, 1, 'G0', false)
                                                    aMill.cncPrintC('plunged to previous pass before ramp') if @debug
@@ -1316,7 +1348,13 @@ module PhlatScript
                                           aMill.cncPrintC('points = 1') if @debug
                                           if PhlatScript.useMultipass? && phlatcut.is_a?(CenterLineCut)
                                              # do simple ramp to depth
-                                             aMill.move(point.x, point.y) if pass == 1
+                                             # do not use .safemove here
+                                             if aMill.notequal(aMill.getZ, 2*@safeHeight)
+                                                aMill.move(point.x, point.y) if pass == 1
+                                             else
+                                                aMill.move(point.x, point.y, 2*@safeHeight,1,'G0') if pass == 1
+                                                aMill.retract(@safeHeight)
+                                             end
                                              aMill.cncPrintC('RAMP to depth') if @debug
                                              aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate,true) #set nodist true
                                           else
@@ -1332,7 +1370,13 @@ module PhlatScript
                                        end
                                     else
                                        # If it's not a peck drilling we don't need retract
-                                       aMill.move(point.x, point.y)
+                                       # do not use .safemove here
+                                       if aMill.getZ > @safeHeight
+                                          aMill.move(point.x, point.y, 2*@safeHeight,PhlatScript.plungeRate,'G0')
+                                          aMill.retract(@safeHeight)
+                                       else
+                                          aMill.move(point.x, point.y, aMill.getZ,PhlatScript.plungeRate,'G0')
+                                       end
                                        if (phlatcut.is_a? PhlatArc) && phlatcut.is_arc?
                                           center = phlatcut.center
                                           tcenter = (trans ? center.transform(trans) : center) # transform if needed
@@ -1351,8 +1395,14 @@ module PhlatScript
                                     end
                                  end # if else plungcut
                               else # NOT multipass
-                                 aMill.retract(@safeHeight)
-                                 aMill.move(point.x, point.y)
+                                 aMill.safemove(point.x, point.y)
+                                 #if aMill.getZ < @safeHeight
+                                 #   aMill.retract(@safeHeight)
+                                 #end
+                                 #aMill.move(point.x, point.y, aMill.getZ, PhlatScript.plungeRate, 'G0')
+                                 #if aMill.getZ > @safeHeight
+                                 #   aMill.retract(@safeHeight)
+                                 #end
                                  if phlatcut.is_a? PlungeCut
                                     # puts "plunge #{phlatcut}"
                                     # puts "   plunge dia #{phlatcut.diameter}"
@@ -1388,7 +1438,7 @@ module PhlatScript
                                        aMill.ramplimitArc(@rampangle, otherpoint, phlatcut.radius, tcenter, cut_depth, PhlatScript.plungeRate, cmnd)
 													$phoptions.feed_adjust =  fawas		
                                     else
-                                       puts "straight ramp to #{cut_depth}" if @debug
+                                       puts "straight ramp to #{sprintf("%0.3f",cut_depth.to_mm)}" if @debug
                                        aMill.ramp(@rampangle, otherpoint, cut_depth, PhlatScript.plungeRate)
                                     end
                                  end # if plungecut
@@ -1508,7 +1558,8 @@ module PhlatScript
                                           # aMill.ramp(@rampangle,otherpoint, cut_depth, PhlatScript.plungeRate)
                                           else
                                              # puts "plain move, not tab, not ramp_next #{point.x.to_mm} #{point.y.to_mm} #{cut_depth.to_mm}" if (@debug)
-                                             aMill.cncPrintC('plain move') if phlatcut.is_a?(CenterLineCut) && @debug
+                                             aMill.setComment('centerline plain move') if phlatcut.is_a?(CenterLineCut) && @debug
+                                             aMill.retract(@safeHeight) if aMill.getZ > @safeHeight
                                              aMill.move(point.x, point.y, cut_depth)
                                           end
                                        end
@@ -1550,6 +1601,9 @@ module PhlatScript
 
       ## the original milledges, no ramp handling
       def self.millEdgesPlain(aMill, edges, material_thickness, reverse = false)
+         caller_line = caller.first
+         #puts "milledgesPlain : #{caller_line}"         if @debug
+
          if edges && !edges.empty?
             begin
                puts "millEdgesPlain reverse=#{reverse}" if @debug
@@ -1564,10 +1618,11 @@ module PhlatScript
                   vc = Geom::Transformation.translation(Geom::Vector3d.new(-x, -y, 0))
                   vc *= mirror if Reflection_output
                   trans *= vc # apply both translations
+                  # use vc as an additional transform
                end
-               # use vc as an additional transform
-
-               aMill.retract(@safeHeight)
+               if aMill.getZ < @safeHeight
+                  aMill.retract(@safeHeight)
+               end
 
                save_point = nil
                cut_depth = 0
@@ -1688,8 +1743,12 @@ module PhlatScript
                                  if phlatcut.is_a? PlungeCut
                                     if pass == 1
                                        # puts "plunge multi #{phlatcut}"
-                                       aMill.retract(@safeHeight)
-                                       aMill.move(point.x, point.y)
+                                       if aMill.getZ < @safeHeight
+                                          aMill.retract(@safeHeight)
+                                          aMill.move(point.x, point.y)
+                                       else
+                                          aMill.move(point.x, point.y, aMill.getZ,1,'G0')
+                                       end
                                        # aMill.plung(cut_depth)
                                        diam = phlatcut.diameter > 0 ? phlatcut.diameter : @current_bit_diameter
 
@@ -1716,7 +1775,15 @@ module PhlatScript
                                        # for these cuts we must retract else we get collisions with existing material
                                        # this results from commenting the code in lines 203-205 to stop using 'oldmethod'
                                        # for pockets.
-
+                                       if pass == 1
+                                          if (phlatcut.is_a? PocketCut)
+                                             aMill.cncPrintC('Pocket')
+                                          else
+                                             aMill.cncPrintC('Centerline')
+                                          end
+                                       end
+                                       
+                                       
                                        retractp = false
                                        if points > 1 # if cutting more than 1 edge at a time, must retract
                                           # puts "retracting #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
@@ -1725,8 +1792,8 @@ module PhlatScript
                                              aMill.cncPrintC('retract prevented') if @debug
                                              retractp = true
                                           else
-                                             aMill.retract(@safeHeight)
-                                             retractp = false
+                                             aMill.retract(@safeHeight) if aMill.getZ < @safeHeight
+                                             retractp = false           if aMill.getZ < @safeHeight
                                           end
                                        else # only 1 segment, use optimal single direction cut path
                                           # if multipass and 1 edge and not finished , then partly retract
@@ -1734,18 +1801,24 @@ module PhlatScript
                                           if PhlatScript.useMultipass? && (points == 1) &&
                                              (pass > 1) && ((pass_depth - max_depth).abs >= 0.0) &&
                                              phlatcut.is_a?(CenterLineCut)
-                                             aMill.cncPrint("(PARTIAL RETRACT)\n")
+                                             aMill.setComment("PARTIAL RETRACT") if @debug
                                              aMill.retract(prev_pass_depth + hzoffset)
                                              ccmd = 'G00' # must be 00 to prevent aMill.move overriding the cmd because zo is not safe height
                                           end
                                        end
                                        if ccmd
-                                          aMill.cncPrint("(RAPID #{ccmd})\n")
+                                          aMill.setComment("RAPID #{ccmd}") if @debug
                                           aMill.move(point.x, point.y, prev_pass_depth + hzoffset, PhlatScript.feedRate, 'G0')
                                           ccmd = nil
                                        else
-                                          #                                 puts "moving #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
-                                          aMill.move(point.x, point.y)
+                                          # puts "moving #{save_point.x} #{save_point.y}  #{point.x} #{point.y}"  if (!save_point.nil?)
+                                          aMill.safemove(point.x, point.y)
+                                          #if aMill.getZ > @safeHeight
+                                          #   aMill.move(point.x, point.y, 2*@safeHeight,1,'G0')
+                                          #   aMill.retract(@safeHeight)
+                                          #else
+                                          #   aMill.move(point.x, point.y)
+                                          #end
                                        end
                                        # aMill.cncPrintC("cut_d #{cut_depth.to_mm}   prev #{prev_pass_depth.to_mm}")
                                        # can we rapid down to near the previous pass depth?
@@ -1757,13 +1830,31 @@ module PhlatScript
                                        aMill.plung(cut_depth, PhlatScript.plungeRate)
                                     else
                                        # If it's not a peck drilling we don't need retract
+                                       # we do if the previous move was a G53
+                                       if aMill.getZ > @safeHeight
+                                          aMill.move(point.x, point.y, 2*@safeHeight,1,'G0')
+                                          aMill.retract(@safeHeight)
+                                       end
                                        aMill.move(point.x, point.y)
                                        aMill.plung(cut_depth, PhlatScript.plungeRate)
                                     end
                                  end # if else plungcut
                               else # NOT multipass
-                                 aMill.retract(@safeHeight)
-                                 aMill.move(point.x, point.y)
+                                 if (phlatcut.is_a? PocketCut)
+                                    aMill.cncPrintC('Pocket')
+                                 else
+                                    if phlatcut.is_a? CenterLineCut
+                                       aMill.cncPrintC('Centerline')
+                                    end
+                                 end
+                                 aMill.safemove(point.x, point.y)
+                                 #if aMill.getZ < @safeHeight
+                                 #   aMill.retract(@safeHeight)
+                                 #   aMill.move(point.x, point.y)
+                                 #else
+                                 #   aMill.move(point.x, point.y, aMill.getZ, PhlatScript.plungeRate,'G0')
+                                 #   aMill.retract(@safeHeight)                                 
+                                 #end
                                  if phlatcut.is_a? PlungeCut
                                     # puts "plunge #{phlatcut}"
                                     # puts "   plunge dia #{phlatcut.diameter}"
@@ -1791,7 +1882,7 @@ module PhlatScript
                                  # something odd with this reverse thing, for some arcs it gets the wrong direction, outputting G3 for clockwise cuts instead of G2
                                  g3 = reverse ? !phlatcut.g3? : phlatcut.g3?
                                  cutkind = phlatcut.class                                                    
-                                 puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if @debug
+                                 puts "reverse #{reverse} .g3 #{phlatcut.g3?} cutkind=#{cutkind}  ===  g3=#{g3}"  if @debugarc
 
                                  center = phlatcut.center
                                  unless (center.x != 0.0) && (center.y != 0.0)
@@ -1832,7 +1923,9 @@ module PhlatScript
                raise e.message
                # UI.messagebox "Exception in millEdges "+$! + e.backtrace.to_s
             end
+            aMill.retract(@safeHeight)
          end # if edges
+         #puts "milledgesplain end\n" if @debug
       end # milledges without ramp
 
       def self.enter_file_dialog(_model = Sketchup.active_model)
