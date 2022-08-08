@@ -29,8 +29,22 @@ module PhlatScript
          @laser_grbl_mode = $phoptions.laser_GRBL_mode? # affects how holes are coded
          @laser_power_mode = $phoptions.laser_power_mode? # M4 if true, M3 is false
          @servo = PhlatScript.useServo?
-         @servo_up = $phoptions.servo_up
-         @servo_down = $phoptions.servo_down
+         if @servo
+            # servo overrides laser and ramping and multipass
+            @laser = false
+            PhlatScript.mustramp = false
+            PhlatScript.useMultipass = false
+            $phoptions.feed_adjust = false # dont use arc feed adjust
+         end   
+         @servo_up = $phoptions.servo_up.to_i      # must be integers
+         @servo_down = $phoptions.servo_down.to_i
+         if @servo_up > @servo_down
+            #servo_up must be less than servo_down because servo 0 is pen UP park position
+            t = @servo_up
+            @servo_up = @servo_down
+            @servo_down = t
+         end
+            
          @servo_time = $phoptions.servo_time
          @penPos = @servo_up
          @cboreinner = 0 # diameter of inner hole for counterbores
@@ -381,10 +395,13 @@ module PhlatScript
             retract($phoptions.end_z,"G53 G0")   #Sep2018 safe raise before initial move to start point
             setZ(@retract_depth * 2)
             @cc = 'G00'
+         else
+            setZ(@retract_depth * 2)
          end
          if @servo
             cncPrint('M3 S' , @servo_up , "\n")
             @penPos = @servo_up # keep track of actual pen position
+            setZ(@retract_depth * 2)
          end
          cncPrint('G00 A', $phoptions.posA.to_s, "\n") if $phoptions.useA?
          cncPrint('G00 B', $phoptions.posB.to_s, "\n") if $phoptions.useB?
@@ -729,7 +746,7 @@ module PhlatScript
                # calculate 'laser brightness' as a percentage of material thickness
                depth = laserbright(zo)
                cmd = @laser_power_mode ? 'M04' : 'M03'
-               cncPrint(cmd + ' S', depth.abs.to_i)
+               cncPrint(cmd + ' S', depth.abs.to_i, "\n")
                so = 3.14 # make sure feed rate gets output on next move
                cmd = 'm3' # force output of motion commands at next move
             else
