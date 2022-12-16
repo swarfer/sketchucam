@@ -14,7 +14,7 @@ module PhlatScript
          @cy = 1e10
          @cs = 0.0
          @cc = ''
-         @debug = true # if true then a LOT of stuff will appear in the ruby console
+         @debug = false # if true then a LOT of stuff will appear in the ruby console
          @debugc = ''  # a place to put debugging comments in subfunctions like getfuzzyystep
          @debugramp = false
          puts "debug true in PhlatMill.rb\n" if @debug || @debugramp

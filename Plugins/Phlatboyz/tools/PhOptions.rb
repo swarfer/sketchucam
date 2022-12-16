@@ -81,6 +81,7 @@ module PhlatScript
          @servo_down             = phoptions.servo_down.to_i.to_s
          @servo_time             = phoptions.servo_time.to_f.to_s
          @gforce                 =   (phoptions.gforce? ? '1' : '0')
+         @duetforce                 =   (phoptions.duetforce? ? '1' : '0')
       #featuresforholes
          @use_reduced_safe_height =  (phoptions.use_reduced_safe_height? ? '1' : '0')
          @use_fuzzy_holes        =   (phoptions.use_fuzzy_holes? ? '1' : '0')
@@ -159,6 +160,7 @@ module PhlatScript
          @must_ramp              =  false
          @quarter_arcs           =  true
          @gforce                 = false
+         @duetforce              = false
          @useA                   = false  # these are not saved, just adjustable via the quicktools menu
          @useB                   = false
          @useC                   = false
@@ -358,7 +360,11 @@ module PhlatScript
             value = -1
             value = getvalue(optin['gforce'])             if (optin.has_key?('gforce'))
             @gforce = value > 0 ? true :  false            if (value != -1)
-         #quick peck drill cycle   
+         #duetforce  = output safety moves for Duet - ie allow positive G53 moves
+            value = -1
+            value = getvalue(optin['duetforce'])             if (optin.has_key?('duetforce'))
+            @duetforce = value > 0 ? true :  false            if (value != -1)
+   #quick peck drill cycle   
             value = -1
             value = getvalue(optin['quick_peck'])             if (optin.has_key?('quick_peck'))
             @quick_peck = value > 0 ? true :  false            if (value != -1)
@@ -868,6 +874,14 @@ module PhlatScript
       def gforce=(newval)
          @gforce = newval
       end
+
+      def duetforce?
+         @duetforce
+      end
+      def duetforce=(newval)
+         @duetforce = newval
+      end
+
       
       def useA?
          @useA
@@ -1303,6 +1317,7 @@ end # class
             'Limit ramping angle to (degrees) ',
             'Use Ramping ',
             'Force all Gcodes on for Marlin ',
+            'Allow positive endZ for Duet',
 				'End position Z for G53',
             ];
          defaults=[
@@ -1323,6 +1338,7 @@ end # class
              @options.ramp_angle.to_f,
             @options.must_ramp?.inspect(),
             @options.gforce?.inspect(),
+            @options.duetforce?.inspect(),
              @options.end_z.to_l,
             ];
          list=[
@@ -1341,6 +1357,7 @@ end # class
             '',
             'true|false',
             '',
+            'true|false',
             'true|false',
             'true|false',
             '',
@@ -1375,8 +1392,9 @@ end # class
             @options.ramp_angle              = input[12]  #float
             @options.must_ramp               = (input[13] == 'true')
             @options.gforce                  = (input[14] == 'true')
-            @options.end_z                   = input[15] #length
-				if @options.end_z > 0
+            @options.duetforce               = (input[15] == 'true')
+            @options.end_z                   = input[16] #length
+				if (@options.end_z > 0) and @options.duetforce
 				   @options.end_z = -@options.end_z
 				end
             #puts "saving must_ramp = #{@options.must_ramp?}"

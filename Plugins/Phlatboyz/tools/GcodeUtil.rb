@@ -118,7 +118,7 @@ module PhlatScript
       @tabletop = false
       @must_ramp = false # make this an option!
       @limitangle = 0 # if > 0 will limit to this ramp angle
-      @debug = true
+      @debug = false
       @debugarc = false
       @level = 0
       def initialize
