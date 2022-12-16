@@ -73,7 +73,7 @@ REM   goto spath
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   if exist plugins\tp.zip php move.php plugins\tp.zip SketchUcam-1_5b.rbz
+   if exist plugins\tp.zip php move.php plugins\tp.zip SketchUcam-1_5c.rbz
    if not exist plugins\tp.zip echo ERROR tp.zip not found
 
 goto end
