@@ -7,9 +7,14 @@
 $rev = file('plugins\phrev.dat');
 $rev = trim($rev[0]);
 
-$src = $argv[1];
+$src = str_replace('\\','/',$argv[1]);
 $dest = preg_replace('/.rbz/',"-$rev.rbz",$argv[2]);
-print "Moving  $src to $dest\n ";
-
-rename($argv[1] , $dest);
+if (file_exists($src))
+   {
+   print "Moving  $src to $dest\n ";
+   $cmd = "move \"$src\"  \"$dest\"";
+   system($cmd);
+   }
+else
+   print "source file $src not found for move\n";
 ?>

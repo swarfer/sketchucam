@@ -60,6 +60,7 @@ REM   goto spath
    
    if exist "C:\Program Files (x86)\Google\Google SketchUp 8" cd "C:\Program Files (x86)\Google\Google SketchUp 8\Plugins"
    if exist "C:\Program Files\Google\Google SketchUp 8\Plugins" cd "C:\Program Files\Google\Google SketchUp 8\Plugins"
+   cd
    if exist Phlatboyz goto zipit
       echo Phlatboyz not found
       goto fail
@@ -68,13 +69,14 @@ REM   goto spath
    echo Zipit
    cd
    del tp.zip
-   "c:\program files\7-zip\7z" a  tp.zip *.* -x@..\make.ex -r
+   "c:\program files\7-zip\7z" a  ..\tp.zip *.* -x@..\make.ex -r
+   dir /s /b *.zip
 
 rem   del ..\sketchucam-1*.rbz
    cd ..
 REM   subwcrev .\ phrev.txt phrev.dat     // git does not support this
-   if exist plugins\tp.zip php move.php plugins\tp.zip SketchUcam-1_5c.rbz
-   if not exist plugins\tp.zip echo ERROR tp.zip not found
+   if not exist tp.zip echo ERROR tp.zip not found
+   if exist tp.zip php move.php tp.zip SketchUcam-1_5c.rbz
 
 goto end
 
