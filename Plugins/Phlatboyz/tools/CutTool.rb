@@ -18,6 +18,23 @@ module PhlatScript
     @preview_pts = nil
     @preview_face = false
 
+    # Returns the outer loop vertices of +face+ always wound clockwise when seen from above (+Z),
+    # regardless of whether the face is showing its front or back side up.
+    # SketchUp orders loop vertices relative to the face normal, so a back-up (blue) face yields a
+    # clockwise loop and a front-up face an anticlockwise one. The offset algorithm in PhlatOffset
+    # only produces the correct side for clockwise loops, so Outside cuts went inside (and Inside
+    # cuts went outside) on front-up faces until the user used Reverse Face.
+    def self.cw_vertices(face)
+      verts = face.outer_loop.vertices
+      area = 0.0
+      verts.each_with_index do |v, i|
+        p1 = v.position
+        p2 = verts[(i + 1) % verts.length].position
+        area += (p1.x * p2.y) - (p2.x * p1.y)
+      end
+      area > 0.0 ? verts.reverse : verts
+    end
+
     def initialize
       super()
       @tooltype = (PB_MENU_MENU | PB_MENU_TOOLBAR | PB_MENU_CONTEXT)
@@ -54,7 +71,7 @@ module PhlatScript
       else
         if (cur_face != @preview_face) || (force)
           @preview_face = cur_face
-          @preview_pts = Offset.vertices(cur_face.outer_loop.vertices, self.offset).offsetPoints
+          @preview_pts = Offset.vertices(CutTool.cw_vertices(cur_face), self.offset).offsetPoints
         end
       end
       return (!@preview_pts.nil?)
@@ -126,7 +143,7 @@ module PhlatScript
       new_edges=[] # holds all the new edges created throughout
       cur_pt = nil
       last_pt = nil
-      verts = face.outer_loop.vertices
+      verts = CutTool.cw_vertices(face)
 
       lav = Offset.new			# in PhlatOffset.rb
       lav.load(verts)

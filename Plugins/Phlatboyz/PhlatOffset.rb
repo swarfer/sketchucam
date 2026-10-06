@@ -199,7 +199,10 @@ module PhlatScript
         end
       }
       # (2) while queue is not empty 
+      max_events = (queue.length * 4) + 100  # a merge removes two nodes and adds one, so this can't be exceeded legitimately
       while (queue.length > 0) 
+        max_events -= 1
+        break if max_events < 0
         @processing_queue = true
         # sort the queue by distance to intersection every iteration
         queue = queue.sort { |int1, int2| int1.distance <=> int2.distance }
@@ -208,7 +211,10 @@ module PhlatScript
         int = queue.shift
 
         # (2.b) if vertices are marked as processed then continue to the next intersection
-        next if (int.nodea.data.processed) && (int.nodeb.data.processed)
+        # Skip the event if EITHER vertex has already been merged into a newer node; the queue entry is stale.
+        # (Was '&&', which let stale entries through and corrupted the circular list, so the
+        # LAV iteration never terminated and SketchUp hung.)
+        next if (int.nodea.data.processed) || (int.nodeb.data.processed)
 
         # (2.c) if the predecessor of the predecessor of nodea is equal to nodeb then output three skeleton arcs
         if (int.nodea.prev.prev == int.nodeb)

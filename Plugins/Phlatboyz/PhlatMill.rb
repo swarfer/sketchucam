@@ -2675,6 +2675,16 @@ module PhlatScript
       # * if print is false then return the string rather than cncprint it, for ramplimitarc
       # * If @laser is enabled then the correct M3/M4 will be output before the move
       # for very small arc segments force a linear move instead
+      # Returns true if travelling from (x1,y1) to (x2,y2) round the centre (cx,cy) by the
+      # short way (< 180 degrees) is counter-clockwise (G03). Falls back to +default+ when the
+      # move is (near) 180 degrees or degenerate and the direction cannot be determined.
+      def arc_is_ccw?(x1, y1, x2, y2, cx, cy, default = false)
+         cross = ((x1 - cx) * (y2 - cy)) - ((y1 - cy) * (x2 - cx))
+         scale = Math.hypot(x1 - cx, y1 - cy) * Math.hypot(x2 - cx, y2 - cy)
+         return default if scale <= 0.0 || (cross.abs / scale) < 1.0e-6
+         cross > 0.0
+      end
+
       def arcmoveij(xo, yo, centerx, centery, radius, g3 = false, zo = @cz, so = @speed_curr, cmd = @cmd_arc, print = true)
          cmd = g3 ? @cmd_arc_rev : @cmd_arc
          # puts "g3: #{g3} cmd #{cmd}"
@@ -2685,6 +2695,11 @@ module PhlatScript
          p2 = Geom::Point3d.new(xo, yo, 0.0)         
          if (p1.distance(p2).abs > 0.02.inch) && (radius > 0.01.inch) # is radius big enough?
             cp = Geom::Point3d.new(centerx, centery, 0.0)
+            # Derive the arc direction from the actual geometry rather than trusting the
+            # stored g3 flag, which can come out inverted (e.g. when the face is upside down
+            # or the loop winding is reversed), turning a ~90 degree corner into a ~270 degree sweep.
+            g3 = arc_is_ccw?(@cx, @cy, xo, yo, centerx, centery, g3)
+            cmd = g3 ? @cmd_arc_rev : @cmd_arc
             #   arcmove(xo,yo,radius,g3,zo)
             # always calculate real center, and optionally adjust radius
             
